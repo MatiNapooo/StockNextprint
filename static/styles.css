@@ -1,0 +1,302 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background-color: #cfcfcf; /* gris del fondo grande */
+}
+
+/* HEADER */
+.top-bar {
+    border-top: 2px solid #000;
+    border-bottom: 2px solid #000;
+    background-color: #ffffff;
+}
+
+/* Contenedor del menú */
+.menu-principal {
+    display: flex;
+    width: 100%;
+    height: 120px;              /* alto del header */
+}
+
+/* Cada bloque del menú */
+.menu-item {
+    flex: 1;                    /* todos el mismo ancho */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-right: 2px solid #000;
+    color: #000;
+}
+
+.menu-item:last-child {
+    border-right: none;
+}
+
+/* Colores de cada sección */
+.inventario {
+    background-color: #ffffff;
+}
+
+.entradas {
+    background-color: #b7ff1f;  /* verde */
+}
+
+.salidas {
+    background-color: #ff3333;  /* rojo */
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000;
+}
+
+.pedidos {
+    background-color: #ffffff;
+}
+
+/* Hover */
+.menu-item:hover {
+    filter: brightness(0.95);
+}
+
+/* MAIN */
+.contenido {
+    min-height: calc(100vh - 120px - 4px); /* 120 header + 2px borde arriba/abajo */
+    padding: 1.5rem;
+}
+
+/* --- CONTENIDO GENERAL --- */
+.contenido {
+    min-height: calc(100vh - 120px - 4px);
+    padding: 2.5rem;
+
+    /* Centramos vertical y horizontalmente el contenido */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- HOME: BIENVENIDA --- */
+.bienvenida {
+    text-align: center;
+}
+
+.bienvenida-titulo {
+    font-size: 3.5rem;   /* más grande */
+    margin-bottom: 1.2rem;
+}
+
+.bienvenida-subtitulo {
+    font-size: 2rem;     /* también más grande */
+}
+
+/* --- ACCIONES (ENTRADAS / SALIDAS) --- */
+
+.acciones-container {
+    display: flex;
+    justify-content: center;
+    gap: 5rem;              /* separación un poco mayor */
+    margin-top: 1.5rem;     /* pequeña separación del título si luego ponemos uno */
+}
+
+.accion-card {
+    background-color: #ffffff;
+    border: 3px solid #000;
+    padding: 3rem 5rem;     /* más grande */
+    min-width: 320px;       /* más ancha */
+    text-align: center;
+    font-size: 1.8rem;      /* texto más grande */
+    font-weight: 600;
+    text-decoration: none;
+    color: #000;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+}
+
+.accion-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.98);
+}
+
+/* Logo fijo abajo a la derecha */
+.logo-fixed {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    max-width: 180px;      /* ajustá si lo querés más chico/grande */
+    height: auto;
+    opacity: 0.9;
+    pointer-events: none;  /* que no moleste para hacer clic en algo detrás */
+}
+
+/* El main ya lo tenemos centrado */
+.contenido {
+    min-height: calc(100vh - 120px - 4px);
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* FORMULARIOS DE REGISTRO (entradas/salidas/pedidos) */
+.form-registro {
+    text-align: center;
+}
+
+.form-titulo {
+    font-size: 2.4rem;
+    margin-bottom: 2rem;
+}
+
+/* Contenedor general del form: columna */
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2.5rem;
+}
+
+/* Fila con las dos tarjetas grandes */
+.form-row {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+}
+
+.form-card {
+    background-color: #ffffff;
+    border: 3px solid #000;
+    padding: 2.5rem 3.5rem;
+    min-width: 380px;  /* un poco más ancha */
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.form-card label {
+    font-size: 1.6rem;   /* texto grande para leer bien */
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    text-align: left;
+}
+
+/* inputs y selects grandes para usar con dedo */
+.form-card input,
+.form-card select {
+    font-size: 1.5rem;
+    padding: 0.9rem 1.1rem;
+    border: 2px solid #000;
+    outline: none;
+    background-color: #ffffff;
+    margin-bottom: 1rem;
+}
+
+.form-card input:focus {
+    box-shadow: 0 0 0 2px #555;
+}
+
+/* Botón/tarjeta verde de Confirmar registro */
+.confirm-button {
+    background-color: #b7ff1f;
+    border: 3px solid #000;
+    padding: 1rem 3rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+}
+
+.confirm-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.97);
+}
+
+/* VISTA PREVIA DEL REGISTRO */
+.preview-wrapper {
+    margin-top: 1rem;
+    display: none;                /* OCULTA por defecto */
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.preview-title {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+/* Tabla estilo Excel */
+.preview-table {
+    border-collapse: collapse;
+    min-width: 700px;
+    font-size: 1.1rem;
+}
+
+.preview-table th,
+.preview-table td {
+    border: 1px solid #000;
+    padding: 0.4rem 0.8rem;
+    text-align: left;
+}
+
+/* Encabezado azul tipo Excel */
+.preview-table thead th {
+    background-color: #4a86c5;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* Botón de finalizar */
+.finish-button {
+    margin-top: 1rem;
+    background-color: #5fbf3b;
+    border: 3px solid #000;
+    padding: 0.8rem 2.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+}
+
+.finish-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
+    filter: brightness(0.97);
+}
+
+.select-insumo {
+    font-weight: 700;
+    min-width: 320px;
+    height: 3.5rem;          /* alto visible mayor */
+}
+
+/* Select de unidad: igual de grande y cómodo */
+.select-unidad {
+    font-weight: 700;
+    min-width: 220px;
+    height: 3.5rem;
+    cursor: pointer;
+}
+
+.error-msg {
+    color: #c00000;          /* rojo fuerte */
+    font-weight: 700;        /* negrita */
+    font-size: 1rem;
+    margin-bottom: 0.4rem;
+    min-height: 1.2rem;      /* para que la tarjeta no “salte” cuando aparece */
+}

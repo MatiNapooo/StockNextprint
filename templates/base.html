@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Stock</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- HEADER -->
+    <header class="top-bar">
+        <nav class="menu-principal">
+            <a href="{{ url_for('inventario') }}" class="menu-item inventario">Inventario</a>
+            <a href="{{ url_for('entradas') }}" class="menu-item entradas">Entradas</a>
+            <a href="{{ url_for('salidas') }}" class="menu-item salidas">Salidas</a>
+            <a href="{{ url_for('pedidos') }}" class="menu-item pedidos">Pedidos</a>
+        </nav>
+    </header>
+
+    <main class="contenido">
+
+    {# HOME: ¡Bienvenido! #}
+    {% if vista == "home" %}
+        <section class="bienvenida">
+            <h1 class="bienvenida-titulo">¡Bienvenido!</h1>
+            <p class="bienvenida-subtitulo">Seleccione una opción</p>
+        </section>
+
+    {# ENTRADAS - menú con tarjetas #}
+    {% elif vista == "entradas" %}
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="#" class="accion-card">
+                    Ver historial de entradas
+                </a>
+                <a href="{{ url_for('entradas_nueva') }}" class="accion-card">
+                    Registrar nueva entrada
+                </a>
+            </div>
+        </section>
+
+    {# SALIDAS - menú con tarjetas #}
+    {% elif vista == "salidas" %}
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="#" class="accion-card">
+                    Ver historial de salidas
+                </a>
+                <a href="{{ url_for('salidas_nueva') }}" class="accion-card">
+                    Registrar nueva salida
+                </a>
+            </div>
+        </section>
+
+    {# PEDIDOS - menú con tarjetas #}
+    {% elif vista == "pedidos" %}
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="#" class="accion-card">
+                    Ver historial de pedidos
+                </a>
+                <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">
+                    Registrar nuevo pedido
+                </a>
+            </div>
+        </section>
+
+    {% elif vista == "entradas_nueva" %}
+        <section class="form-registro">
+            <h1 class="form-titulo">Registrar nueva entrada</h1>
+            <form class="form-container">
+                <div class="form-row">
+                    <!-- Tarjeta izquierda: seleccionar insumo -->
+                    <div class="form-card">
+                        <p id="error-insumo" class="error-msg"></p>
+                        <label for="insumo_seleccionado">Seleccionar insumo</label>
+                        <select id="insumo_seleccionado" name="insumo_seleccionado" class="select-insumo">
+                            <option value="">-- Seleccionar insumo --</option>
+                            {% for i in insumos %}
+                                <option
+                                    value="{{ i['codigo'] }}"
+                                    data-nombre="{{ i['nombre_mostrar'] }}"
+                                    data-descripcion="{{ i['descripcion'] }}"
+                                >
+                                    {{ i['nombre_mostrar'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Tarjeta derecha: seleccionar unidad (1 a 20) -->
+                    <div class="form-card">
+                        <p id="error-unidad" class="error-msg"></p>
+                        <label for="unidad_seleccionada">Seleccionar unidad</label>
+                        <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
+                            <option value="">-- Seleccionar unidad --</option>
+                            {% for n in range(1, 21) %}
+                                <option value="{{ n }}">{{ n }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" class="confirm-button">
+                    Confirmar registro
+                </button>
+
+                <div class="preview-wrapper" id="preview-section">
+                    <h2 class="preview-title">Vista previa del registro</h2>
+                    <div id="preview-table-wrapper"></div>
+
+                    <button type="button" class="finish-button">
+                        Finalizar registro
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    {% elif vista == "salidas_nueva" %}
+        <section class="form-registro">
+            <h1 class="form-titulo">Registrar nueva salida</h1>
+            <form class="form-container">
+                <div class="form-row">
+                    <!-- Tarjeta izquierda: seleccionar insumo -->
+                    <div class="form-card">
+                        <p id="error-insumo" class="error-msg"></p>
+                        <label for="insumo_seleccionado">Seleccionar insumo</label>
+                        <select id="insumo_seleccionado" name="insumo_seleccionado" class="select-insumo">
+                            <option value="">-- Seleccionar insumo --</option>
+                            {% for i in insumos %}
+                                <option
+                                    value="{{ i['codigo'] }}"
+                                    data-nombre="{{ i['nombre_mostrar'] }}"
+                                    data-descripcion="{{ i['descripcion'] }}"
+                                >
+                                    {{ i['nombre_mostrar'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Tarjeta derecha: seleccionar unidad (1 a 20) -->
+                    <div class="form-card">
+                        <p id="error-unidad" class="error-msg"></p>
+                        <label for="unidad_seleccionada">Seleccionar unidad</label>
+                        <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
+                            <option value="">-- Seleccionar unidad --</option>
+                            {% for n in range(1, 21) %}
+                                <option value="{{ n }}">{{ n }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" class="confirm-button">
+                    Confirmar registro
+                </button>
+
+                <div class="preview-wrapper" id="preview-section">
+                    <h2 class="preview-title">Vista previa del registro</h2>
+                    <div id="preview-table-wrapper"></div>
+
+                    <button type="button" class="finish-button">
+                        Finalizar registro
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    {# REGISTRAR NUEVO PEDIDO #}
+    {% elif vista == "pedidos_nuevo" %}
+        <section class="form-registro">
+            <h1 class="form-titulo">Registrar nuevo pedido</h1>
+            <form class="form-container">
+                <div class="form-row">
+                    <div class="form-card">
+                        <label for="codigo_registro">Código</label>
+                        <input id="codigo_registro" name="codigo_registro" type="text"
+                            placeholder="Ej. P011">
+
+                        <label for="insumo_registro">Insumo</label>
+                        <input id="insumo_registro" name="insumo_registro" type="text"
+                            placeholder="Ej. Polvo">
+
+                        <label for="descripcion_registro">Descripción</label>
+                        <input id="descripcion_registro" name="descripcion_registro" type="text"
+                            placeholder="Ej. Antirrepinte x 1 Kg">
+                    </div>
+
+                    <div class="form-card">
+                        <label for="cantidad_registro">Cantidad</label>
+                        <input id="cantidad_registro" name="cantidad_registro" type="number"
+                            placeholder="Ej. 8" min="1" step="1">
+                    </div>
+                </div>
+
+                <button type="button" class="confirm-button">
+                    Confirmar registro
+                </button>
+
+                <div class="preview-wrapper" id="preview-section">
+                    <h2 class="preview-title">Vista previa del registro</h2>
+                    <div id="preview-table-wrapper"></div>
+
+                    <button type="button" class="finish-button">
+                        Finalizar registro
+                    </button>
+                </div>
+            </form>
+        </section>
+
+    {# OTRAS SECCIONES #}
+    {% else %}
+        <section class="bienvenida">
+            <h1 class="bienvenida-titulo">Sección en construcción</h1>
+            <p class="bienvenida-subtitulo">Pronto agregaremos contenido aquí.</p>
+        </section>
+    {% endif %}
+
+    </main>
+
+    
+    <img src="{{ url_for('static', filename='img/logo-nextprint.png') }}"
+         alt="Nextprint"
+         class="logo-fixed">
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+
+</body>
+</html>
