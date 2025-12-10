@@ -1,4 +1,4 @@
-/* Reset básico */
+
 * {
     margin: 0;
     padding: 0;
@@ -7,26 +7,56 @@
 
 body {
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background-color: #cfcfcf; /* gris del fondo grande */
+    background-color: #cfcfcf; 
 }
 
-/* HEADER */
+
 .top-bar {
     border-top: 2px solid #000;
     border-bottom: 2px solid #000;
     background-color: #ffffff;
 }
 
-/* Contenedor del menú */
-.menu-principal {
+
+.header-inner {
     display: flex;
-    width: 100%;
-    height: 120px;              /* alto del header */
+    align-items: stretch;
+    height: 120px;
+    padding: 0 2rem;
+    gap: 1.5rem;
 }
 
-/* Cada bloque del menú */
+
+.btn-volver {
+    align-self: center;
+    background-color: #ffffff;
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 0.4rem 1.2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    color: #000;
+    box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-volver:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+}
+
+
+.menu-principal {
+    display: flex;
+    flex: 1;
+}
+
+
 .menu-item {
-    flex: 1;                    /* todos el mismo ancho */
+    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -41,17 +71,18 @@ body {
     border-right: none;
 }
 
-/* Colores de cada sección */
+
+
 .inventario {
     background-color: #ffffff;
 }
 
 .entradas {
-    background-color: #b7ff1f;  /* verde */
+    background-color: #b7ff1f; 
 }
 
 .salidas {
-    background-color: #ff3333;  /* rojo */
+    background-color: #ff3333;  
     color: #ffffff;
     text-shadow: 1px 1px 2px #000;
 }
@@ -60,59 +91,58 @@ body {
     background-color: #ffffff;
 }
 
-/* Hover */
+
 .menu-item:hover {
     filter: brightness(0.95);
 }
 
-/* MAIN */
+
 .contenido {
-    min-height: calc(100vh - 120px - 4px); /* 120 header + 2px borde arriba/abajo */
+    min-height: calc(100vh - 120px - 4px); 
     padding: 1.5rem;
 }
 
-/* --- CONTENIDO GENERAL --- */
+
 .contenido {
     min-height: calc(100vh - 120px - 4px);
     padding: 2.5rem;
 
-    /* Centramos vertical y horizontalmente el contenido */
+   
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-/* --- HOME: BIENVENIDA --- */
+
 .bienvenida {
     text-align: center;
 }
 
 .bienvenida-titulo {
-    font-size: 3.5rem;   /* más grande */
+    font-size: 3.5rem;   
     margin-bottom: 1.2rem;
 }
 
 .bienvenida-subtitulo {
-    font-size: 2rem;     /* también más grande */
+    font-size: 2rem;    
 }
 
-/* --- ACCIONES (ENTRADAS / SALIDAS) --- */
 
 .acciones-container {
     display: flex;
     justify-content: center;
-    gap: 5rem;              /* separación un poco mayor */
-    margin-top: 1.5rem;     /* pequeña separación del título si luego ponemos uno */
+    gap: 5rem;              
+    margin-top: 1.5rem;     
 }
 
 .accion-card {
     background-color: #ffffff;
     border: 3px solid #000;
-    padding: 3rem 5rem;     /* más grande */
-    min-width: 320px;       /* más ancha */
+    padding: 3rem 5rem;    
+    min-width: 320px;       
     text-align: center;
-    font-size: 1.8rem;      /* texto más grande */
+    font-size: 1.8rem;      
     font-weight: 600;
     text-decoration: none;
     color: #000;
@@ -126,18 +156,18 @@ body {
     filter: brightness(0.98);
 }
 
-/* Logo fijo abajo a la derecha */
+
 .logo-fixed {
     position: fixed;
     right: 20px;
     bottom: 20px;
-    max-width: 180px;      /* ajustá si lo querés más chico/grande */
+    max-width: 180px;      
     height: auto;
     opacity: 0.9;
-    pointer-events: none;  /* que no moleste para hacer clic en algo detrás */
+    pointer-events: none;  
 }
 
-/* El main ya lo tenemos centrado */
+
 .contenido {
     min-height: calc(100vh - 120px - 4px);
     padding: 2.5rem;
@@ -147,7 +177,7 @@ body {
     justify-content: center;
 }
 
-/* FORMULARIOS DE REGISTRO (entradas/salidas/pedidos) */
+
 .form-registro {
     text-align: center;
 }
@@ -157,7 +187,7 @@ body {
     margin-bottom: 2rem;
 }
 
-/* Contenedor general del form: columna */
+
 .form-container {
     display: flex;
     flex-direction: column;
@@ -165,7 +195,7 @@ body {
     gap: 2.5rem;
 }
 
-/* Fila con las dos tarjetas grandes */
+
 .form-row {
     display: flex;
     justify-content: center;
@@ -176,7 +206,7 @@ body {
     background-color: #ffffff;
     border: 3px solid #000;
     padding: 2.5rem 3.5rem;
-    min-width: 380px;  /* un poco más ancha */
+    min-width: 380px;  
     box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
     display: flex;
     flex-direction: column;
@@ -184,13 +214,13 @@ body {
 }
 
 .form-card label {
-    font-size: 1.6rem;   /* texto grande para leer bien */
+    font-size: 1.6rem;  
     font-weight: 700;
     margin-bottom: 0.8rem;
     text-align: left;
 }
 
-/* inputs y selects grandes para usar con dedo */
+
 .form-card input,
 .form-card select {
     font-size: 1.5rem;
@@ -205,7 +235,7 @@ body {
     box-shadow: 0 0 0 2px #555;
 }
 
-/* Botón/tarjeta verde de Confirmar registro */
+
 .confirm-button {
     background-color: #b7ff1f;
     border: 3px solid #000;
@@ -224,10 +254,10 @@ body {
     filter: brightness(0.97);
 }
 
-/* VISTA PREVIA DEL REGISTRO */
+
 .preview-wrapper {
     margin-top: 1rem;
-    display: none;                /* OCULTA por defecto */
+    display: none;               
     flex-direction: column;
     align-items: center;
     gap: 1rem;
@@ -238,7 +268,7 @@ body {
     font-weight: 600;
 }
 
-/* Tabla estilo Excel */
+
 .preview-table {
     border-collapse: collapse;
     min-width: 700px;
@@ -252,14 +282,14 @@ body {
     text-align: left;
 }
 
-/* Encabezado azul tipo Excel */
+
 .preview-table thead th {
     background-color: #4a86c5;
     color: #ffffff;
     font-weight: 700;
 }
 
-/* Botón de finalizar */
+
 .finish-button {
     margin-top: 1rem;
     background-color: #5fbf3b;
@@ -282,10 +312,10 @@ body {
 .select-insumo {
     font-weight: 700;
     min-width: 320px;
-    height: 3.5rem;          /* alto visible mayor */
+    height: 3.5rem;         
 }
 
-/* Select de unidad: igual de grande y cómodo */
+
 .select-unidad {
     font-weight: 700;
     min-width: 220px;
@@ -294,9 +324,259 @@ body {
 }
 
 .error-msg {
-    color: #c00000;          /* rojo fuerte */
-    font-weight: 700;        /* negrita */
+    color: #c00000;          
+    font-weight: 700;        
     font-size: 1rem;
     margin-bottom: 0.4rem;
-    min-height: 1.2rem;      /* para que la tarjeta no “salte” cuando aparece */
+    min-height: 1.2rem;      
+}
+
+.accion-card-disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+}
+
+.accion-card-menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.accion-card-img {
+    max-width: 160px;
+    max-height: 120px;
+    object-fit: contain;
+}
+
+.insumo-imagen {
+    margin-top: 1rem;
+    max-width: 220px;
+    max-height: 180px;
+    object-fit: contain;
+    border: 2px solid #000;
+    background-color: #ffffff;
+    display: none; /* se muestra solo cuando hay insumo seleccionado */
+}
+
+/* HISTORIAL */
+.historial {
+    width: 100%;
+}
+
+.historial-titulo {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.btn-agregar-insumo {
+    background-color: #ffffff;
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 0.4rem 1.0rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+
+.btn-agregar-insumo:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+}
+
+
+.historial-filtro {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.historial-filtro label {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.historial-filtro input {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid #000;
+    width: 280px;
+}
+
+.historial-tabla-wrapper {
+    max-height: calc(100vh - 260px);
+    overflow-y: auto;
+}
+
+.historial-tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+}
+
+.historial-tabla th,
+.historial-tabla td {
+    border: 1px solid #000;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+}
+
+.historial-tabla thead th {
+    background-color: #4a86c5;
+    color: #ffffff;
+}
+
+/* Botón BORRAR */
+.btn-borrar {
+    background-color: #ff4d4d;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+}
+
+.btn-borrar:hover {
+    filter: brightness(0.9);
+}
+
+/* MODAL BORRADO */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
+    display: none;  /* se muestra desde JS */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fdfdfd;
+    border: 3px solid #000;
+    padding: 2rem 3rem;
+    box-shadow: 4px 4px 0 rgba(0,0,0,0.6);
+    text-align: center;
+}
+
+.modal-texto {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.modal-botones {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+}
+
+.modal-btn {
+    min-width: 100px;
+    padding: 0.8rem 1.5rem;
+    border-radius: 14px;
+    border: 2px solid #000;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+}
+
+.modal-btn-si {
+    background-color: #b7ff1f;
+}
+
+.modal-btn-no {
+    background-color: #ff4d4d;
+    color: #fff;
+}
+
+.modal-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Botón MODIFICAR en inventario */
+.btn-modificar {
+    background-color: #ffffff;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 0.2rem 0.8rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-modificar:hover {
+    filter: brightness(0.95);
+}
+
+/* Modal específico de inventario */
+.modal-inventario-content {
+    min-width: 480px;
+    max-width: 640px;
+}
+
+.btn-volver-modal {
+    background-color: #ffffff;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 0.2rem 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 1rem;
+}
+
+.modal-titulo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.modal-form-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.modal-form-row label {
+    min-width: 140px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.modal-form-row input {
+    flex: 1;
+    font-size: 1.1rem;
+    padding: 0.3rem 0.6rem;
+    border: 2px solid #000;
+}
+
+.modal-form-actions {
+    margin-top: 1.2rem;
+    display: flex;
+    justify-content: flex-end;
 }
