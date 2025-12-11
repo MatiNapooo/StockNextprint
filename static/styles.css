@@ -97,23 +97,24 @@ body {
 }
 
 
-.contenido {
-    min-height: calc(100vh - 120px - 4px); 
-    padding: 1.5rem;
-}
-
-
+/* Configuración base del main */
 .contenido {
     min-height: calc(100vh - 120px - 4px);
     padding: 2.5rem;
+}
 
-   
+/* Menú principal: centrado en la pantalla */
+.contenido-menu {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
+/* Resto de vistas (ADMIN, entradas, salidas, etc.): layout normal */
+.contenido-app {
+    display: block;
+}
 
 .bienvenida {
     text-align: center;
@@ -533,14 +534,15 @@ body {
 }
 
 .btn-volver-modal {
-    background-color: #ffffff;
+    padding: 0.5rem 1.4rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 999px;
     border: 2px solid #000;
-    border-radius: 10px;
-    padding: 0.2rem 0.8rem;
-    font-weight: 700;
+    background-color: #fff;
     cursor: pointer;
-    margin-bottom: 1rem;
 }
+
 
 .modal-titulo {
     font-size: 1.6rem;
@@ -580,3 +582,204 @@ body {
     display: flex;
     justify-content: flex-end;
 }
+
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    gap: 1.5rem;
+}
+
+.historial-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.historial-header-right {
+    display: flex;
+    gap: 0.6rem;
+}
+
+/* Ya tenías .historial-filtro y .btn-agregar-insumo;
+   podés reutilizarlos para Inventario */
+
+.btn-eliminar-insumo,
+.btn-editar-insumo {
+    background-color: #ffffff;
+    border: 2px solid #000;
+    border-radius: 12px;
+    padding: 0.4rem 1.0rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+
+.btn-eliminar-insumo:hover,
+.btn-editar-insumo:hover {
+    filter: brightness(0.96);
+    transform: translateY(-1px);
+    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+}
+
+.modal-form-row select {
+    flex: 1;
+    font-size: 1.1rem;
+    padding: 0.3rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 4px;
+    min-height: 2.2rem;       /* bueno para iPad */
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* El contenido grande de inventario (modificar / eliminar / agregar) */
+.modal-inventario-content {
+    max-width: 900px;
+    width: 80%;
+    padding: 2.5rem 3rem;
+    border-radius: 8px;
+}
+
+/* Layout del formulario dentro de los modales */
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+    margin-top: 1rem;
+}
+
+.modal-form-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.modal-form-row label {
+    min-width: 150px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Select grande y legible para tablet */
+.modal-form-row select {
+    flex: 1;
+    font-size: 1.1rem;
+    padding: 0.4rem 0.7rem;
+    border: 2px solid #000;
+    border-radius: 6px;
+    min-height: 2.3rem;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* Botón Eliminar centrado y con espacio */
+.modal-form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+/* ---- LOGIN ADMIN ---- */
+
+.login-section {
+    min-height: calc(100vh - 200px); /* ajusta si hace falta por header/footer */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-form {
+    margin-top: 2rem;
+    width: 420px;
+    max-width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.login-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.login-row label {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.login-row input {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.6rem;
+    border: 2px solid #000;
+    border-radius: 4px;
+}
+
+.login-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 0.5rem;
+}
+
+.login-button {
+    padding: 0.8rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 8px;
+    border: 2px solid #000;
+    background-color: #1fb244; /* verde */
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #333;
+    text-transform: uppercase;
+}
+
+.login-button:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 #333;
+}
+
+.login-error {
+    margin-top: 0.3rem;
+    text-align: center;
+    color: #c00;
+    font-weight: 700;
+}
+
+/* Ajuste de layout SOLO para el inventario ADMIN */
+.historial-admin .historial-tabla-wrapper {
+    width: 100%;          /* que use todo el ancho disponible */
+    max-width: none;      /* sin límite de ancho */
+    margin-top: 1.5rem;
+    margin-left: 0;       /* que no se empuje hacia la derecha */
+    margin-right: 0;
+}
+
+.historial-admin .historial-tabla {
+    width: 100%;
+} 
+
+.btn-cerrar-sesion {
+    display: inline-block;
+    padding: 0.4rem 1.4rem;
+    margin-right: 1rem;
+    font-size: 0.95rem;
+    font-weight: 700;            /* NEGRITA */
+    border-radius: 999px;
+    border: 2px solid #000;
+    background-color: #ff4d4d;   /* ROJO */
+    color: #000000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-cerrar-sesion:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 2px 2px 0 #333;
+}
+
+
+

@@ -21,18 +21,20 @@
                     <div class="menu-item salidas"></div>
                     <div class="menu-item pedidos"></div>
                 {% else %}
-                    <!-- Resto de vistas: menú normal con texto y links -->
-                    <a href="{{ url_for('inventario') }}" class="menu-item inventario">Inventario</a>
+                    <a href="{{ url_for('menu_principal') }}" class="menu-item menu-main">Menu</a>
+                    <a href="{{ url_for('inventario') }}" class="menu-item">ADMIN</a>
+                    <a href="{{ url_for('inventario_simple') }}" class="menu-item">Inventario</a>
                     <a href="{{ url_for('entradas') }}" class="menu-item entradas">Entradas</a>
                     <a href="{{ url_for('salidas') }}" class="menu-item salidas">Salidas</a>
-                    <a href="{{ url_for('pedidos') }}" class="menu-item pedidos">Pedidos</a>
+                    <a href="{{ url_for('pedidos') }}" class="menu-item">Pedidos</a>
                 {% endif %}
             </nav>
         </div>
     </header>
 
     <!-- MAIN -->
-    <main class="contenido">
+    <main class="contenido {% if vista == 'menu' %}contenido-menu{% else %}contenido-app{% endif %}">
+
 
         {% if vista == "menu" %}
             <section class="acciones">
@@ -54,94 +56,129 @@
 
 
 
-        {# INVENTARIO (por ahora vacío) #}
+        {# INVENTARIO #}
         {% elif vista == "inventario" %}
-            <section class="historial">
-                <div class="historial-header">
-                    <h1 class="historial-titulo">Inventario</h1>
-                    <button type="button" class="btn-agregar-insumo">
-                        Agregar insumo
-                    </button>
-                </div>
+            <section class="historial historial-admin">
+                    <div class="historial-header">
+                        <div class="historial-header-left">
+                            <h1 class="historial-titulo">Inventario</h1>
+                            <div class="historial-filtro inventario-filtro">
+                                <label for="filtro-inventario">Filtrar:</label>
+                                <input id="filtro-inventario" type="text"
+                                    placeholder="Escriba para filtrar">
+                            </div>
+                        </div>
+                                    <div class="historial-header-right">
+                                        <!-- Cerrar sesión -->
+                                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion">
+                                            Cerrar sesión
+                                        </a>
 
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-inventario">
-                        <thead>
-                            <tr>
-                                <th>CÓDIGO</th>
-                                <th>INSUMO</th>
-                                <th>DESCRIPCIÓN</th>
-                                <th>STOCK INICIAL</th>
-                                <th>ENTRADAS</th>
-                                <th>SALIDAS</th>
-                                <th>TOTAL</th>
-                                <th>ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr data-item-id="{{ r['id'] }}">
-                                    <td>{{ r['codigo'] }}</td>
-                                    <td>{{ r['nombre'] }}</td>
-                                    <td>{{ r['descripcion'] }}</td>
-                                    <td>{{ r['stock_inicial'] }}</td>
-                                    <td>{{ r['entradas'] }}</td>
-                                    <td>{{ r['salidas'] }}</td>
-                                    <td>{{ r['total'] }}</td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn-modificar"
-                                                data-id="{{ r['id'] }}"
-                                                data-stock="{{ r['stock_inicial'] }}"
-                                                data-entradas="{{ r['entradas'] }}"
-                                                data-salidas="{{ r['salidas'] }}"
-                                                data-total="{{ r['total'] }}">
-                                            Modificar
+                                        <!-- Botones de insumos -->
+                                        <button type="button" class="btn-agregar-insumo">
+                                            Agregar insumo
                                         </button>
-                                    </td>
+
+                                        <button type="button"
+                                                id="btn-eliminar-insumo-header"
+                                                class="btn-eliminar-insumo"
+                                                onclick="
+                                                    document.getElementById('modal-insumo-eliminar').style.display='flex';
+                                                    this.style.visibility='hidden';
+                                                ">
+                                            Eliminar insumo
+                                        </button>
+
+                                        <button type="button"
+                                                class="btn-editar-insumo"
+                                                onclick="document.getElementById('modal-insumo-editar').style.display='flex'">
+                                            Modificar insumo
+                                        </button>
+                                    </div>
+
+                    <div class="historial-tabla-wrapper">
+                        <table class="historial-tabla" id="tabla-inventario">
+                            <thead>
+                                <tr>
+                                    <th>CÓDIGO</th>
+                                    <th>INSUMO</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>STOCK INICIAL</th>
+                                    <th>ENTRADAS</th>
+                                    <th>SALIDAS</th>
+                                    <th>TOTAL</th>
+                                    <th>ACCIÓN</th>
                                 </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+
+                            <tbody>
+                                {% for r in registros %}
+                                    <tr data-item-id="{{ r['id'] }}"
+                                        data-codigo="{{ r['codigo'] }}"
+                                        data-nombre="{{ r['nombre'] }}"
+                                        data-descripcion="{{ r['descripcion'] }}"
+                                        data-unidad="{{ r['unidad'] or '' }}">
+                                        <td>{{ r['codigo'] }}</td>
+                                        <td>{{ r['nombre'] }}</td>
+                                        <td>{{ r['descripcion'] }}</td>
+                                        <td>{{ r['stock_inicial'] }}</td>
+                                        <td>{{ r['entradas'] }}</td>
+                                        <td>{{ r['salidas'] }}</td>
+                                        <td>{{ r['total'] }}</td>
+                                        <td>
+                                            <button type="button"
+                                                    class="btn-modificar"
+                                                    data-id="{{ r['id'] }}"
+                                                    data-stock="{{ r['stock_inicial'] }}"
+                                                    data-entradas="{{ r['entradas'] }}"
+                                                    data-salidas="{{ r['salidas'] }}"
+                                                    data-total="{{ r['total'] }}">
+                                                Modificar
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
             </section>
 
-            <!-- MODAL INVENTARIO -->
-            <div class="modal-overlay" id="modal-inventario">
-                <div class="modal-content modal-inventario-content">
-                    <button type="button" class="btn-volver-modal" id="inv-modal-cerrar">
-                        Volver
-                    </button>
-                    <h2 class="modal-titulo">Modificar inventario</h2>
+                <!-- MODAL MODIFICAR STOCK / ENTRADAS / SALIDAS / TOTAL -->
+                <div class="modal-overlay" id="modal-inventario">
+                    <div class="modal-content modal-inventario-content">
+                        <button type="button" class="btn-volver-modal" id="inv-modal-cerrar">
+                            Volver
+                        </button>
+                        <h2 class="modal-titulo">Modificar inventario</h2>
 
-                    <div class="modal-form">
-                        <div class="modal-form-row">
-                            <label for="inv-stock">Stock inicial</label>
-                            <input type="number" id="inv-stock" min="0">
-                        </div>
-                        <div class="modal-form-row">
-                            <label for="inv-entradas">Entradas</label>
-                            <input type="number" id="inv-entradas" min="0">
-                        </div>
-                        <div class="modal-form-row">
-                            <label for="inv-salidas">Salidas</label>
-                            <input type="number" id="inv-salidas" min="0">
-                        </div>
-                        <div class="modal-form-row">
-                            <label for="inv-total">Total</label>
-                            <input type="number" id="inv-total">
-                        </div>
+                        <div class="modal-form">
+                            <div class="modal-form-row">
+                                <label for="inv-stock">Stock inicial</label>
+                                <input type="number" id="inv-stock" min="0">
+                            </div>
+                            <div class="modal-form-row">
+                                <label for="inv-entradas">Entradas</label>
+                                <input type="number" id="inv-entradas" min="0">
+                            </div>
+                            <div class="modal-form-row">
+                                <label for="inv-salidas">Salidas</label>
+                                <input type="number" id="inv-salidas" min="0">
+                            </div>
+                            <div class="modal-form-row">
+                                <label for="inv-total">Total</label>
+                                <input type="number" id="inv-total">
+                            </div>
 
-                        <div class="modal-form-actions">
-                            <button type="button"
-                                    class="modal-btn modal-btn-si"
-                                    id="inv-modal-confirmar">
-                                Confirmar
-                            </button>
+                            <div class="modal-form-actions">
+                                <button type="button"
+                                        class="modal-btn modal-btn-si"
+                                        id="inv-modal-confirmar">
+                                    Confirmar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
                 <!-- MODAL AGREGAR INSUMO -->
                 <div class="modal-overlay" id="modal-insumo">
@@ -185,6 +222,189 @@
                 </div>
 
 
+                    <!-- MODAL ELIMINAR INSUMO -->
+                    <div class="modal-overlay" id="modal-insumo-eliminar">
+                        <div class="modal-content modal-inventario-content">
+                           <button type="button"
+                                    class="btn-volver-modal"
+                                    id="del-insumo-cerrar"
+                                    onclick="
+                                        document.getElementById('modal-insumo-eliminar').style.display='none';
+                                        document.getElementById('btn-eliminar-insumo-header').style.visibility='visible';
+                                    ">
+                                Volver
+                            </button>
+
+
+                            <button type="button"
+                                    class="btn-eliminar-insumo"
+                                    onclick="abrirModalEliminarInsumo()">
+                                Eliminar insumo
+                            </button>
+
+
+                            <h2 class="modal-titulo">Eliminar insumo</h2>
+
+                            <div class="modal-form">
+                                <div class="modal-form-row">
+                                    <label for="del-insumo-select">Seleccionar insumo</label>
+                                    <select id="del-insumo-select">
+                                        <option value="">-- Seleccione un insumo --</option>
+                                        {% for r in registros %}
+                                            <option value="{{ r['codigo'] }}">
+                                                {{ r['codigo'] }} - {{ r['nombre'] }} {{ r['descripcion'] }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                  <div class="modal-form-actions">
+                                        <button type="button"
+                                                class="modal-btn modal-btn-no"
+                                                id="del-insumo-eliminar">
+                                            Eliminar
+                                        </button>
+                                    </div>
+                            </div>
+                        </div>          
+                    </div>
+
+                    <!-- MODAL CONFIRMACIÓN ELIMINAR INSUMO -->
+                    <div class="modal-overlay" id="modal-insumo-confirm">
+                        <div class="modal-content">
+                            <p class="modal-texto">¿ESTÁS SEGURO QUE QUERÉS ELIMINAR ESTE INSUMO?</p>
+                            <div class="modal-botones">
+                                <button type="button" class="modal-btn modal-btn-si" id="insumo-conf-si">SI</button>
+                                <button type="button" class="modal-btn modal-btn-no" id="insumo-conf-no">NO</button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- MODAL MODIFICAR INSUMO -->
+                        <div class="modal-overlay" id="modal-insumo-editar">
+                            <div class="modal-content modal-inventario-content">
+                                <button type="button" class="btn-volver-modal" id="edit-insumo-cerrar">
+                                    Volver
+                                </button>
+                                <h2 class="modal-titulo">Modificar insumo</h2>
+
+                                <div class="modal-form">
+                                    <div class="modal-form-row">
+                                        <label for="edit-insumo-select">Seleccionar insumo</label>
+                                        <select id="edit-insumo-select">
+                                            {% for r in registros %}
+                                                <option value="{{ r['codigo'] }}"
+                                                        data-nombre="{{ r['nombre'] }}"
+                                                        data-descripcion="{{ r['descripcion'] }}"
+                                                        data-unidad="{{ r['unidad'] or '' }}">
+                                                    {{ r['codigo'] }} - {{ r['nombre'] }} {{ r['descripcion'] }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                    <div class="modal-form-row">
+                                        <label for="edit-codigo">Código</label>
+                                        <input type="text" id="edit-codigo">
+                                    </div>
+                                    <div class="modal-form-row">
+                                        <label for="edit-nombre">Insumo</label>
+                                        <input type="text" id="edit-nombre">
+                                    </div>
+                                    <div class="modal-form-row">
+                                        <label for="edit-descripcion">Descripción</label>
+                                        <input type="text" id="edit-descripcion">
+                                    </div>
+                                    <div class="modal-form-row">
+                                        <label for="edit-unidad">Unidad (opcional)</label>
+                                        <input type="text" id="edit-unidad">
+                                    </div>
+
+                                    <div class="modal-form-actions">
+                                        <button type="button"
+                                                class="modal-btn modal-btn-si"
+                                                id="edit-insumo-confirmar">
+                                            Confirmar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                {% elif vista == "inventario_simple" %}
+            <section class="historial">
+                <h1 class="historial-titulo">Inventario</h1>
+
+                <div class="historial-filtro inventario-filtro">
+                    <label for="filtro-inventario-simple">Filtrar:</label>
+                    <input id="filtro-inventario-simple" type="text"
+                           placeholder="Escriba para filtrar">
+                </div>
+
+                <div class="historial-tabla-wrapper">
+                    <table class="historial-tabla" id="tabla-inventario-simple">
+                        <thead>
+                            <tr>
+                                <th>CÓDIGO</th>
+                                <th>INSUMO</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th>STOCK INICIAL</th>
+                                <th>ENTRADAS</th>
+                                <th>SALIDAS</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in registros %}
+                                <tr>
+                                    <td>{{ r['codigo'] }}</td>
+                                    <td>{{ r['nombre'] }}</td>
+                                    <td>{{ r['descripcion'] }}</td>
+                                    <td>{{ r['stock_inicial'] }}</td>
+                                    <td>{{ r['entradas'] }}</td>
+                                    <td>{{ r['salidas'] }}</td>
+                                    <td>{{ r['total'] }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        {% elif vista == "login_admin" %}
+            <section class="login-section">
+                <h1 class="welcome-title">Iniciar Sesión</h1>
+
+                <form class="login-form" method="post" action="{{ url_for('inventario') }}">
+                    <div class="login-row">
+                        <label for="login-usuario">Usuario</label>
+                        <input type="text"
+                               id="login-usuario"
+                               name="usuario"
+                               autocomplete="username">
+                    </div>
+
+                    <div class="login-row">
+                        <label for="login-contrasena">Contraseña</label>
+                        <input type="password"
+                               id="login-contrasena"
+                               name="contrasena"
+                               autocomplete="current-password">
+                    </div>
+
+                    {% if login_error %}
+                        <p class="login-error">Usuario o contraseña incorrecta</p>
+                    {% endif %}
+
+                    <div class="login-actions">
+                        <button type="submit" class="login-button">INGRESAR</button>
+                    </div>
+                </form>
+            </section>
+
+        
         {# ENTRADAS #}
         {% elif vista == "entradas" %}
             <section class="acciones">

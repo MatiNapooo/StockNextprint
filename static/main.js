@@ -198,10 +198,54 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-        // -------------------
-    // INVENTARIO: popup MODIFICAR
+       // -------------------
+    // INVENTARIO: filtro
     // -------------------
     const tablaInventario = document.getElementById("tabla-inventario");
+    const filtroInv = document.getElementById("filtro-inventario");
+
+    if (tablaInventario && filtroInv) {
+        filtroInv.addEventListener("input", function () {
+            const filtro = filtroInv.value.trim().toLowerCase();
+            const filas = tablaInventario.querySelectorAll("tbody tr");
+
+            filas.forEach((tr) => {
+                const texto = tr.textContent.toLowerCase();
+                if (!filtro || texto.includes(filtro)) {
+                    tr.style.display = "";
+                } else {
+                    tr.style.display = "none";
+                }
+            });
+        });
+    }
+
+         // -------------------
+        // INVENTARIO SIMPLE (solo lectura): filtro
+        // -------------------
+        const tablaInventarioSimple = document.getElementById("tabla-inventario-simple");
+        const filtroInvSimple = document.getElementById("filtro-inventario-simple");
+
+        if (tablaInventarioSimple && filtroInvSimple) {
+            filtroInvSimple.addEventListener("input", function () {
+                const filtro = filtroInvSimple.value.trim().toLowerCase();
+                const filas = tablaInventarioSimple.querySelectorAll("tbody tr");
+
+                filas.forEach((tr) => {
+                    const texto = tr.textContent.toLowerCase();
+                    if (!filtro || texto.includes(filtro)) {
+                        tr.style.display = "";
+                    } else {
+                        tr.style.display = "none";
+                    }
+                });
+            });
+    }
+
+
+    // -------------------
+    // INVENTARIO: popup MODIFICAR cantidades
+    // -------------------
     const modalInv = document.getElementById("modal-inventario");
     const invCerrar = document.getElementById("inv-modal-cerrar");
     const invConfirmar = document.getElementById("inv-modal-confirmar");
@@ -245,7 +289,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 stock_inicial: parseInt(inputStock.value || "0", 10),
                 entradas: parseInt(inputEntradas.value || "0", 10),
                 salidas: parseInt(inputSalidas.value || "0", 10),
-                total: parseInt(inputTotal.value || "0", 10),
             };
 
             fetch(`/inventario/${inventarioIdActual}/actualizar`, {
@@ -253,26 +296,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             })
-                .then((resp) => {
-                    if (!resp.ok) {
-                        throw new Error("Error al actualizar inventario");
-                    }
-                    return resp.json();
-                })
-                .then(() => {
-                    // columnas: 0 código, 1 insumo, 2 desc, 3 stock, 4 entradas, 5 salidas, 6 total, 7 acción
+                .then((resp) => resp.json())
+                .then((data) => {
+                    if (!data.ok) throw new Error("Error al actualizar inventario");
+
                     const celdas = inventarioFilaActual.querySelectorAll("td");
-                    celdas[3].textContent = payload.stock_inicial;
-                    celdas[4].textContent = payload.entradas;
-                    celdas[5].textContent = payload.salidas;
-                    celdas[6].textContent = payload.total;
+                    celdas[3].textContent = data.stock_inicial;
+                    celdas[4].textContent = data.entradas;
+                    celdas[5].textContent = data.salidas;
+                    celdas[6].textContent = data.total;
 
                     const btn = inventarioFilaActual.querySelector(".btn-modificar");
                     if (btn) {
-                        btn.dataset.stock = payload.stock_inicial;
-                        btn.dataset.entradas = payload.entradas;
-                        btn.dataset.salidas = payload.salidas;
-                        btn.dataset.total = payload.total;
+                        btn.dataset.stock = data.stock_inicial;
+                        btn.dataset.entradas = data.entradas;
+                        btn.dataset.salidas = data.salidas;
+                        btn.dataset.total = data.total;
                     }
 
                     modalInv.style.display = "none";
@@ -286,7 +325,198 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
         });
     }
-    
+    // -------------------
+    // INVENTARIO: ELIMINAR INSUMO
+    // -------------------
+    const delSelect = document.getElementById("del-insumo-select");
+    const delEliminar = document.getElementById("del-insumo-eliminar");
+    const modalDelConfirm = document.getElementById("modal-insumo-confirm");
+    const delConfSi = document.getElementById("insumo-conf-si");
+    const delConfNo = document.getElementById("insumo-conf-no");
+
+    let codigoAEliminar = null;
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+            // Funciones globales para abrir/cerrar el modal de ELIMINAR INSUMO
+   
+    });
+
+    if (
+        tablaInventario &&
+        delSelect &&
+        delEliminar &&
+        modalDelConfirm &&
+        delConfSi &&
+        delConfNo
+    ) {
+        // Click en "Eliminar" dentro del primer popup
+        delEliminar.addEventListener("click", function () {
+            const codigo = delSelect.value;
+            if (!codigo) {
+                alert("Seleccione un insumo.");
+                return;
+            }
+            codigoAEliminar = codigo;
+            modalDelConfirm.style.display = "flex";
+        });
+
+        // Click en "NO" en el popup de confirmación
+        delConfNo.addEventListener("click", function () {
+            modalDelConfirm.style.display = "none";
+            codigoAEliminar = null;
+        });
+
+        // Click en "SI" en el popup de confirmación
+        delConfSi.addEventListener("click", function () {
+            if (!codigoAEliminar) {
+                modalDelConfirm.style.display = "none";
+                return;
+            }
+
+            fetch(`/insumos/${codigoAEliminar}/eliminar`, {
+                method: "POST",
+            })
+                .then((resp) => resp.json())
+                .then((data) => {
+                    if (!data.ok) throw new Error("No se pudo eliminar insumo");
+
+                    // ... (borrado de fila y opciones)
+
+                    modalDelConfirm.style.display = "none";
+                    const modalEliminar = document.getElementById("modal-insumo-eliminar");
+                    if (modalEliminar) modalEliminar.style.display = "none";
+                    document.body.classList.remove("modal-eliminar-open");
+                    codigoAEliminar = null;
+                })
+
+                .catch((err) => {
+                    console.error(err);
+                    alert("Error al eliminar insumo.");
+                    modalDelConfirm.style.display = "none";
+                });
+        });
+    }
+
+    // -------------------
+    // INVENTARIO: MODIFICAR INSUMO (datos del insumo)
+    // -------------------
+    const btnEditarInsumo = document.querySelector(".btn-editar-insumo");
+    const modalEditInsumo = document.getElementById("modal-insumo-editar");
+    const editCerrar = document.getElementById("edit-insumo-cerrar");
+    const editConfirmar = document.getElementById("edit-insumo-confirmar");
+
+    const editSelectInsumo = document.getElementById("edit-insumo-select");
+    const editCodigo = document.getElementById("edit-codigo");
+    const editNombre = document.getElementById("edit-nombre");
+    const editDescripcion = document.getElementById("edit-descripcion");
+    const editUnidad = document.getElementById("edit-unidad");
+
+    function cargarDatosEdicion() {
+        const opt = editSelectInsumo.options[editSelectInsumo.selectedIndex];
+        if (!opt) return;
+        editCodigo.value = opt.value;
+        editNombre.value = opt.dataset.nombre || "";
+        editDescripcion.value = opt.dataset.descripcion || "";
+        editUnidad.value = opt.dataset.unidad || "";
+    }
+
+    if (
+        tablaInventario &&
+        btnEditarInsumo &&
+        modalEditInsumo &&
+        editCerrar &&
+        editConfirmar &&
+        editSelectInsumo
+    ) {
+        btnEditarInsumo.addEventListener("click", function () {
+            cargarDatosEdicion();
+            modalEditInsumo.style.display = "flex";
+        });
+
+        editSelectInsumo.addEventListener("change", cargarDatosEdicion);
+
+        editCerrar.addEventListener("click", function () {
+            modalEditInsumo.style.display = "none";
+        });
+
+        editConfirmar.addEventListener("click", function () {
+            const codigoOriginal = editSelectInsumo.value;
+
+            const payload = {
+                codigo_original: codigoOriginal,
+                codigo_nuevo: editCodigo.value.trim(),
+                nombre: editNombre.value.trim(),
+                descripcion: editDescripcion.value.trim(),
+                unidad: editUnidad.value.trim(),
+            };
+
+            if (!payload.codigo_nuevo || !payload.nombre) {
+                alert("Código e insumo son obligatorios.");
+                return;
+            }
+
+            fetch("/insumos/modificar", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+                .then((resp) => resp.json().then((data) => ({ ok: resp.ok, data })))
+                .then(({ ok, data }) => {
+                    if (!ok || !data.ok) {
+                        alert(data.error || "No se pudo modificar el insumo.");
+                        return;
+                    }
+
+                    // actualizar option del selector de edición
+                    const opt = editSelectInsumo.options[editSelectInsumo.selectedIndex];
+                    opt.value = data.codigo;
+                    opt.dataset.nombre = data.nombre;
+                    opt.dataset.descripcion = data.descripcion || "";
+                    opt.dataset.unidad = data.unidad || "";
+                    opt.textContent =
+                        data.codigo +
+                        " - " +
+                        data.nombre +
+                        " " +
+                        (data.descripcion || "");
+
+                    // actualizar option en selector de eliminar
+                    if (delSelect) {
+                        [...delSelect.options].forEach((o) => {
+                            if (o.value === codigoOriginal) {
+                                o.value = data.codigo;
+                                o.textContent =
+                                    data.codigo +
+                                    " - " +
+                                    data.nombre +
+                                    " " +
+                                    (data.descripcion || "");
+                            }
+                        });
+                    }
+
+                    // actualizar fila en tabla inventario
+                    const fila = tablaInventario.querySelector(
+                        `tr[data-codigo="${codigoOriginal}"]`
+                    );
+                    if (fila) {
+                        fila.dataset.codigo = data.codigo;
+                        const celdas = fila.querySelectorAll("td");
+                        celdas[0].textContent = data.codigo;
+                        celdas[1].textContent = data.nombre;
+                        celdas[2].textContent = data.descripcion || "";
+                    }
+
+                    modalEditInsumo.style.display = "none";
+                })
+                .catch((err) => {
+                    console.error(err);
+                    alert("Error al comunicarse con el servidor.");
+                });
+        });
+    }
+
     // -------------------
     // INVENTARIO: popup AGREGAR INSUMO
     // -------------------
@@ -309,7 +539,6 @@ document.addEventListener("DOMContentLoaded", function () {
         insConfirmar
     ) {
         btnAgregarInsumo.addEventListener("click", function () {
-            // limpiar campos
             insCodigo.value = "";
             insNombre.value = "";
             insDescripcion.value = "";
@@ -349,10 +578,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         return;
                     }
 
-                    // Crear nueva fila al final de la tabla
                     const tbody = tablaInventario.querySelector("tbody");
                     const tr = document.createElement("tr");
                     tr.setAttribute("data-item-id", data.inventario_id);
+                    tr.setAttribute("data-codigo", data.codigo);
 
                     tr.innerHTML = `
                         <td>${data.codigo}</td>
@@ -376,7 +605,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     `;
 
                     tbody.appendChild(tr);
-
                     modalInsumo.style.display = "none";
                 })
                 .catch((err) => {
