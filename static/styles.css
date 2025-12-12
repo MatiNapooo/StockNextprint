@@ -52,6 +52,7 @@ body {
 .menu-principal {
     display: flex;
     flex: 1;
+    background-color: #dbeeff;   /* celeste como fondo base */
 }
 
 
@@ -65,10 +66,29 @@ body {
     text-decoration: none;
     border-right: 2px solid #000;
     color: #000;
+    background-color: #dbeeff;   /* celeste por defecto */
 }
 
 .menu-item:last-child {
     border-right: none;
+}
+
+/* Colores específicos para cada menú */
+.menu-item.menu,
+.menu-item.admin,
+.menu-item.inventario,
+.menu-item.pedidos {
+    background-color: #dbeeff;   /* celeste */
+}
+
+.menu-item.entradas {
+    background-color: #b7ff1f;   /* verde */
+}
+
+.menu-item.salidas {
+    background-color: #ff3333;   /* rojo */
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000;
 }
 
 
@@ -589,6 +609,18 @@ body {
     align-items: flex-end;
     margin-bottom: 1rem;
     gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.historial-admin .historial-header {
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.historial-admin .historial-header-right {
+    align-self: flex-start;
+    margin-top: 1rem;
 }
 
 .historial-header-left {
@@ -750,6 +782,12 @@ body {
 }
 
 /* Ajuste de layout SOLO para el inventario ADMIN */
+.historial-admin {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;       /* Centrar el contenedor */
+}
+
 .historial-admin .historial-tabla-wrapper {
     width: 100%;          /* que use todo el ancho disponible */
     max-width: none;      /* sin límite de ancho */
@@ -781,5 +819,97 @@ body {
     box-shadow: 2px 2px 0 #333;
 }
 
+.registro-section {
+    text-align: center;
+}
 
+.registro-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem auto;
+    max-width: 1100px;
+}
+
+.registro-card {
+    background-color: #ffffff;
+    border: 3px solid #000;
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.registro-card label {
+    font-weight: 700;
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.registro-card input {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 1rem;
+    border: 2px solid #000;
+    border-radius: 6px;
+}
+
+.registro-acciones {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.btn-confirmar {
+    padding: 0.8rem 3rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 2px solid #000;
+    background-color: #28b44b;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 #333;
+}
+
+/* Errores bajo los campos */
+.campo-error {
+    color: #c00;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+}
+
+/* Modal vista previa un poco más ancho */
+.modal-previa {
+    max-width: 95%;
+}
+
+/* Botón azul para finalizar */
+.modal-btn-azul {
+    background-color: #3a7bd5;
+    color: #fff;
+}
+
+/* Fila de pedido entregado: verde con transición */
+.pedido-entregado {
+    background-color: #b9f5b9;
+    font-weight: 700;
+    transition: background-color 0.4s ease;
+}
+
+.pedido-entregado-icono {
+    font-weight: 700;
+}
+
+/* Botón "Entregado" similar a modificar de otros historiales */
+.btn-entregado {
+    padding: 0.2rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 999px;
+    border: 2px solid #000;
+    background-color: #ffffff;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 #333;
+}
 

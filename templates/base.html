@@ -21,19 +21,21 @@
                     <div class="menu-item salidas"></div>
                     <div class="menu-item pedidos"></div>
                 {% else %}
-                    <a href="{{ url_for('menu_principal') }}" class="menu-item menu-main">Menu</a>
-                    <a href="{{ url_for('inventario') }}" class="menu-item">ADMIN</a>
-                    <a href="{{ url_for('inventario_simple') }}" class="menu-item">Inventario</a>
+                    <a href="{{ url_for('menu_principal') }}" class="menu-item menu">Menu</a>
+                    <a href="{{ url_for('inventario') }}" class="menu-item admin">ADMIN</a>
+                    <a href="{{ url_for('inventario_simple') }}" class="menu-item inventario">Inventario</a>
                     <a href="{{ url_for('entradas') }}" class="menu-item entradas">Entradas</a>
                     <a href="{{ url_for('salidas') }}" class="menu-item salidas">Salidas</a>
-                    <a href="{{ url_for('pedidos') }}" class="menu-item">Pedidos</a>
+                    <a href="{{ url_for('pedidos') }}" class="menu-item pedidos">Pedidos</a>
                 {% endif %}
             </nav>
         </div>
     </header>
 
     <!-- MAIN -->
-    <main class="contenido {% if vista == 'menu' %}contenido-menu{% else %}contenido-app{% endif %}">
+<!-- MAIN -->
+<main class="contenido {% if vista == 'menu' %}contenido-menu{% else %}contenido-app{% endif %}">
+
 
 
         {% if vista == "menu" %}
@@ -235,14 +237,6 @@
                                 Volver
                             </button>
 
-
-                            <button type="button"
-                                    class="btn-eliminar-insumo"
-                                    onclick="abrirModalEliminarInsumo()">
-                                Eliminar insumo
-                            </button>
-
-
                             <h2 class="modal-titulo">Eliminar insumo</h2>
 
                             <div class="modal-form">
@@ -436,10 +430,10 @@
         {% elif vista == "pedidos" %}
             <section class="acciones">
                 <div class="acciones-container">
-                    <a href="#" class="accion-card">
+                    <a href="{{ url_for('pedidos_historial') }}" class="accion-card">
                         Ver historial de pedidos
                     </a>
-                    <a href="#" class="accion-card">
+                    <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">
                         Registrar nuevo pedido
                     </a>
                 </div>
@@ -449,7 +443,7 @@
         {% elif vista == "entradas_nueva" %}
             <section class="form-registro">
                 <h1 class="form-titulo">Registrar nueva entrada</h1>
-                <form class="form-container" method="post">
+                <form class="form-container" method="post" id="form-entrada-nueva">
                     <div class="form-row">
                       <div class="form-card">
                         <p id="error-insumo" class="error-msg"></p>
@@ -476,7 +470,6 @@
                             alt="Imagen del insumo seleccionado">
                     </div>
 
-
                         <div class="form-card">
                             <p id="error-unidad" class="error-msg"></p>
                             <label for="unidad_seleccionada">Seleccionar unidad</label>
@@ -489,19 +482,55 @@
                         </div>
                     </div>
 
-                     <button type="button" class="confirm-button">
-                         Confirmar registro
+                    <button type="button" class="confirm-button" id="btn-entrada-confirmar">
+                        Confirmar registro
                     </button>
-
-                    <div class="preview-wrapper" id="preview-section">
-                        <h2 class="preview-title">Vista previa del registro</h2>
-                        <div id="preview-table-wrapper"></div>
-
-                        <button type="submit" class="finish-button">
-                            Finalizar registro
-                        </button>
-                    </div>
                 </form>
+
+                <!-- MODAL VISTA PREVIA ENTRADA -->
+                <div class="modal-overlay" id="modal-entrada-previa">
+                    <div class="modal-content modal-previa">
+                        <h2 class="modal-titulo">Vista previa del registro</h2>
+
+                        <div class="historial-tabla-wrapper">
+                            <table class="historial-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>FECHA</th>
+                                        <th>CÓDIGO</th>
+                                        <th>INSUMO</th>
+                                        <th>DESCRIPCIÓN</th>
+                                        <th>CANTIDAD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="prev-entrada-fecha"></td>
+                                        <td id="prev-entrada-codigo"></td>
+                                        <td id="prev-entrada-insumo"></td>
+                                        <td id="prev-entrada-descripcion"></td>
+                                        <td id="prev-entrada-cantidad"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="modal-form-actions">
+                            <button type="button"
+                                    class="modal-btn modal-btn-no"
+                                    id="entrada-previa-cancelar">
+                                Volver
+                            </button>
+
+                            <button type="submit"
+                                    class="modal-btn modal-btn-si modal-btn-azul"
+                                    form="form-entrada-nueva"
+                                    id="entrada-finalizar">
+                                Finalizar registro
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="modal-ok" class="modal-overlay"
                     data-activo="{{ '1' if registro_ok else '0' }}">
@@ -516,7 +545,7 @@
         {% elif vista == "salidas_nueva" %}
             <section class="form-registro">
                 <h1 class="form-titulo">Registrar nueva salida</h1>
-                <form class="form-container" method="post">
+                <form class="form-container" method="post" id="form-salida-nueva">
                     <div class="form-row">
                         <div class="form-card">
                             <p id="error-insumo" class="error-msg"></p>
@@ -543,7 +572,6 @@
                                 alt="Imagen del insumo seleccionado">
                         </div>
 
-
                         <div class="form-card">
                             <p id="error-unidad" class="error-msg"></p>
                             <label for="unidad_seleccionada">Seleccionar unidad</label>
@@ -556,19 +584,55 @@
                         </div>
                     </div>
 
-                    <button type="button" class="confirm-button">
+                    <button type="button" class="confirm-button" id="btn-salida-confirmar">
                         Confirmar registro
                     </button>
-
-                    <div class="preview-wrapper" id="preview-section">
-                        <h2 class="preview-title">Vista previa del registro</h2>
-                        <div id="preview-table-wrapper"></div>
-
-                        <button type="submit" class="finish-button">
-                            Finalizar registro
-                        </button>
-                    </div>
                 </form>
+
+                <!-- MODAL VISTA PREVIA SALIDA -->
+                <div class="modal-overlay" id="modal-salida-previa">
+                    <div class="modal-content modal-previa">
+                        <h2 class="modal-titulo">Vista previa del registro</h2>
+
+                        <div class="historial-tabla-wrapper">
+                            <table class="historial-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>FECHA</th>
+                                        <th>CÓDIGO</th>
+                                        <th>INSUMO</th>
+                                        <th>DESCRIPCIÓN</th>
+                                        <th>CANTIDAD</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="prev-salida-fecha"></td>
+                                        <td id="prev-salida-codigo"></td>
+                                        <td id="prev-salida-insumo"></td>
+                                        <td id="prev-salida-descripcion"></td>
+                                        <td id="prev-salida-cantidad"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="modal-form-actions">
+                            <button type="button"
+                                    class="modal-btn modal-btn-no"
+                                    id="salida-previa-cancelar">
+                                Volver
+                            </button>
+
+                            <button type="submit"
+                                    class="modal-btn modal-btn-si modal-btn-azul"
+                                    form="form-salida-nueva"
+                                    id="salida-finalizar">
+                                Finalizar registro
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 <div id="modal-ok" class="modal-overlay"
                     data-activo="{{ '1' if registro_ok else '0' }}">
@@ -673,32 +737,209 @@
 
 
         {# REGISTRAR NUEVO PEDIDO (por ahora placeholder) #}
-        {% elif vista == "pedidos_nuevo" %}
-            <section class="bienvenida">
-                <h1 class="bienvenida-titulo">Registrar nuevo pedido</h1>
-                <p class="bienvenida-subtitulo">Sección en construcción.</p>
-            </section>
-
-        {# DEFAULT #}
-        {% else %}
-            <section class="bienvenida">
-                <h1 class="bienvenida-titulo">Sección en construcción</h1>
-                <p class="bienvenida-subtitulo">Pronto agregaremos contenido aquí.</p>
-            </section>
-        {% endif %}
-
-            <!-- MODAL BORRADO -->
-            <div class="modal-overlay" id="modal-borrar">
-                <div class="modal-content">
-                    <p class="modal-texto">¿Seguro que quieres borrar?</p>
-                    <div class="modal-botones">
-                        <button type="button" class="modal-btn modal-btn-si">SI</button>
-                        <button type="button" class="modal-btn modal-btn-no">NO</button>
+        {% elif vista == "pedidos" %}
+            <section class="menu-secundario">
+                <h1 class="welcome-title">Pedidos</h1>
+                <div class="menu-secundario-opciones">
+                    <div class="menu-card"
+                         onclick="window.location='{{ url_for('pedidos_historial') }}'">
+                        Ver historial de pedidos
+                    </div>
+                    <div class="menu-card"
+                         onclick="window.location='{{ url_for('pedidos_nuevo') }}'">
+                        Registrar nuevo pedido
                     </div>
                 </div>
+            </section>
+
+        {% elif vista == "pedidos_nuevo" %}
+            <section class="registro-section">
+                <h1 class="welcome-title">Registrar nuevo pedido</h1>
+
+                <form id="form-pedido-nuevo" method="post" action="{{ url_for('pedidos_nuevo') }}">
+                    <div class="registro-cards-grid">
+                        <div class="registro-card">
+                            <label for="pedido_por">Pedido por</label>
+                            <input type="text" id="pedido_por" name="pedido_por">
+                            <p class="campo-error" id="err-pedido_por"></p>
+                        </div>
+
+                        <div class="registro-card">
+                            <label for="proveedor">Proveedor</label>
+                            <input type="text" id="proveedor" name="proveedor">
+                            <p class="campo-error" id="err-proveedor"></p>
+                        </div>
+
+                        <div class="registro-card">
+                            <label for="insumo_pedido">Insumo</label>
+                            <input type="text"
+                                id="insumo_pedido"
+                                name="insumo"
+                                list="lista-insumos-pedido">
+                            <datalist id="lista-insumos-pedido">
+                                {% for i in insumos %}
+                                    <option value="{{ i['nombre'] }} {{ i['descripcion'] }}"
+                                            data-codigo="{{ i['codigo'] }}"></option>
+                                {% endfor %}
+                            </datalist>
+                            <!-- campo oculto donde guardamos el código si coincide con inventario -->
+                            <input type="hidden" id="insumo_codigo" name="insumo_codigo">
+                            <p class="campo-error" id="err-insumo_pedido"></p>
+                        </div>
+
+
+                        <div class="registro-card">
+                            <label for="presentacion">Presentación</label>
+                            <input type="text" id="presentacion" name="presentacion">
+                            <p class="campo-error" id="err-presentacion"></p>
+                        </div>
+
+                        <div class="registro-card">
+                            <label for="descripcion_pedido">Descripción</label>
+                            <input type="text" id="descripcion_pedido" name="descripcion">
+                            <p class="campo-error" id="err-descripcion_pedido"></p>
+                        </div>
+
+                        <div class="registro-card">
+                            <label for="cantidad_pedido">Cantidad</label>
+                            <input type="number" id="cantidad_pedido" name="cantidad" min="1">
+                            <p class="campo-error" id="err-cantidad_pedido"></p>
+                        </div>
+                    </div>
+
+                    <!-- Botón Confirmar registro (mismo estilo que entradas/salidas) -->
+                    <div class="registro-acciones">
+                        <button type="button"
+                                id="btn-pedido-confirmar"
+                                class="btn-confirmar">
+                            Confirmar registro
+                        </button>
+                    </div>
+                </form>
+
+                <!-- MODAL VISTA PREVIA PEDIDO -->
+                <div class="modal-overlay" id="modal-pedido-previa">
+                    <div class="modal-content modal-previa">
+                        <h2 class="modal-titulo">Vista previa del pedido</h2>
+
+                        <div class="historial-tabla-wrapper">
+                            <table class="historial-tabla">
+                                <thead>
+                                    <tr>
+                                        <th>FECHA</th>
+                                        <th>PEDIDO POR</th>
+                                        <th>PROVEEDOR</th>
+                                        <th>INSUMO</th>
+                                        <th>PRESENTACIÓN</th>
+                                        <th>DESCRIPCIÓN</th>
+                                        <th>CANTIDAD</th>
+                                        <th>ESTADO</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td id="prev-pedido-fecha"></td>
+                                        <td id="prev-pedido-por"></td>
+                                        <td id="prev-pedido-proveedor"></td>
+                                        <td id="prev-pedido-insumo"></td>
+                                        <td id="prev-pedido-presentacion"></td>
+                                        <td id="prev-pedido-descripcion"></td>
+                                        <td id="prev-pedido-cantidad"></td>
+                                        <td id="prev-pedido-estado">En Espera</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="modal-form-actions">
+                            <button type="button"
+                                    class="modal-btn modal-btn-no"
+                                    id="pedido-previa-cancelar">
+                                Volver
+                            </button>
+
+                            <!-- Azul, finaliza registro -->
+                            <button type="submit"
+                                    class="modal-btn modal-btn-si modal-btn-azul"
+                                    form="form-pedido-nuevo"
+                                    id="pedido-finalizar">
+                                Finalizar registro
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        {% elif vista == "pedidos_historial" %}
+                <section class="historial">
+                    <div class="historial-header">
+                        <div class="historial-header-left">
+                            <h1 class="historial-titulo">Historial de pedidos</h1>
+                            <div class="historial-filtro">
+                                <label for="filtro-pedidos">Filtrar:</label>
+                                <input id="filtro-pedidos" type="text" placeholder="Escriba para filtrar">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="historial-tabla-wrapper">
+                        <table class="historial-tabla" id="tabla-pedidos">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>PEDIDO POR</th>
+                                    <th>PROVEEDOR</th>
+                                    <th>INSUMO</th>
+                                    <th>PRESENTACIÓN</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>CANTIDAD</th>
+                                    <th>ESTADO</th>
+                                    <th>ACCIÓN</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in registros %}
+                                    <tr class="{% if p['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                                        <td>{{ p['fecha'] }}</td>
+                                        <td>{{ p['pedido_por'] }}</td>
+                                        <td>{{ p['proveedor'] }}</td>
+                                        <td>{{ p['insumo'] }}</td>
+                                        <td>{{ p['presentacion'] }}</td>
+                                        <td>{{ p['descripcion'] }}</td>
+                                        <td>{{ p['cantidad'] }}</td>
+                                        <td>{{ p['estado'] }}</td>
+                                        <td>
+                                            {% if p['estado'] != 'Entregado' %}
+                                                <form method="post"
+                                                    action="{{ url_for('pedido_entregado', pedido_id=p['id']) }}">
+                                                    <button type="submit" class="btn-entregado">
+                                                        Entregado
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <!-- Ya entregado, podés mostrar un ✔ o dejar vacío -->
+                                                <span class="pedido-entregado-icono">✔</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+        {% endif %}
+
+        <!-- MODAL BORRADO (Global - para entradas, salidas y pedidos) -->
+        <div class="modal-overlay" id="modal-borrar">
+            <div class="modal-content">
+                <p class="modal-texto">¿Seguro que quieres borrar?</p>
+                <div class="modal-botones">
+                    <button type="button" class="modal-btn modal-btn-si">SI</button>
+                    <button type="button" class="modal-btn modal-btn-no">NO</button>
+                </div>
             </div>
-
-
+        </div>
     </main>
 
     <!-- LOGO FIJO -->

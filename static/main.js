@@ -1,28 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
     // -------------------
-    // REGISTRO (entradas / salidas)
+    // REGISTRO (entradas / salidas) - con modales popup
     // -------------------
-    const confirmButton = document.querySelector(".confirm-button");
-    const previewSection = document.getElementById("preview-section");
-    const previewWrapper = document.getElementById("preview-table-wrapper");
     const insumoSelect = document.getElementById("insumo_seleccionado");
     const unidadSelect = document.getElementById("unidad_seleccionada");
-
     const errorInsumo = document.getElementById("error-insumo");
     const errorUnidad = document.getElementById("error-unidad");
-
     const insumoImg = document.getElementById("insumo-imagen");
     const imgBase = insumoSelect ? insumoSelect.dataset.imgBase : "";
 
-    if (
-        confirmButton &&
-        previewSection &&
-        previewWrapper &&
-        insumoSelect &&
-        unidadSelect &&
-        errorInsumo &&
-        errorUnidad
-    ) {
+    // Detectar si estamos en entrada o salida
+    const formEntrada = document.getElementById("form-entrada-nueva");
+    const formSalida = document.getElementById("form-salida-nueva");
+    const esEntrada = formEntrada !== null;
+    const esSalida = formSalida !== null;
+
+    if (insumoSelect && unidadSelect && errorInsumo && errorUnidad) {
         // Actualizar imagen del insumo al cambiar el select
         function actualizarImagenInsumo() {
             if (!insumoImg || !imgBase) return;
@@ -45,69 +38,77 @@ document.addEventListener("DOMContentLoaded", function () {
             insumoSelect.addEventListener("change", actualizarImagenInsumo);
         }
 
-        // Confirmar → validar + generar vista previa (NO guarda)
-        confirmButton.addEventListener("click", function () {
-            // Limpiar errores
-            errorInsumo.textContent = "";
-            errorUnidad.textContent = "";
+        // Selector para el botón correcto
+        let confirmButton = null;
+        let modalPrevia = null;
+        let btnCancelar = null;
+        
+        if (esEntrada) {
+            confirmButton = document.getElementById("btn-entrada-confirmar");
+            modalPrevia = document.getElementById("modal-entrada-previa");
+            btnCancelar = document.getElementById("entrada-previa-cancelar");
+        } else if (esSalida) {
+            confirmButton = document.getElementById("btn-salida-confirmar");
+            modalPrevia = document.getElementById("modal-salida-previa");
+            btnCancelar = document.getElementById("salida-previa-cancelar");
+        }
 
-            let hayError = false;
+        if (confirmButton && modalPrevia && btnCancelar) {
+            // Confirmar - validar + generar vista previa en modal
+            confirmButton.addEventListener("click", function () {
+                // Limpiar errores
+                errorInsumo.textContent = "";
+                errorUnidad.textContent = "";
 
-            if (!insumoSelect.value) {
-                errorInsumo.textContent = "*Tenes que rellenar esta casilla";
-                hayError = true;
-            }
+                let hayError = false;
 
-            if (!unidadSelect.value) {
-                errorUnidad.textContent = "*Tenes que rellenar esta casilla";
-                hayError = true;
-            }
+                if (!insumoSelect.value) {
+                    errorInsumo.textContent = "*Tenes que rellenar esta casilla";
+                    hayError = true;
+                }
 
-            if (hayError) {
-                previewSection.style.display = "none";
-                previewWrapper.innerHTML = "";
-                return;
-            }
+                if (!unidadSelect.value) {
+                    errorUnidad.textContent = "*Tenes que rellenar esta casilla";
+                    hayError = true;
+                }
 
-            const selectedOption = insumoSelect.options[insumoSelect.selectedIndex];
+                if (hayError) {
+                    return;
+                }
 
-            const codigo = selectedOption.value || "";
-            const nombre = selectedOption.dataset.nombre || "";
-            const descripcion = selectedOption.dataset.descripcion || "";
-            const cantidad = unidadSelect.value || "";
+                const selectedOption = insumoSelect.options[insumoSelect.selectedIndex];
+                const codigo = selectedOption.value || "";
+                const nombre = selectedOption.dataset.nombre || "";
+                const descripcion = selectedOption.dataset.descripcion || "";
+                const cantidad = unidadSelect.value || "";
 
-            const hoy = new Date();
-            const fecha = hoy.toLocaleDateString("es-AR", {
-                day: "numeric",
-                month: "short",
+                const hoy = new Date();
+                const fecha = hoy.toLocaleDateString("es-AR");
+
+                // Llenar los campos del modal según tipo
+                if (esEntrada) {
+                    document.getElementById("prev-entrada-fecha").textContent = fecha;
+                    document.getElementById("prev-entrada-codigo").textContent = codigo;
+                    document.getElementById("prev-entrada-insumo").textContent = nombre;
+                    document.getElementById("prev-entrada-descripcion").textContent = descripcion;
+                    document.getElementById("prev-entrada-cantidad").textContent = cantidad;
+                } else if (esSalida) {
+                    document.getElementById("prev-salida-fecha").textContent = fecha;
+                    document.getElementById("prev-salida-codigo").textContent = codigo;
+                    document.getElementById("prev-salida-insumo").textContent = nombre;
+                    document.getElementById("prev-salida-descripcion").textContent = descripcion;
+                    document.getElementById("prev-salida-cantidad").textContent = cantidad;
+                }
+
+                // Mostrar modal
+                modalPrevia.style.display = "flex";
             });
 
-            const tablaHTML = `
-                <table class="preview-table">
-                    <thead>
-                        <tr>
-                            <th>FECHA</th>
-                            <th>CÓDIGO</th>
-                            <th>INSUMO</th>
-                            <th>DESCRIPCIÓN</th>
-                            <th>CANTIDAD</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>${fecha}</td>
-                            <td>${codigo}</td>
-                            <td>${nombre}</td>
-                            <td>${descripcion}</td>
-                            <td>${cantidad}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            `;
-
-            previewWrapper.innerHTML = tablaHTML;
-            previewSection.style.display = "flex";
-        });
+            // Cancelar → cerrar modal
+            btnCancelar.addEventListener("click", function () {
+                modalPrevia.style.display = "none";
+            });
+        }
     }
 
     // -------------------
@@ -649,3 +650,116 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 3000);
     }
 });
+
+    // --------------------------------
+    // PEDIDOS: REGISTRAR NUEVO
+    // --------------------------------
+    const pedidoPorInput = document.getElementById("pedido_por");
+    const proveedorInput = document.getElementById("proveedor");
+    const insumoPedidoInput = document.getElementById("insumo_pedido");
+    const presentacionInput = document.getElementById("presentacion");
+    const descripcionPedidoInput = document.getElementById("descripcion_pedido");
+    const cantidadPedidoInput = document.getElementById("cantidad_pedido");
+    const insumoCodigoHidden = document.getElementById("insumo_codigo");
+
+
+    const btnPedidoConfirmar = document.getElementById("btn-pedido-confirmar");
+    const modalPedidoPrevia = document.getElementById("modal-pedido-previa");
+    const pedidoPreviaCancelar = document.getElementById("pedido-previa-cancelar");
+
+    const prevPedidoFecha = document.getElementById("prev-pedido-fecha");
+    const prevPedidoPor = document.getElementById("prev-pedido-por");
+    const prevPedidoProveedor = document.getElementById("prev-pedido-proveedor");
+    const prevPedidoInsumo = document.getElementById("prev-pedido-insumo");
+    const prevPedidoPresentacion = document.getElementById("prev-pedido-presentacion");
+    const prevPedidoDescripcion = document.getElementById("prev-pedido-descripcion");
+    const prevPedidoCantidad = document.getElementById("prev-pedido-cantidad");
+
+    // Vincular input de insumo con datalist y guardar el código
+        if (insumoPedidoInput && insumoCodigoHidden) {
+            insumoPedidoInput.addEventListener("input", function () {
+                const val = this.value;
+                const lista = document.getElementById("lista-insumos-pedido");
+                let codigo = "";
+
+                if (lista) {
+                    for (const opt of lista.options) {
+                        if (opt.value === val) {
+                            codigo = opt.dataset.codigo || "";
+                            break;
+                        }
+                    }
+                }
+                insumoCodigoHidden.value = codigo;
+            });
+        }
+
+            
+    if (btnPedidoConfirmar && modalPedidoPrevia) {
+        btnPedidoConfirmar.addEventListener("click", function () {
+            // Borramos mensajes de error
+            const campos = [
+                ["pedido_por", pedidoPorInput],
+                ["proveedor", proveedorInput],
+                ["insumo_pedido", insumoPedidoInput],
+                ["presentacion", presentacionInput],
+                ["descripcion_pedido", descripcionPedidoInput],
+                ["cantidad_pedido", cantidadPedidoInput],
+            ];
+
+            let hayError = false;
+            campos.forEach(([id, input]) => {
+                const errElem = document.getElementById("err-" + id);
+                if (!input.value.trim()) {
+                    hayError = true;
+                    if (errElem) errElem.textContent = "Tenés que rellenar esta casilla";
+                } else {
+                    if (errElem) errElem.textContent = "";
+                }
+            });
+
+            if (hayError) return;
+
+            // Armar la vista previa
+            const hoy = new Date();
+            const fechaStr = hoy.toLocaleDateString("es-AR");
+
+            prevPedidoFecha.textContent = fechaStr;
+            prevPedidoPor.textContent = pedidoPorInput.value.trim();
+            prevPedidoProveedor.textContent = proveedorInput.value.trim();
+            prevPedidoInsumo.textContent = insumoPedidoInput.value.trim();
+            prevPedidoPresentacion.textContent = presentacionInput.value.trim();
+            prevPedidoDescripcion.textContent = descripcionPedidoInput.value.trim();
+            prevPedidoCantidad.textContent = cantidadPedidoInput.value.trim();
+
+            modalPedidoPrevia.style.display = "flex";
+        });
+
+        if (pedidoPreviaCancelar) {
+            pedidoPreviaCancelar.addEventListener("click", function () {
+                modalPedidoPrevia.style.display = "none";
+            });
+        }
+    }
+
+    // --------------------------------
+    // PEDIDOS: HISTORIAL, filtro
+    // --------------------------------
+    const tablaPedidos = document.getElementById("tabla-pedidos");
+    const filtroPedidos = document.getElementById("filtro-pedidos");
+
+    if (tablaPedidos && filtroPedidos) {
+        filtroPedidos.addEventListener("input", function () {
+            const texto = filtroPedidos.value.trim().toLowerCase();
+            const filas = tablaPedidos.querySelectorAll("tbody tr");
+
+            filas.forEach((tr) => {
+                const contenido = tr.textContent.toLowerCase();
+                if (!texto || contenido.includes(texto)) {
+                    tr.style.display = "";
+                } else {
+                    tr.style.display = "none";
+                }
+            });
+        });
+    }

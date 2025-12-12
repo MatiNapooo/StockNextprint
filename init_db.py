@@ -60,3 +60,4 @@ conn.commit()
 conn.close()
 
 print("Base de datos lista: insumos, entradas, salidas, inventario.")
+

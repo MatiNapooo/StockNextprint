@@ -5,13 +5,14 @@ from sqlite3 import IntegrityError
 from flask import Flask, render_template, request, redirect, url_for, session
 
 
+
 app = Flask(__name__)
 # Clave para firmar la cookie de sesión (podés cambiarla por otra)
 app.secret_key = "nextprint-stock-super-secreto"
 
 # Usuarios habilitados para ADMIN
 USUARIOS_ADMIN = {
-    "nnapoli": "matiesmihijofavorito",
+    "nicolas": "nnapoli",
     "luis": "nnapoli",
 }
 
@@ -284,6 +285,7 @@ def inventario():
 
         if credenciales_validas(usuario, contrasena):
             # Guardamos usuario en la sesión de este navegador
+            session.permanent = True  # Sesión persiste hasta que haga logout explícito
             session["usuario_admin"] = usuario
             registros = obtener_registros_inventario()
             return render_template("base.html", vista="inventario", registros=registros)
@@ -322,9 +324,6 @@ def salidas():
     return render_template("base.html", vista="salidas")
 
 
-@app.route("/pedidos")
-def pedidos():
-    return render_template("base.html", vista="pedidos")
 
 
 # ---------------- ENTRADAS ----------------
@@ -592,7 +591,120 @@ def insumo_modificar():
         "inventario_id": inventario_id,
     }, 200
 
+# -------------------------
+# PEDIDOS
+# -------------------------
 
+@app.route("/pedidos")
+def pedidos():
+    # Menú de pedidos: ver historial / registrar nuevo
+    return render_template("base.html", vista="pedidos")
+
+
+@app.route("/pedidos/nuevo", methods=["GET", "POST"])
+def pedidos_nuevo():
+    if request.method == "POST":
+        pedido_por = request.form.get("pedido_por", "").strip()
+        proveedor = request.form.get("proveedor", "").strip()
+        insumo = request.form.get("insumo", "").strip()
+        insumo_codigo = request.form.get("insumo_codigo", "").strip()
+        presentacion = request.form.get("presentacion", "").strip()
+        descripcion = request.form.get("descripcion", "").strip()
+        cantidad = request.form.get("cantidad", "").strip()
+
+        if not (pedido_por and proveedor and insumo and presentacion and descripcion and cantidad):
+            error = "Faltan completar campos"
+            # Volver a mostrar el formulario con error
+            # (si querés pasar el error al template)
+            conn = get_db_connection()
+            insumos = conn.execute(
+                "SELECT codigo, nombre, descripcion FROM insumos ORDER BY nombre"
+            ).fetchall()
+            conn.close()
+            return render_template(
+                "base.html",
+                vista="pedidos_nuevo",
+                error=error,
+                insumos=insumos,
+            )
+
+        conn = get_db_connection()
+        conn.execute(
+            """
+            INSERT INTO pedidos
+                (fecha, pedido_por, proveedor, insumo,
+                 presentacion, descripcion, cantidad, estado, insumo_codigo)
+            VALUES (DATE('now'), ?, ?, ?, ?, ?, ?, 'En Espera', ?)
+            """,
+            (pedido_por, proveedor, insumo, presentacion, descripcion, cantidad, insumo_codigo or None),
+        )
+        conn.commit()
+        conn.close()
+
+        return redirect(url_for("pedidos"))
+
+    # GET → cargar lista de insumos para el datalist
+    conn = get_db_connection()
+    insumos = conn.execute(
+        "SELECT codigo, nombre, descripcion FROM insumos ORDER BY nombre"
+    ).fetchall()
+    conn.close()
+
+    return render_template("base.html", vista="pedidos_nuevo", insumos=insumos)
+
+
+@app.route("/pedidos/historial")
+def pedidos_historial():
+    conn = get_db_connection()
+    registros = conn.execute(
+        """
+        SELECT id, fecha, pedido_por, proveedor, insumo,
+               presentacion, descripcion, cantidad, estado
+        FROM pedidos
+        ORDER BY fecha DESC, id DESC
+        """
+    ).fetchall()
+    conn.close()
+    return render_template("base.html", vista="pedidos_historial", registros=registros)
+
+@app.route("/pedidos/<int:pedido_id>/entregar", methods=["POST"])
+def pedido_entregado(pedido_id):
+    conn = get_db_connection()
+    pedido = conn.execute(
+        "SELECT cantidad, insumo_codigo, estado FROM pedidos WHERE id = ?",
+        (pedido_id,),
+    ).fetchone()
+
+    if pedido is None:
+        conn.close()
+        return redirect(url_for("pedidos_historial"))
+
+    # Solo actualizamos si todavía no estaba entregado
+    if pedido["estado"] != "Entregado":
+        cantidad = pedido["cantidad"]
+        insumo_codigo = pedido["insumo_codigo"]
+
+        # Si el pedido está vinculado a un insumo del inventario
+        if insumo_codigo:
+            conn.execute(
+                """
+                UPDATE inventario
+                SET stock_inicial = stock_inicial + ?,
+                    total = total + ?
+                WHERE insumo_codigo = ?
+                """,
+                (cantidad, cantidad, insumo_codigo),
+            )
+
+        # Marcar el pedido como entregado
+        conn.execute(
+            "UPDATE pedidos SET estado = 'Entregado' WHERE id = ?",
+            (pedido_id,),
+        )
+        conn.commit()
+
+    conn.close()
+    return redirect(url_for("pedidos_historial"))
 
 
 # ---------------- ARRANQUE APP ----------------
