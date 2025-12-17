@@ -618,38 +618,38 @@ document.addEventListener("DOMContentLoaded", function () {
     // -------------------
     // MODAL "¡Registro confirmado!"
     // -------------------
+ document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    const ok = params.get("ok");
     const modalOk = document.getElementById("modal-ok");
-    if (modalOk && modalOk.dataset.activo === "1") {
-        // Mostrar el modal
+
+    if (ok === "1" && modalOk) {
         modalOk.style.display = "flex";
 
         setTimeout(function () {
             modalOk.style.display = "none";
 
-            // Limpiar ?ok=1 de la URL
-            if (window.location.search.includes("ok=1")) {
-                const nuevaUrl = window.location.pathname;
-                window.history.replaceState(null, "", nuevaUrl);
-            }
-
-            // Limpiar vista previa
-            if (previewSection && previewWrapper) {
-                previewSection.style.display = "none";
-                previewWrapper.innerHTML = "";
-            }
-
-            // Resetear selects
-            if (insumoSelect) insumoSelect.selectedIndex = 0;
-            if (unidadSelect) unidadSelect.selectedIndex = 0;
-
-            // Ocultar imagen de insumo
-            if (insumoImg) {
-                insumoImg.style.display = "none";
-                insumoImg.removeAttribute("src");
-            }
+            // limpiar el ?ok=1 de la URL
+            params.delete("ok");
+            const nuevaUrl =
+                window.location.pathname +
+                (params.toString() ? "?" + params.toString() : "");
+            window.history.replaceState({}, "", nuevaUrl);
         }, 3000);
     }
 });
+
+// Helpers mínimos para abrir/cerrar el modal de eliminar insumo
+function abrirModalEliminarInsumo() {
+    const m = document.getElementById("modal-insumo-eliminar");
+    if (m) m.style.display = "flex";
+}
+
+function cerrarModalEliminarInsumo() {
+    const m = document.getElementById("modal-insumo-eliminar");
+    if (m) m.style.display = "none";
+}
+
 
     // --------------------------------
     // PEDIDOS: REGISTRAR NUEVO
@@ -763,3 +763,174 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
+
+    // FILTRO INVENTARIO PAPEL
+const tablaPapel = document.getElementById("tabla-papel");
+const filtroPapel = document.getElementById("filtro-papel");
+
+if (tablaPapel && filtroPapel) {
+    filtroPapel.addEventListener("input", function () {
+        const texto = filtroPapel.value.trim().toLowerCase();
+        const filas = tablaPapel.querySelectorAll("tbody tr");
+
+        filas.forEach((tr) => {
+            const contenido = tr.textContent.toLowerCase();
+            tr.style.display = (!texto || contenido.includes(texto)) ? "" : "none";
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const modalOk = document.getElementById('modal-ok');
+
+    if (modalOk && modalOk.dataset.activo === '1') {
+        // mostrar
+        modalOk.style.display = 'flex';
+
+        // ocultar a los 3 segundos
+        setTimeout(function () {
+            modalOk.style.display = 'none';
+
+            // quitar el ?ok=1 de la URL para que no vuelva a aparecer al refrescar
+            if (window.location.search.includes('ok=1')) {
+                const nuevaUrl = window.location.pathname;
+                window.history.replaceState(null, '', nuevaUrl);
+            }
+        }, 3000);
+    }
+});
+
+document.addEventListener('click', function (e) {
+    // Botón ENTREGADO de pedidos de papel
+    if (e.target.classList.contains('btn-entregado-papel')) {
+        const btn = e.target;
+        const id = btn.dataset.id;
+        if (!id || btn.disabled) return;
+
+        fetch(`/papel/pedidos/${id}/entregado`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                const fila = btn.closest('tr');
+                if (fila) {
+                    fila.classList.add('pedido-entregado');
+                    const estadoCell = fila.querySelector('.estado-pedido');
+                    if (estadoCell) estadoCell.textContent = 'Entregado';
+                }
+                btn.disabled = true;
+            } else {
+                console.error(data.error || 'Error al marcar entregado');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+});
+
+function configurarFiltro(inputId, tablaId) {
+    const input = document.getElementById(inputId);
+    const tabla = document.getElementById(tablaId);
+    if (!input || !tabla) return;
+
+    input.addEventListener('input', function () {
+        const term = input.value.toLowerCase();
+        const filas = tabla.querySelectorAll('tbody tr');
+        filas.forEach(tr => {
+            const texto = tr.textContent.toLowerCase();
+            tr.style.display = texto.includes(term) ? '' : 'none';
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    configurarFiltro('filtro-papel-ped', 'tabla-papel-pedidos');
+});
+
+// --------------------------------
+// PAPEL: Confirmar entrada/salida/pedidos
+// --------------------------------
+document.addEventListener('DOMContentLoaded', function () {
+    // Papel - Entradas nueva
+    const btnPapelEntradasConfirmar = document.getElementById('btn-papel-entradas-confirmar');
+    const formPapelEntradasNueva = document.getElementById('form-papel-entradas-nueva');
+    
+    if (btnPapelEntradasConfirmar && formPapelEntradasNueva) {
+        btnPapelEntradasConfirmar.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            // Validar campos obligatorios
+            const tipoPapel = formPapelEntradasNueva.querySelector('select[name="tipo_papel"]').value;
+            const cantidad = formPapelEntradasNueva.querySelector('input[name="cantidad"]').value;
+            
+            if (!tipoPapel || !cantidad) {
+                alert('Por favor completa los campos obligatorios');
+                return;
+            }
+            
+            // Enviar formulario con tipo POST
+            const tempInput = document.createElement('input');
+            tempInput.type = 'hidden';
+            tempInput.name = 'paso';
+            tempInput.value = 'pre';
+            formPapelEntradasNueva.appendChild(tempInput);
+            
+            formPapelEntradasNueva.submit();
+        });
+    }
+    
+    // Papel - Salidas nueva
+    const btnPapelSalidasConfirmar = document.getElementById('btn-papel-salidas-confirmar');
+    const formPapelSalidasNueva = document.getElementById('form-papel-salidas-nueva');
+    
+    if (btnPapelSalidasConfirmar && formPapelSalidasNueva) {
+        btnPapelSalidasConfirmar.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            const tipoPapel = formPapelSalidasNueva.querySelector('select[name="tipo_papel"]').value;
+            const cantidad = formPapelSalidasNueva.querySelector('input[name="cantidad"]').value;
+            
+            if (!tipoPapel || !cantidad) {
+                alert('Por favor completa los campos obligatorios');
+                return;
+            }
+            
+            const tempInput = document.createElement('input');
+            tempInput.type = 'hidden';
+            tempInput.name = 'paso';
+            tempInput.value = 'pre';
+            formPapelSalidasNueva.appendChild(tempInput);
+            
+            formPapelSalidasNueva.submit();
+        });
+    }
+    
+    // Papel - Pedidos nuevo
+    const btnPapelPedidosConfirmar = document.getElementById('btn-papel-pedidos-confirmar');
+    const formPapelPedidosNuevo = document.getElementById('form-papel-pedidos-nuevo');
+    
+    if (btnPapelPedidosConfirmar && formPapelPedidosNuevo) {
+        btnPapelPedidosConfirmar.addEventListener('click', function (e) {
+            e.preventDefault();
+            
+            const tipoPapel = formPapelPedidosNuevo.querySelector('select[name="tipo_papel"]').value;
+            const cantidad = formPapelPedidosNuevo.querySelector('input[name="cantidad"]').value;
+            
+            if (!tipoPapel || !cantidad) {
+                alert('Por favor completa los campos obligatorios');
+                return;
+            }
+            
+            const tempInput = document.createElement('input');
+            tempInput.type = 'hidden';
+            tempInput.name = 'paso';
+            tempInput.value = 'pre';
+            formPapelPedidosNuevo.appendChild(tempInput);
+            
+            formPapelPedidosNuevo.submit();
+        });
+    }
+});

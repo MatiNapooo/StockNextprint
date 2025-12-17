@@ -61,3 +61,20 @@ conn.close()
 
 print("Base de datos lista: insumos, entradas, salidas, inventario.")
 
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS papel_pedidos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha TEXT NOT NULL,
+    tipo_papel TEXT NOT NULL,
+    gramaje TEXT NOT NULL,
+    formato TEXT NOT NULL,
+    marca TEXT NOT NULL,
+    proveedor TEXT NOT NULL,
+    cantidad INTEGER NOT NULL,
+    observaciones TEXT,
+    estado TEXT NOT NULL DEFAULT 'En espera'
+)
+""")
+
+conn.commit()
+conn.close()

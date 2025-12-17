@@ -10,6 +10,7 @@ app = Flask(__name__)
 # Clave para firmar la cookie de sesión (podés cambiarla por otra)
 app.secret_key = "nextprint-stock-super-secreto"
 
+
 # Usuarios habilitados para ADMIN
 USUARIOS_ADMIN = {
     "nicolas": "nnapoli",
@@ -23,54 +24,103 @@ def credenciales_validas(usuario, contrasena):
     esperado = USUARIOS_ADMIN.get(usuario.strip())
     return esperado is not None and esperado == contrasena.strip()
 
+from flask import Flask, render_template, request, redirect, url_for, session
+# ...
 
-@app.route("/insumos/nuevo", methods=["POST"])
-def insumo_nuevo():
-    data = request.get_json(force=True)
+app.secret_key = "cualquier_clave_larga_y_secreta"
 
-    codigo = (data.get("codigo") or "").strip().upper()
-    nombre = (data.get("nombre") or "").strip()
-    descripcion = (data.get("descripcion") or "").strip()
-    unidad = (data.get("unidad") or "").strip()
-    stock_inicial = int(data.get("stock_inicial") or 0)
+# ---------- ADMIN (LOGIN + VISTA INVENTARIO INSUMOS) ----------
+from flask import Flask, render_template, request, redirect, url_for, session
+# (esto ya lo tenés, sólo confirmo que esté importado session)
 
-    if not codigo or not nombre:
-        return {"ok": False, "error": "Código e insumo son obligatorios."}, 400
+# Clave para sesiones (si ya tenés una, dejá la tuya)
+app.secret_key = "cualquier_clave_larga_y_secreta"
 
+
+# --------- LOGIN ADMIN (INSUMOS) ----------
+@app.route("/admin", methods=["GET", "POST"])
+def admin():
+    error = None
+
+    # Si envían el formulario, validamos
+    if request.method == "POST":
+        usuario = request.form.get("usuario", "").strip()
+        contrasena = request.form.get("contrasena", "").strip()
+
+        cred_ok = (
+            (usuario == "nnapoli" and contrasena == "matiesmihijofavorito") or
+            (usuario == "luis" and contrasena == "nnapoli")
+        )
+
+        if cred_ok:
+            session["admin_logueado"] = True
+        else:
+            error = "Usuario o contraseña incorrecta"
+
+    # Si NO está logueado, mostramos login
+    if not session.get("admin_logueado"):
+        return render_template("base.html", vista="admin_login", modo="insumos", error=error)
+
+    # Si está logueado, mostramos inventario de insumos (modo admin)
     conn = get_db_connection()
-    try:
-        # Insertar insumo
-        conn.execute(
-            "INSERT INTO insumos (codigo, nombre, descripcion, unidad) VALUES (?, ?, ?, ?)",
-            (codigo, nombre, descripcion, unidad),
-        )
-        # Insertar inventario asociado
-        cur_inv = conn.execute(
-            """
-            INSERT INTO inventario (insumo_codigo, stock_inicial, entradas, salidas, total)
-            VALUES (?, ?, 0, 0, ?)
-            """,
-            (codigo, stock_inicial, stock_inicial),
-        )
-        inv_id = cur_inv.lastrowid
-        conn.commit()
-    except IntegrityError:
-        conn.close()
-        return {"ok": False, "error": "Ya existe un insumo con ese código."}, 400
-
+    registros = conn.execute("""
+        SELECT * FROM inventario
+        ORDER BY nombre
+    """).fetchall()
     conn.close()
-    return {
-        "ok": True,
-        "inventario_id": inv_id,
-        "codigo": codigo,
-        "nombre": nombre,
-        "descripcion": descripcion,
-        "stock_inicial": stock_inicial,
-        "entradas": 0,
-        "salidas": 0,
-        "total": stock_inicial,
-    }, 201
 
+    return render_template(
+        "base.html",
+        vista="inventario_admin",   # bloque que va a mostrar la tabla con botones de admin
+        modo="insumos",
+        registros=registros
+    )
+
+
+# --------- LOGIN ADMIN PAPEL ----------
+@app.route("/papel/admin", methods=["GET", "POST"])
+def papel_admin():
+    error = None
+
+    if request.method == "POST":
+        usuario = request.form.get("usuario", "").strip()
+        contrasena = request.form.get("contrasena", "").strip()
+
+        cred_ok = (
+            (usuario == "nnapoli" and contrasena == "matiesmihijofavorito") or
+            (usuario == "luis" and contrasena == "nnapoli")
+        )
+
+        if cred_ok:
+            session["papel_admin_logueado"] = True
+        else:
+            error = "Usuario o contraseña incorrecta"
+
+    if not session.get("papel_admin_logueado"):
+        return render_template("base.html", vista="admin_login", modo="papel", error=error)
+
+    # inventario SIMPLE de papel cuando está logueado
+    conn = get_db_connection()
+    registros = conn.execute("""
+        SELECT * FROM papel_inventario
+        ORDER BY tipo_papel
+    """).fetchall()
+    conn.close()
+
+    return render_template(
+        "base.html",
+        vista="papel_inventario_admin",   # otro bloque de tabla para papel
+        modo="papel",
+        registros=registros
+    )
+
+
+# --------- LOGOUT (cierra ambas sesiones) ----------
+@app.route("/logout")
+def logout():
+    session.pop("admin_logueado", None)
+    session.pop("papel_admin_logueado", None)
+    return redirect(url_for("admin"))
 
 @app.route("/insumos/<codigo>/actualizar", methods=["POST"])
 def insumo_actualizar(codigo):
@@ -295,6 +345,24 @@ def inventario():
     # GET inicial o POST fallido → mostrar formulario de login
     return render_template("base.html", vista="login_admin", login_error=error)
 
+# ---------- PAPEL: INVENTARIO SIMPLE ----------
+@app.route("/papel/inventario")
+def papel_inventario():
+    conn = get_db_connection()
+    registros = conn.execute("""
+        SELECT id, nombre, stock_inicial, entradas, salidas, total
+        FROM papel_inventario
+        ORDER BY nombre
+    """).fetchall()
+    conn.close()
+    return render_template(
+        "base.html",
+        vista="papel_inventario_simple",   # <<< nombre de vista para el simple
+        registros=registros,
+        modo="papel"
+    )
+
+
 
 @app.route("/logout_admin")
 def logout_admin():
@@ -305,6 +373,7 @@ def logout_admin():
 
 
 
+
 # ---------------------------------------------------------
 # INVENTARIO (solo lectura, sin botones)
 # ---------------------------------------------------------
@@ -312,6 +381,7 @@ def logout_admin():
 def inventario_simple():
     registros = obtener_registros_inventario()
     return render_template("base.html", vista="inventario_simple", registros=registros)
+
 
 
 @app.route("/entradas")
@@ -330,58 +400,43 @@ def salidas():
 
 @app.route("/entradas/nueva", methods=["GET", "POST"])
 def entradas_nueva():
-    if request.method == "POST":
-        insumo_codigo = request.form.get("insumo_seleccionado")
-        cantidad = request.form.get("unidad_seleccionada")
-
-        # Validación: si falta algo, volvemos a mostrar el formulario
-        if not insumo_codigo or not cantidad:
-            insumos = obtener_insumos()
-            return render_template(
-                "base.html",
-                vista="entradas_nueva",
-                insumos=insumos,
-                registro_ok=False,
-            )
-
-        cantidad_int = int(cantidad)
-        conn = get_db_connection()
-        fecha = datetime.now().strftime("%d-%b")
-
-        # Guardar entrada
-        conn.execute(
-            "INSERT INTO entradas (fecha, insumo_codigo, cantidad) VALUES (?, ?, ?)",
-            (fecha, insumo_codigo, cantidad_int),
-        )
-
-        # Actualizar inventario: sumar entradas y recalcular total
-        conn.execute(
-            """
-            UPDATE inventario
-            SET entradas = entradas + ?,
-                total = stock_inicial + (entradas + ?) - salidas
-            WHERE insumo_codigo = ?
-            """,
-            (cantidad_int, cantidad_int, insumo_codigo),
-        )
-
-        conn.commit()
-        conn.close()
-
-        # Redirigimos con ?ok=1 para mostrar el popup "Registro confirmado"
-        return redirect(url_for("entradas_nueva", ok="1"))
-
-    # GET: mostrar formulario
+    # Usar la lista estándar de insumos (con nombre_mostrar y descripcion)
     insumos = obtener_insumos()
+
+    if request.method == "POST":
+        codigo = request.form.get("insumo_seleccionado", "").strip()
+        cantidad_txt = request.form.get("unidad_seleccionada", "").strip()
+
+        if codigo and cantidad_txt:
+            try:
+                cantidad = int(cantidad_txt)
+                if cantidad > 0:
+                    # Guardar en historial de entradas
+                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
+
+                    conn = get_db_connection()
+                    conn.execute("""
+                        INSERT INTO entradas (fecha, insumo_codigo, cantidad)
+                        VALUES (?, ?, ?)
+                    """, (fecha_hoy, codigo, cantidad))
+
+                    # Actualizar inventario: entradas y total
+                    conn.execute("""
+                        UPDATE inventario
+                        SET entradas = entradas + ?,
+                            total    = stock_inicial + entradas + ? - salidas
+                        WHERE insumo_codigo = ?
+                    """, (cantidad, cantidad, codigo))
+
+                    conn.commit()
+                    conn.close()
+
+                    return redirect(url_for("entradas", ok=1))
+            except ValueError:
+                pass  # si hay error de número, simplemente no guarda
+
     registro_ok = request.args.get("ok") == "1"
-    return render_template(
-        "base.html",
-        vista="entradas_nueva",
-        insumos=insumos,
-        registro_ok=registro_ok,
-    )
-
-
+    return render_template("base.html", vista="entradas_nueva", modo="insumos", insumos=insumos, registro_ok=registro_ok)
 
 
 @app.route("/entradas/historial")
@@ -641,7 +696,7 @@ def pedidos_nuevo():
         conn.commit()
         conn.close()
 
-        return redirect(url_for("pedidos"))
+        return redirect(url_for("pedidos", ok=1))
 
     # GET → cargar lista de insumos para el datalist
     conn = get_db_connection()
@@ -705,6 +760,315 @@ def pedido_entregado(pedido_id):
 
     conn.close()
     return redirect(url_for("pedidos_historial"))
+
+
+
+# ---------- PAPEL - MENÚ ENTRADAS ----------
+@app.route("/papel/entradas")
+def papel_entradas():
+    return render_template(
+        "base.html",
+        vista="papel_entradas_menu",
+        modo="papel"
+    )
+
+# ---------- PAPEL - REGISTRAR NUEVA ENTRADA ----------
+from datetime import datetime
+
+@app.route("/papel/entradas/nuevo", methods=["GET", "POST"])
+def papel_entradas_nuevo():
+    if request.method == "POST":
+        tipo_papel = request.form.get("tipo_papel", "").strip()
+        gramaje = request.form.get("gramaje", "").strip()
+        formato = request.form.get("formato", "").strip()
+        proveedor = request.form.get("proveedor", "").strip()
+        marca = request.form.get("marca", "").strip()
+        cantidad = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        # VALIDACIÓN BÁSICA
+        if not tipo_papel or not gramaje or not formato or not proveedor or not marca or not cantidad:
+            error = "Tenés que completar todos los campos obligatorios."
+            # cargar lista de papeles para volver a mostrar el formulario
+            conn = get_db_connection()
+            papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            conn.close()
+            preview = {
+                "tipo_papel": tipo_papel,
+                "gramaje": gramaje,
+                "formato": formato,
+                "proveedor": proveedor,
+                "marca": marca,
+                "cantidad": cantidad,
+                "observaciones": observaciones,
+            }
+            return render_template(
+                "base.html",
+                vista="papel_entradas_nueva",
+                modo="papel",
+                error=error,
+                papeles=papeles,
+                preview=preview,
+            )
+
+        # GUARDAR EN BD
+        conn = get_db_connection()
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        conn.execute("""
+            INSERT INTO papel_entradas
+                (fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones))
+
+        conn.commit()
+        conn.close()
+
+        # Después de guardar, redirigimos al historial con ?ok=1 para mostrar el popup
+        return redirect(url_for("papel_entradas_historial", ok=1))
+
+    # GET: mostrar formulario vacío (cargar lista de papeles)
+    conn = get_db_connection()
+    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles)
+
+
+# ---------- PAPEL - HISTORIAL DE ENTRADAS ----------
+@app.route("/papel/entradas/historial")
+def papel_entradas_historial():
+    conn = get_db_connection()
+    registros = conn.execute("""
+        SELECT fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones
+        FROM papel_entradas
+        ORDER BY fecha DESC, id DESC
+    """).fetchall()
+    conn.close()
+    return render_template(
+        "base.html",
+        vista="papel_entradas_historial",
+        modo="papel",
+        registros=registros
+    )
+
+# ---------- PAPEL - MENÚ SALIDAS ----------
+@app.route("/papel/salidas")
+def papel_salidas():
+    return render_template(
+        "base.html",
+        vista="papel_salidas_menu",
+        modo="papel"
+    )
+
+
+# ---------- PAPEL - REGISTRAR NUEVA SALIDA ----------
+@app.route("/papel/salidas/nuevo", methods=["GET", "POST"])
+def papel_salidas_nuevo():
+    if request.method == "POST":
+        tipo_papel    = request.form.get("tipo_papel", "").strip()
+        gramaje       = request.form.get("gramaje", "").strip()
+        formato       = request.form.get("formato", "").strip()
+        proveedor     = request.form.get("proveedor", "").strip()
+        marca         = request.form.get("marca", "").strip()
+        cantidad      = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        # Validación básica
+        if (not tipo_papel or not gramaje or not formato or
+                not proveedor or not marca or not cantidad):
+            error = "Tenés que completar todos los campos obligatorios."
+            # cargar lista de papeles para volver a mostrar el formulario
+            conn = get_db_connection()
+            papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            conn.close()
+            preview = {
+                "tipo_papel": tipo_papel,
+                "gramaje": gramaje,
+                "formato": formato,
+                "proveedor": proveedor,
+                "marca": marca,
+                "cantidad": cantidad,
+                "observaciones": observaciones,
+            }
+            return render_template(
+                "base.html",
+                vista="papel_salidas_nueva",
+                modo="papel",
+                error=error,
+                papeles=papeles,
+                preview=preview,
+            )
+
+        # Guardar en la tabla de salidas de papel
+        conn = get_db_connection()
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        conn.execute("""
+            INSERT INTO papel_salidas
+                (fecha, tipo_papel, gramaje, formato,
+                 proveedor, marca, cantidad, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            fecha, tipo_papel, gramaje, formato,
+            proveedor, marca, cantidad, observaciones
+        ))
+
+        conn.commit()
+        conn.close()
+
+        # Después de guardar, ir al historial de salidas de papel con ?ok=1
+        return redirect(url_for("papel_salidas_historial", ok=1))
+
+    # GET: mostrar formulario vacío (cargar lista de papeles)
+    conn = get_db_connection()
+    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template(
+        "base.html",
+        vista="papel_salidas_nueva",
+        modo="papel",
+        papeles=papeles,
+    )
+
+
+
+# ---------- PAPEL - HISTORIAL DE SALIDAS ----------
+@app.route("/papel/salidas/historial")
+def papel_salidas_historial():
+    conn = get_db_connection()
+    registros = conn.execute("""
+        SELECT fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones
+        FROM papel_salidas
+        ORDER BY fecha DESC, id DESC
+    """).fetchall()
+    conn.close()
+
+    return render_template(
+        "base.html",
+        vista="papel_salidas_historial",
+        modo="papel",
+        registros=registros
+    )
+
+from datetime import datetime
+from flask import Flask, render_template, request, redirect, url_for, jsonify
+# ...
+
+# ---------- PAPEL - MENÚ PEDIDOS ----------
+@app.route("/papel/pedidos")
+def papel_pedidos():
+    return render_template(
+        "base.html",
+        vista="papel_pedidos_menu",
+        modo="papel"
+    )
+
+
+# ---------- PAPEL - REGISTRAR NUEVO PEDIDO ----------
+@app.route("/papel/pedidos/nuevo", methods=["GET", "POST"])
+def papel_pedidos_nuevo():
+    if request.method == "POST":
+        tipo_papel    = request.form.get("tipo_papel", "").strip()
+        gramaje       = request.form.get("gramaje", "").strip()
+        formato       = request.form.get("formato", "").strip()
+        marca         = request.form.get("marca", "").strip()
+        proveedor     = request.form.get("proveedor", "").strip()
+        cantidad      = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        # Validación básica
+        if (not tipo_papel or not gramaje or not formato or
+                not marca or not proveedor or not cantidad):
+            error = "Tenés que completar todos los campos obligatorios."
+            return render_template(
+                "base.html",
+                vista="papel_pedidos_nuevo",
+                modo="papel",
+                error=error
+            )
+
+        conn = get_db_connection()
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        # Insertar en papel_pedidos
+        conn.execute("""
+            INSERT INTO papel_pedidos
+                (fecha, tipo_papel, gramaje, formato,
+                 marca, proveedor, cantidad, observaciones, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            fecha, tipo_papel, gramaje, formato,
+            marca, proveedor, cantidad, observaciones or None,
+            "En espera"
+        ))
+
+        conn.commit()
+        conn.close()
+
+        # Después de guardar, ir al historial de pedidos de papel con ?ok=1
+        return redirect(url_for("papel_pedidos_historial", ok=1))
+
+    # GET: mostrar formulario de nuevo pedido de papel
+    return render_template(
+        "base.html",
+        vista="papel_pedidos_nuevo",
+        modo="papel"
+    )
+
+
+# ---------- PAPEL - HISTORIAL DE PEDIDOS ----------
+@app.route("/papel/pedidos/historial")
+def papel_pedidos_historial():
+    conn = get_db_connection()
+    registros = conn.execute("""
+        SELECT * FROM papel_pedidos
+        ORDER BY fecha DESC, id DESC
+    """).fetchall()
+    conn.close()
+
+    return render_template(
+        "base.html",
+        vista="papel_pedidos_historial",
+        modo="papel",
+        registros=registros
+    )
+
+
+# ---------- PAPEL - MARCAR PEDIDO COMO ENTREGADO ----------
+@app.route("/papel/pedidos/<int:pedido_id>/entregado", methods=["POST"])
+def papel_pedido_entregado(pedido_id):
+    conn = get_db_connection()
+    pedido = conn.execute("""
+        SELECT * FROM papel_pedidos WHERE id = ?
+    """, (pedido_id,)).fetchone()
+
+    if not pedido:
+        conn.close()
+        return jsonify({"ok": False, "error": "Pedido no encontrado"}), 404
+
+    # Si ya estaba entregado, no hacemos nada
+    if pedido["estado"] != "Entregado":
+        # Marcamos como Entregado
+        conn.execute("""
+            UPDATE papel_pedidos
+            SET estado = 'Entregado'
+            WHERE id = ?
+        """, (pedido_id,))
+
+        # Actualizamos inventario de papel:
+        # sumamos la cantidad a stock_inicial y total
+        conn.execute("""
+            UPDATE papel_inventario
+            SET stock_inicial = stock_inicial + ?,
+                total         = total + ?
+            WHERE nombre = ?
+        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
+
+        conn.commit()
+
+    conn.close()
+    return jsonify({"ok": True})
+
 
 
 # ---------------- ARRANQUE APP ----------------

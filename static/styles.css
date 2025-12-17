@@ -55,6 +55,30 @@ body {
     background-color: #dbeeff;   /* celeste como fondo base */
 }
 
+.menu-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+    margin-top: 4rem;
+    height: calc(100vh - 140px);  /* ajustá 140px según el alto de tu header */
+}
+
+/* Tarjeta del menú (Insumos / Papel) */
+.menu-card {
+    width: 340px;
+    height: 260px;
+    background-color: #ffffff;
+    border: 4px solid #000;
+    box-shadow: 4px 4px 0 #333;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
 
 .menu-item {
     flex: 1;
@@ -67,6 +91,27 @@ body {
     border-right: 2px solid #000;
     color: #000;
     background-color: #dbeeff;   /* celeste por defecto */
+}
+
+/* Efecto hover opcional */
+.menu-card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 #333;
+}
+
+/* Imagen dentro de la tarjeta */
+.menu-card-img {
+    max-width: 50%;
+    height: auto;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+/* Título de la tarjeta */
+.menu-card-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
 }
 
 .menu-item:last-child {
@@ -911,5 +956,24 @@ body {
     background-color: #ffffff;
     cursor: pointer;
     box-shadow: 2px 2px 0 #333;
+}
+
+.modal-overlay.modal-ok {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-ok-content {
+    background: #ffffff;
+    padding: 40px 60px;
+    border-radius: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
 }
 
