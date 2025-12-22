@@ -14,7 +14,7 @@ app.secret_key = "nextprint-stock-super-secreto"
 # Usuarios habilitados para ADMIN
 USUARIOS_ADMIN = {
     "nicolas": "nnapoli",
-    "luis": "nnapoli",
+    "luis": "lonapoli",
 }
 
 
@@ -48,8 +48,8 @@ def admin():
         contrasena = request.form.get("contrasena", "").strip()
 
         cred_ok = (
-            (usuario == "nnapoli" and contrasena == "matiesmihijofavorito") or
-            (usuario == "luis" and contrasena == "nnapoli")
+            (usuario == "nicolas" and contrasena == "nnapoli") or
+            (usuario == "luis" and contrasena == "lonapoli")
         )
 
         if cred_ok:
@@ -65,9 +65,9 @@ def admin():
     conn = get_db_connection()
     registros = conn.execute("""
         SELECT * FROM inventario
-        ORDER BY nombre
+        ORDER BY insumo_codigo
     """).fetchall()
-    conn.close()
+
 
     return render_template(
         "base.html",
@@ -87,8 +87,8 @@ def papel_admin():
         contrasena = request.form.get("contrasena", "").strip()
 
         cred_ok = (
-            (usuario == "nnapoli" and contrasena == "matiesmihijofavorito") or
-            (usuario == "luis" and contrasena == "nnapoli")
+            (usuario == "nicolas" and contrasena == "nnapoli") or
+            (usuario == "luis" and contrasena == "lonapoli")
         )
 
         if cred_ok:
@@ -102,9 +102,10 @@ def papel_admin():
     # inventario SIMPLE de papel cuando está logueado
     conn = get_db_connection()
     registros = conn.execute("""
-        SELECT * FROM papel_inventario
-        ORDER BY tipo_papel
+        SELECT * FROM inventario
+        ORDER BY insumo_codigo
     """).fetchall()
+
     conn.close()
 
     return render_template(
@@ -343,7 +344,7 @@ def inventario():
             error = "Usuario o contraseña incorrecta"
 
     # GET inicial o POST fallido → mostrar formulario de login
-    return render_template("base.html", vista="login_admin", login_error=error)
+    return render_template("base.html", vista="admin_login", login_error=error)
 
 # ---------- PAPEL: INVENTARIO SIMPLE ----------
 @app.route("/papel/inventario")
@@ -646,6 +647,44 @@ def insumo_modificar():
         "inventario_id": inventario_id,
     }, 200
 
+@app.route("/insumo/agregar", methods=["POST"])
+def insumo_agregar():
+    data = request.get_json()
+    codigo = (data.get("codigo") or "").strip()
+    nombre = (data.get("nombre") or "").strip()
+    descripcion = (data.get("descripcion") or "").strip()
+    unidad = (data.get("unidad") or "").strip()
+    stock = int(data.get("stock") or 0)
+
+    if not codigo or not nombre or not descripcion:
+        return ("Faltan datos", 400)
+
+    conn = get_db_connection()
+
+    # Insertar en insumos
+    conn.execute("""
+        INSERT INTO insumos (codigo, nombre, descripcion, proveedor, unidad)
+        VALUES (?, ?, ?, '', ?)
+    """, (codigo, nombre, descripcion, unidad))
+
+    # Insertar/asegurar inventario
+    existe = conn.execute("SELECT 1 FROM inventario WHERE insumo_codigo = ?", (codigo,)).fetchone()
+    if not existe:
+        conn.execute("""
+            INSERT INTO inventario (insumo_codigo, stock_inicial, entradas, salidas, total)
+            VALUES (?, ?, 0, 0, ?)
+        """, (codigo, stock, stock))
+    else:
+        conn.execute("""
+            UPDATE inventario
+            SET stock_inicial = stock_inicial + ?, total = total + ?
+            WHERE insumo_codigo = ?
+        """, (stock, stock, codigo))
+
+    conn.commit()
+    conn.close()
+    return ("OK", 200)
+
 # -------------------------
 # PEDIDOS
 # -------------------------
@@ -722,7 +761,7 @@ def pedidos_historial():
     conn.close()
     return render_template("base.html", vista="pedidos_historial", registros=registros)
 
-@app.route("/pedidos/<int:pedido_id>/entregar", methods=["POST"])
+@app.route("/pedidos/<int:pedido_id>/entregado", methods=["POST"])
 def pedido_entregado(pedido_id):
     conn = get_db_connection()
     pedido = conn.execute(
@@ -734,12 +773,10 @@ def pedido_entregado(pedido_id):
         conn.close()
         return redirect(url_for("pedidos_historial"))
 
-    # Solo actualizamos si todavía no estaba entregado
     if pedido["estado"] != "Entregado":
         cantidad = pedido["cantidad"]
         insumo_codigo = pedido["insumo_codigo"]
 
-        # Si el pedido está vinculado a un insumo del inventario
         if insumo_codigo:
             conn.execute(
                 """
@@ -751,7 +788,6 @@ def pedido_entregado(pedido_id):
                 (cantidad, cantidad, insumo_codigo),
             )
 
-        # Marcar el pedido como entregado
         conn.execute(
             "UPDATE pedidos SET estado = 'Entregado' WHERE id = ?",
             (pedido_id,),

@@ -493,6 +493,39 @@ body {
     font-size: 1rem;
 }
 
+/* Ajuste visual para Admin - misma integración que inventario simple */
+section.inventario {
+    background: transparent;
+    box-shadow: none;
+    padding: 0 30px;
+}
+
+.historial-controles {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-rojo {
+    background-color: #ff4d4d;
+    color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+.btn-negro {
+    background-color: white;
+    border: 2px solid black;
+    border-radius: 10px;
+    font-weight: bold;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
 .historial-tabla th,
 .historial-tabla td {
     border: 1px solid #000;

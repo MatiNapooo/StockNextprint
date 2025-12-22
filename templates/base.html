@@ -68,10 +68,7 @@
                                 <div class="form-error">{{ error }}</div>
                             {% endif %}
 
-                            <form method="post"
-                                action="{% if modo == 'papel' %}{{ url_for('papel_admin') }}{% else %}{{ url_for('admin') }}{% endif %}"
-                                class="login-form">
-
+                            <form method="post" action="{% if modo == 'papel' %}{{ url_for('papel_admin') }}{% else %}{{ url_for('admin') }}{% endif %}"class="login-form">
                                 <div class="login-row">
                                     <label for="usuario">Usuario</label>
                                     <input type="text" id="usuario" name="usuario">
@@ -90,64 +87,52 @@
 
 
 
-        {# INVENTARIO #}
+                {# INVENTARIO #}
                 {% elif vista == "inventario_admin" %}
-            <section class="inventario">
-                <h1 class="section-title">Inventario – Insumos</h1>
+            
+                <section class="historial inventario" style="background-color: transparent; box-shadow: none;">
+                    <h2>Inventario – Insumos</h2>
 
-                <div class="inventario-header">
-                    <div class="inventario-filtro">
-                        <label for="filtro-inv">Filtrar:</label>
-                        <input id="filtro-inv" type="text" placeholder="Escriba para filtrar">
+                    <div class="historial-controles">
+                        <label for="filtro-inventario">Filtrar:</label>
+                        <input type="text" id="filtro-inventario" placeholder="Escriba para filtrar">
+
+                        <button class="btn-rojo" onclick="window.location.href='{{ url_for('logout') }}'">Cerrar sesión</button>
+                        <button class="btn-negro">Agregar insumo</button>
+                        <button class="btn-negro">Eliminar insumo</button>
+                        <button class="btn-negro">Modificar insumo</button>
                     </div>
 
-                    <div class="inventario-acciones">
-                        <button type="button"
-                                class="btn-cerrar-sesion"
-                                onclick="window.location='{{ url_for('logout') }}'">
-                            Cerrar sesión
-                        </button>
-
-                        <button type="button" class="btn-agregar-insumo" onclick="abrirModalAgregarInsumo()">
-                            Agregar insumo
-                        </button>
-                        <button type="button" class="btn-eliminar-insumo" onclick="abrirModalEliminarInsumo()">
-                            Eliminar insumo
-                        </button>
-                        <button type="button" class="btn-modificar-insumo" onclick="abrirModalModificarInsumo()">
-                            Modificar insumo
-                        </button>
+                    <div class="historial-tabla-wrapper">
+                        <table id="tabla-inventario" class="historial-tabla">
+                            <thead>
+                                <tr>
+                                    <th>CÓDIGO</th>
+                                    <th>INSUMO</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>STOCK INICIAL</th>
+                                    <th>ENTRADAS</th>
+                                    <th>SALIDAS</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in registros %}
+                                <tr>
+                                    <td>{{ r['insumo_codigo'] }}</td>
+                                    <td>{{ r['insumo_nombre'] }}</td>
+                                    <td>{{ r['insumo_descripcion'] }}</td>
+                                    <td>{{ r['stock_inicial'] }}</td>
+                                    <td>{{ r['entradas'] }}</td>
+                                    <td>{{ r['salidas'] }}</td>
+                                    <td>{{ r['total'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
+                </section>
 
-                <div class="tabla-wrapper">
-                    <table id="tabla-inventario" class="tabla-inventario">
-                        <thead>
-                        <tr>
-                            <th>CÓDIGO</th>
-                            <th>INSUMO</th>
-                            <th>DESCRIPCIÓN</th>
-                            <th>STOCK INICIAL</th>
-                            <th>ENTRADAS</th>
-                            <th>SALIDAS</th>
-                            <th>TOTAL</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for r in registros %}
-                            <tr>
-                                <td>{{ r['codigo'] }}</td>
-                                <td>{{ r['nombre'] }}</td>
-                                <td>{{ r['descripcion'] }}</td>
-                                <td>{{ r['stock_inicial'] }}</td>
-                                <td>{{ r['entradas'] }}</td>
-                                <td>{{ r['salidas'] }}</td>
-                                <td>{{ r['total'] }}</td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
 
 
                 <!-- MODAL MODIFICAR STOCK / ENTRADAS / SALIDAS / TOTAL -->
@@ -335,7 +320,7 @@
             
 
                 {% elif vista == "inventario_simple" %}
-            <section class="historial">
+                <section class="historial">
                 <h1 class="historial-titulo">Inventario</h1>
 
                 <div class="historial-filtro inventario-filtro">
@@ -419,7 +404,10 @@
         {% elif vista == "entradas_nueva" %}
             <section class="form-registro">
                 <h1 class="form-titulo">Registrar nueva entrada</h1>
-                <form class="form-container" method="post" id="form-entrada-nueva">
+                <form class="form-container"
+                 method="post"
+                 id="form-entrada-nueva"
+                 action="{{ url_for('entradas_nueva') }}">
                     <div class="form-row">
                       <div class="form-card">
                         <p id="error-insumo" class="error-msg"></p>
@@ -521,7 +509,10 @@
         {% elif vista == "salidas_nueva" %}
             <section class="form-registro">
                 <h1 class="form-titulo">Registrar nueva salida</h1>
-                <form class="form-container" method="post" id="form-salida-nueva">
+                <form class="form-container"
+                    method="post"
+                    id="form-salida-nueva"
+                    action="{{ url_for('salidas_nueva') }}">
                     <div class="form-row">
                         <div class="form-card">
                             <p id="error-insumo" class="error-msg"></p>
