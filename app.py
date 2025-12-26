@@ -1,10 +1,17 @@
 import sqlite3
+import os 
 from collections import Counter
 from datetime import datetime
 from sqlite3 import IntegrityError
 from flask import Flask, render_template, request, redirect, url_for, session
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "stock.db")  # <-- USAR ESTA (ES LA QUE TIENE DATOS)
 
+def get_conn():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
 
 app = Flask(__name__)
 # Clave para firmar la cookie de sesión (podés cambiarla por otra)
@@ -12,7 +19,7 @@ app.secret_key = "nextprint-stock-super-secreto"
 
 
 # Usuarios habilitados para ADMIN
-USUARIOS_ADMIN = {
+USERS = {
     "nicolas": "nnapoli",
     "luis": "lonapoli",
 }
@@ -21,60 +28,99 @@ USUARIOS_ADMIN = {
 def credenciales_validas(usuario, contrasena):
     if not usuario or not contrasena:
         return False
-    esperado = USUARIOS_ADMIN.get(usuario.strip())
+    esperado = USERS.get(usuario.strip())
     return esperado is not None and esperado == contrasena.strip()
 
-from flask import Flask, render_template, request, redirect, url_for, session
-# ...
 
-app.secret_key = "cualquier_clave_larga_y_secreta"
+def inventario_rows(conn):
+    # Inventario calculado (insumos + sumatorias entradas/salidas)
+    return conn.execute("""
+        SELECT
+            i.codigo,
+            i.insumo,
+            i.descripcion,
+            COALESCE(i.stock_inicial, 0) AS stock_inicial,
+            COALESCE(e.entradas, 0) AS entradas,
+            COALESCE(s.salidas, 0) AS salidas,
+            (COALESCE(i.stock_inicial, 0) + COALESCE(e.entradas, 0) - COALESCE(s.salidas, 0)) AS total
+        FROM insumos i
+        LEFT JOIN (
+            SELECT codigo, SUM(cantidad) AS entradas
+            FROM entradas
+            GROUP BY codigo
+        ) e ON e.codigo = i.codigo
+        LEFT JOIN (
+            SELECT codigo, SUM(cantidad) AS salidas
+            FROM salidas
+            GROUP BY codigo
+        ) s ON s.codigo = i.codigo
+        ORDER BY i.insumo COLLATE NOCASE
+    """).fetchall()
 
-# ---------- ADMIN (LOGIN + VISTA INVENTARIO INSUMOS) ----------
-from flask import Flask, render_template, request, redirect, url_for, session
-# (esto ya lo tenés, sólo confirmo que esté importado session)
 
-# Clave para sesiones (si ya tenés una, dejá la tuya)
-app.secret_key = "cualquier_clave_larga_y_secreta"
-
+def inventario_row_by_codigo(conn, codigo):
+    row = conn.execute("""
+        SELECT
+            i.codigo,
+            i.insumo,
+            i.descripcion,
+            COALESCE(i.stock_inicial, 0) AS stock_inicial,
+            COALESCE(e.entradas, 0) AS entradas,
+            COALESCE(s.salidas, 0) AS salidas,
+            (COALESCE(i.stock_inicial, 0) + COALESCE(e.entradas, 0) - COALESCE(s.salidas, 0)) AS total
+        FROM insumos i
+        LEFT JOIN (
+            SELECT codigo, SUM(cantidad) AS entradas
+            FROM entradas
+            GROUP BY codigo
+        ) e ON e.codigo = i.codigo
+        LEFT JOIN (
+            SELECT codigo, SUM(cantidad) AS salidas
+            FROM salidas
+            GROUP BY codigo
+        ) s ON s.codigo = i.codigo
+        WHERE i.codigo = ?
+    """, (codigo,)).fetchone()
+    return row
 
 # --------- LOGIN ADMIN (INSUMOS) ----------
 @app.route("/admin", methods=["GET", "POST"])
 def admin():
-    error = None
+    # Si ya está logueado, mostrar inventario admin
+    if request.method == "GET":
+        if session.get("admin_logged_in"):
+            return redirect(url_for("admin_inventario"))
+        return render_template("base.html", vista="admin_login", login_error=False)
 
-    # Si envían el formulario, validamos
-    if request.method == "POST":
-        usuario = request.form.get("usuario", "").strip()
-        contrasena = request.form.get("contrasena", "").strip()
+    # POST: intentar login
+    usuario = (request.form.get("usuario") or "").strip()
+    contrasena = request.form.get("contrasena") or ""
 
-        cred_ok = (
-            (usuario == "nicolas" and contrasena == "nnapoli") or
-            (usuario == "luis" and contrasena == "lonapoli")
-        )
+    if USERS.get(usuario) == contrasena:
+        session.clear()
+        session["admin_logged_in"] = True
+        session["admin_user"] = usuario
+        session.permanent = False  # cookie de sesión (no permanente)
+        return redirect(url_for("admin_inventario"))
 
-        if cred_ok:
-            session["admin_logueado"] = True
-        else:
-            error = "Usuario o contraseña incorrecta"
-
-    # Si NO está logueado, mostramos login
-    if not session.get("admin_logueado"):
-        return render_template("base.html", vista="admin_login", modo="insumos", error=error)
-
-    # Si está logueado, mostramos inventario de insumos (modo admin)
-    conn = get_db_connection()
-    registros = conn.execute("""
-        SELECT * FROM inventario
-        ORDER BY insumo_codigo
-    """).fetchall()
+    return render_template("base.html", vista="admin_login", login_error=True)
 
 
-    return render_template(
-        "base.html",
-        vista="inventario_admin",   # bloque que va a mostrar la tabla con botones de admin
-        modo="insumos",
-        registros=registros
-    )
+@app.route("/admin/inventario")
+def admin_inventario():
+    if not session.get("admin_logged_in"):
+        return redirect(url_for("admin"))
+
+    conn = get_conn()
+    registros = inventario_rows(conn)
+    conn.close()
+    return render_template("base.html", vista="inventario_admin", registros=registros)
+
+
+@app.route("/logout_admin")
+def logout_admin():
+    session.clear()
+    return redirect(url_for("admin"))
 
 
 # --------- LOGIN ADMIN PAPEL ----------
@@ -100,7 +146,7 @@ def papel_admin():
         return render_template("base.html", vista="admin_login", modo="papel", error=error)
 
     # inventario SIMPLE de papel cuando está logueado
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute("""
         SELECT * FROM inventario
         ORDER BY insumo_codigo
@@ -134,7 +180,7 @@ def insumo_actualizar(codigo):
     if not nuevo_codigo or not nombre:
         return {"ok": False, "error": "Código e insumo son obligatorios."}, 400
 
-    conn = get_db_connection()
+    conn = get_conn()
     try:
         conn.execute("""
             UPDATE insumos
@@ -169,13 +215,8 @@ def insumo_actualizar(codigo):
     return {"ok": True}, 200
 
 
-def get_db_connection():
-    conn = sqlite3.connect("stock.db")
-    conn.row_factory = sqlite3.Row
-    return conn
-
 def obtener_registros_inventario():
-    conn = get_db_connection()
+    conn = get_conn()
     filas = conn.execute("""
         SELECT inv.id,
                inv.insumo_codigo AS codigo,
@@ -219,7 +260,7 @@ def obtener_registros_inventario():
     return registros
 
 def obtener_insumos():
-    conn = get_db_connection()
+    conn = get_conn()
     filas = conn.execute(
         "SELECT codigo, nombre, descripcion FROM insumos"
     ).fetchall()
@@ -266,56 +307,6 @@ def menu_principal():
 
 from collections import Counter  # ponlo arriba si todavía no lo importaste
 
-# ---------------------------------------------------------
-# INVENTARIO: función auxiliar que devuelve los registros
-# ---------------------------------------------------------
-def obtener_registros_inventario():
-    conn = get_db_connection()
-    filas = conn.execute(
-        """
-        SELECT inv.id,
-               inv.insumo_codigo AS codigo,
-               ins.nombre,
-               ins.descripcion,
-               ins.unidad,
-               inv.stock_inicial,
-               inv.entradas,
-               inv.salidas,
-               inv.total
-        FROM inventario inv
-        JOIN insumos ins ON inv.insumo_codigo = ins.codigo
-        """
-    ).fetchall()
-    conn.close()
-
-    contador_nombres = Counter(f["nombre"] for f in filas)
-    registros = []
-
-    for f in filas:
-        d = dict(f)
-        codigo = d["codigo"]
-        nombre = d["nombre"]
-        descripcion = d["descripcion"] or ""
-
-        # Prefijo "Tinta" para las tintas
-        if codigo in ("P001", "P002", "P003", "P004", "P025"):
-            base_nombre = f"Tinta {nombre}"
-        else:
-            base_nombre = nombre
-
-        # Si hay nombres repetidos, agregamos descripción
-        if contador_nombres[nombre] > 1 and descripcion:
-            nombre_mostrar = f"{base_nombre} {descripcion}"
-        else:
-            nombre_mostrar = base_nombre
-
-        d["nombre"] = nombre_mostrar
-        registros.append(d)
-
-    # Orden alfabético por nombre a mostrar
-    registros.sort(key=lambda x: x["nombre"])
-    return registros
-
 
 # ---------------------------------------------------------
 # ADMIN (vista actual de inventario, con botones)
@@ -349,7 +340,7 @@ def inventario():
 # ---------- PAPEL: INVENTARIO SIMPLE ----------
 @app.route("/papel/inventario")
 def papel_inventario():
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute("""
         SELECT id, nombre, stock_inicial, entradas, salidas, total
         FROM papel_inventario
@@ -364,17 +355,6 @@ def papel_inventario():
     )
 
 
-
-@app.route("/logout_admin")
-def logout_admin():
-    # Borrar el usuario de la sesión de este navegador
-    session.pop("usuario_admin", None)
-    # Volver a /inventario, que ahora mostrará el login
-    return redirect(url_for("inventario"))
-
-
-
-
 # ---------------------------------------------------------
 # INVENTARIO (solo lectura, sin botones)
 # ---------------------------------------------------------
@@ -386,169 +366,181 @@ def inventario_simple():
 
 
 @app.route("/entradas")
-def entradas():
-    return render_template("base.html", vista="entradas")
+def entradas_menu():
+    return render_template("base.html", vista="entradas_menu")
 
 
 @app.route("/salidas")
-def salidas():
-    return render_template("base.html", vista="salidas")
+def salidas_menu():
+    return render_template("base.html", vista="salidas_menu")
 
 
+@app.route("/entradas/nuevo")
+def entradas_nuevo():
+    conn = get_conn()
+    insumos = conn.execute("""
+        SELECT codigo, nombre, descripcion
+        FROM insumos
+        ORDER BY nombre COLLATE NOCASE
+    """).fetchall()
+    conn.close()
+    return render_template("base.html", vista="mov_nuevo", mov_tipo="entrada", insumos=insumos)
 
 
-# ---------------- ENTRADAS ----------------
-
-@app.route("/entradas/nueva", methods=["GET", "POST"])
-def entradas_nueva():
-    # Usar la lista estándar de insumos (con nombre_mostrar y descripcion)
-    insumos = obtener_insumos()
-
-    if request.method == "POST":
-        codigo = request.form.get("insumo_seleccionado", "").strip()
-        cantidad_txt = request.form.get("unidad_seleccionada", "").strip()
-
-        if codigo and cantidad_txt:
-            try:
-                cantidad = int(cantidad_txt)
-                if cantidad > 0:
-                    # Guardar en historial de entradas
-                    fecha_hoy = datetime.now().strftime("%Y-%m-%d")
-
-                    conn = get_db_connection()
-                    conn.execute("""
-                        INSERT INTO entradas (fecha, insumo_codigo, cantidad)
-                        VALUES (?, ?, ?)
-                    """, (fecha_hoy, codigo, cantidad))
-
-                    # Actualizar inventario: entradas y total
-                    conn.execute("""
-                        UPDATE inventario
-                        SET entradas = entradas + ?,
-                            total    = stock_inicial + entradas + ? - salidas
-                        WHERE insumo_codigo = ?
-                    """, (cantidad, cantidad, codigo))
-
-                    conn.commit()
-                    conn.close()
-
-                    return redirect(url_for("entradas", ok=1))
-            except ValueError:
-                pass  # si hay error de número, simplemente no guarda
-
-    registro_ok = request.args.get("ok") == "1"
-    return render_template("base.html", vista="entradas_nueva", modo="insumos", insumos=insumos, registro_ok=registro_ok)
+@app.route("/salidas/nuevo")
+def salidas_nuevo():
+    conn = get_conn()
+    insumos = conn.execute("""
+        SELECT codigo, nombre, descripcion
+        FROM insumos
+        ORDER BY nombre COLLATE NOCASE
+    """).fetchall()
+    conn.close()
+    return render_template("base.html", vista="mov_nuevo", mov_tipo="salida", insumos=insumos)
 
 
 @app.route("/entradas/historial")
 def entradas_historial():
-    conn = get_db_connection()
-    registros = conn.execute(
-        """
-        SELECT e.id, e.fecha, i.codigo, i.nombre, i.descripcion, e.cantidad
-        FROM entradas e
-        JOIN insumos i ON e.insumo_codigo = i.codigo
-        ORDER BY e.id DESC
-        """
-    ).fetchall()
+    conn = get_conn()
+    registros = conn.execute("""
+        SELECT id, fecha, codigo, insumo, descripcion, cantidad
+        FROM entradas
+        ORDER BY id DESC
+    """).fetchall()
     conn.close()
-    return render_template(
-        "base.html", vista="entradas_historial", registros=registros
-    )
-
-
-@app.route("/entradas/<int:registro_id>/borrar", methods=["POST"])
-def borrar_entrada(registro_id: int):
-    conn = get_db_connection()
-    conn.execute("DELETE FROM entradas WHERE id = ?", (registro_id,))
-    conn.commit()
-    conn.close()
-    return ("", 204)
-
-
-# ---------------- SALIDAS ----------------
-
-@app.route("/salidas/nueva", methods=["GET", "POST"])
-def salidas_nueva():
-    if request.method == "POST":
-        insumo_codigo = request.form.get("insumo_seleccionado")
-        cantidad = request.form.get("unidad_seleccionada")
-
-        # Validación: si falta algo, volvemos a mostrar el formulario
-        if not insumo_codigo or not cantidad:
-            insumos = obtener_insumos()
-            return render_template(
-                "base.html",
-                vista="salidas_nueva",
-                insumos=insumos,
-                registro_ok=False,
-            )
-
-        cantidad_int = int(cantidad)
-        conn = get_db_connection()
-        fecha = datetime.now().strftime("%d-%b")
-
-        # Guardar salida
-        conn.execute(
-            "INSERT INTO salidas (fecha, insumo_codigo, cantidad) VALUES (?, ?, ?)",
-            (fecha, insumo_codigo, cantidad_int),
-        )
-
-        # Actualizar inventario: sumar salidas y recalcular total
-        conn.execute(
-            """
-            UPDATE inventario
-            SET salidas = salidas + ?,
-                total = stock_inicial + entradas - (salidas + ?)
-            WHERE insumo_codigo = ?
-            """,
-            (cantidad_int, cantidad_int, insumo_codigo),
-        )
-
-        conn.commit()
-        conn.close()
-
-        # Redirigimos con ?ok=1 para mostrar el popup "Registro confirmado"
-        return redirect(url_for("salidas_nueva", ok="1"))
-
-    # GET: mostrar formulario
-    insumos = obtener_insumos()
-    registro_ok = request.args.get("ok") == "1"
-    return render_template(
-        "base.html",
-        vista="salidas_nueva",
-        insumos=insumos,
-        registro_ok=registro_ok,
-    )
-
-
-
+    return render_template("base.html", vista="mov_historial", mov_tipo="entrada", registros=registros)
 
 
 @app.route("/salidas/historial")
 def salidas_historial():
-    conn = get_db_connection()
-    registros = conn.execute(
-        """
-        SELECT s.id, s.fecha, i.codigo, i.nombre, i.descripcion, s.cantidad
-        FROM salidas s
-        JOIN insumos i ON s.insumo_codigo = i.codigo
-        ORDER BY s.id DESC
-        """
-    ).fetchall()
+    conn = get_conn()
+    registros = conn.execute("""
+        SELECT id, fecha, codigo, insumo, descripcion, cantidad
+        FROM salidas
+        ORDER BY id DESC
+    """).fetchall()
     conn.close()
-    return render_template(
-        "base.html", vista="salidas_historial", registros=registros
-    )
+    return render_template("base.html", vista="mov_historial", mov_tipo="salida", registros=registros)
 
 
-@app.route("/salidas/<int:registro_id>/borrar", methods=["POST"])
-def borrar_salida(registro_id: int):
-    conn = get_db_connection()
-    conn.execute("DELETE FROM salidas WHERE id = ?", (registro_id,))
+@app.post("/api/movimiento/preview")
+def api_mov_preview():
+    data = request.get_json(silent=True) or {}
+    tipo = (data.get("tipo") or "").strip().lower()
+    codigo = (data.get("codigo") or "").strip()
+    cantidad_raw = data.get("cantidad")
+
+    if tipo not in ("entrada", "salida"):
+        return jsonify(ok=False, error="Tipo inválido."), 400
+    if not codigo:
+        return jsonify(ok=False, error="Tenés que elegir un insumo."), 400
+    try:
+        cantidad = int(cantidad_raw)
+        if cantidad <= 0:
+            raise ValueError()
+    except Exception:
+        return jsonify(ok=False, error="Tenés que elegir una cantidad válida."), 400
+
+    conn = get_conn()
+    row = inventario_row_by_codigo(conn, codigo)
+    conn.close()
+
+    if not row:
+        return jsonify(ok=False, error="No existe el insumo seleccionado."), 404
+
+    stock_inicial = int(row["stock_inicial"])
+    entradas = int(row["entradas"])
+    salidas = int(row["salidas"])
+    total_actual = int(row["total"])
+
+    if tipo == "entrada":
+        entradas_nuevo = entradas + cantidad
+        salidas_nuevo = salidas
+        total_nuevo = total_actual + cantidad
+    else:
+        entradas_nuevo = entradas
+        salidas_nuevo = salidas + cantidad
+        total_nuevo = total_actual - cantidad
+
+    preview = {
+        "codigo": row["codigo"],
+        "insumo": row["insumo"],
+        "descripcion": row["descripcion"],
+        "stock_inicial": stock_inicial,
+        "entradas": entradas_nuevo,
+        "salidas": salidas_nuevo,
+        "total": total_nuevo,
+        "cantidad_mov": cantidad,
+        "tipo": tipo,
+    }
+    return jsonify(ok=True, preview=preview)
+
+
+@app.post("/api/movimiento/confirm")
+def api_mov_confirm():
+    data = request.get_json(silent=True) or {}
+    tipo = (data.get("tipo") or "").strip().lower()
+    codigo = (data.get("codigo") or "").strip()
+    cantidad_raw = data.get("cantidad")
+
+    if tipo not in ("entrada", "salida"):
+        return jsonify(ok=False, error="Tipo inválido."), 400
+    if not codigo:
+        return jsonify(ok=False, error="Tenés que elegir un insumo."), 400
+    try:
+        cantidad = int(cantidad_raw)
+        if cantidad <= 0:
+            raise ValueError()
+    except Exception:
+        return jsonify(ok=False, error="Tenés que elegir una cantidad válida."), 400
+
+    conn = get_conn()
+    ins = conn.execute("SELECT codigo, insumo, descripcion FROM insumos WHERE codigo = ?", (codigo,)).fetchone()
+    if not ins:
+        conn.close()
+        return jsonify(ok=False, error="No existe el insumo seleccionado."), 404
+
+    fecha = datetime.now().strftime("%Y-%m-%d")
+
+    if tipo == "entrada":
+        conn.execute(
+            "INSERT INTO entradas (fecha, codigo, insumo, descripcion, cantidad) VALUES (?,?,?,?,?)",
+            (fecha, ins["codigo"], ins["insumo"], ins["descripcion"], cantidad),
+        )
+    else:
+        conn.execute(
+            "INSERT INTO salidas (fecha, codigo, insumo, descripcion, cantidad) VALUES (?,?,?,?,?)",
+            (fecha, ins["codigo"], ins["insumo"], ins["descripcion"], cantidad),
+        )
+
     conn.commit()
     conn.close()
-    return ("", 204)
+
+    return jsonify(ok=True, cantidad=cantidad)
+
+
+@app.post("/api/movimiento/delete")
+def api_mov_delete():
+    data = request.get_json(silent=True) or {}
+    tipo = (data.get("tipo") or "").strip().lower()
+    mov_id = data.get("id")
+
+    if tipo not in ("entrada", "salida"):
+        return jsonify(ok=False, error="Tipo inválido."), 400
+    try:
+        mov_id = int(mov_id)
+    except Exception:
+        return jsonify(ok=False, error="ID inválido."), 400
+
+    tabla = "entradas" if tipo == "entrada" else "salidas"
+    conn = get_conn()
+    conn.execute(f"DELETE FROM {tabla} WHERE id = ?", (mov_id,))
+    conn.commit()
+    conn.close()
+
+    return jsonify(ok=True)
+
+
 
 @app.route("/inventario/<int:item_id>/actualizar", methods=["POST"])
 def inventario_actualizar(item_id: int):
@@ -559,7 +551,7 @@ def inventario_actualizar(item_id: int):
 
     total = stock_inicial + entradas - salidas
 
-    conn = get_db_connection()
+    conn = get_conn()
     conn.execute("""
         UPDATE inventario
         SET stock_inicial = ?, entradas = ?, salidas = ?, total = ?
@@ -579,7 +571,7 @@ def inventario_actualizar(item_id: int):
 @app.route("/insumos/<codigo>/eliminar", methods=["POST"])
 def insumo_eliminar(codigo):
     codigo = codigo.strip().upper()
-    conn = get_db_connection()
+    conn = get_conn()
 
     # Borramos movimientos e inventario asociados
     conn.execute("DELETE FROM entradas WHERE insumo_codigo = ?", (codigo,))
@@ -604,7 +596,7 @@ def insumo_modificar():
     if not codigo_original or not codigo_nuevo or not nombre:
         return {"ok": False, "error": "Código e insumo son obligatorios."}, 400
 
-    conn = get_db_connection()
+    conn = get_conn()
     try:
         fila_inv = conn.execute(
             "SELECT id FROM inventario WHERE insumo_codigo = ?",
@@ -659,7 +651,7 @@ def insumo_agregar():
     if not codigo or not nombre or not descripcion:
         return ("Faltan datos", 400)
 
-    conn = get_db_connection()
+    conn = get_conn()
 
     # Insertar en insumos
     conn.execute("""
@@ -710,7 +702,7 @@ def pedidos_nuevo():
             error = "Faltan completar campos"
             # Volver a mostrar el formulario con error
             # (si querés pasar el error al template)
-            conn = get_db_connection()
+            conn = get_conn()
             insumos = conn.execute(
                 "SELECT codigo, nombre, descripcion FROM insumos ORDER BY nombre"
             ).fetchall()
@@ -722,7 +714,7 @@ def pedidos_nuevo():
                 insumos=insumos,
             )
 
-        conn = get_db_connection()
+        conn = get_conn()
         conn.execute(
             """
             INSERT INTO pedidos
@@ -738,7 +730,7 @@ def pedidos_nuevo():
         return redirect(url_for("pedidos", ok=1))
 
     # GET → cargar lista de insumos para el datalist
-    conn = get_db_connection()
+    conn = get_conn()
     insumos = conn.execute(
         "SELECT codigo, nombre, descripcion FROM insumos ORDER BY nombre"
     ).fetchall()
@@ -749,7 +741,7 @@ def pedidos_nuevo():
 
 @app.route("/pedidos/historial")
 def pedidos_historial():
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute(
         """
         SELECT id, fecha, pedido_por, proveedor, insumo,
@@ -763,7 +755,7 @@ def pedidos_historial():
 
 @app.route("/pedidos/<int:pedido_id>/entregado", methods=["POST"])
 def pedido_entregado(pedido_id):
-    conn = get_db_connection()
+    conn = get_conn()
     pedido = conn.execute(
         "SELECT cantidad, insumo_codigo, estado FROM pedidos WHERE id = ?",
         (pedido_id,),
@@ -826,7 +818,7 @@ def papel_entradas_nuevo():
         if not tipo_papel or not gramaje or not formato or not proveedor or not marca or not cantidad:
             error = "Tenés que completar todos los campos obligatorios."
             # cargar lista de papeles para volver a mostrar el formulario
-            conn = get_db_connection()
+            conn = get_conn()
             papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
             conn.close()
             preview = {
@@ -848,7 +840,7 @@ def papel_entradas_nuevo():
             )
 
         # GUARDAR EN BD
-        conn = get_db_connection()
+        conn = get_conn()
         fecha = datetime.now().strftime("%Y-%m-%d")
 
         conn.execute("""
@@ -864,7 +856,7 @@ def papel_entradas_nuevo():
         return redirect(url_for("papel_entradas_historial", ok=1))
 
     # GET: mostrar formulario vacío (cargar lista de papeles)
-    conn = get_db_connection()
+    conn = get_conn()
     papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
     conn.close()
     return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles)
@@ -873,7 +865,7 @@ def papel_entradas_nuevo():
 # ---------- PAPEL - HISTORIAL DE ENTRADAS ----------
 @app.route("/papel/entradas/historial")
 def papel_entradas_historial():
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute("""
         SELECT fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones
         FROM papel_entradas
@@ -914,7 +906,7 @@ def papel_salidas_nuevo():
                 not proveedor or not marca or not cantidad):
             error = "Tenés que completar todos los campos obligatorios."
             # cargar lista de papeles para volver a mostrar el formulario
-            conn = get_db_connection()
+            conn = get_conn()
             papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
             conn.close()
             preview = {
@@ -936,7 +928,7 @@ def papel_salidas_nuevo():
             )
 
         # Guardar en la tabla de salidas de papel
-        conn = get_db_connection()
+        conn = get_conn()
         fecha = datetime.now().strftime("%Y-%m-%d")
 
         conn.execute("""
@@ -956,7 +948,7 @@ def papel_salidas_nuevo():
         return redirect(url_for("papel_salidas_historial", ok=1))
 
     # GET: mostrar formulario vacío (cargar lista de papeles)
-    conn = get_db_connection()
+    conn = get_conn()
     papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
     conn.close()
     return render_template(
@@ -971,7 +963,7 @@ def papel_salidas_nuevo():
 # ---------- PAPEL - HISTORIAL DE SALIDAS ----------
 @app.route("/papel/salidas/historial")
 def papel_salidas_historial():
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute("""
         SELECT fecha, tipo_papel, gramaje, formato, proveedor, marca, cantidad, observaciones
         FROM papel_salidas
@@ -1023,7 +1015,7 @@ def papel_pedidos_nuevo():
                 error=error
             )
 
-        conn = get_db_connection()
+        conn = get_conn()
         fecha = datetime.now().strftime("%Y-%m-%d")
 
         # Insertar en papel_pedidos
@@ -1055,7 +1047,7 @@ def papel_pedidos_nuevo():
 # ---------- PAPEL - HISTORIAL DE PEDIDOS ----------
 @app.route("/papel/pedidos/historial")
 def papel_pedidos_historial():
-    conn = get_db_connection()
+    conn = get_conn()
     registros = conn.execute("""
         SELECT * FROM papel_pedidos
         ORDER BY fecha DESC, id DESC
@@ -1073,7 +1065,7 @@ def papel_pedidos_historial():
 # ---------- PAPEL - MARCAR PEDIDO COMO ENTREGADO ----------
 @app.route("/papel/pedidos/<int:pedido_id>/entregado", methods=["POST"])
 def papel_pedido_entregado(pedido_id):
-    conn = get_db_connection()
+    conn = get_conn()
     pedido = conn.execute("""
         SELECT * FROM papel_pedidos WHERE id = ?
     """, (pedido_id,)).fetchone()
@@ -1091,8 +1083,7 @@ def papel_pedido_entregado(pedido_id):
             WHERE id = ?
         """, (pedido_id,))
 
-        # Actualizamos inventario de papel:
-        # sumamos la cantidad a stock_inicial y total
+     
         conn.execute("""
             UPDATE papel_inventario
             SET stock_inicial = stock_inicial + ?,
@@ -1107,7 +1098,6 @@ def papel_pedido_entregado(pedido_id):
 
 
 
-# ---------------- ARRANQUE APP ----------------
 
 if __name__ == "__main__":
     print("Levantando servidor Flask en http://127.0.0.1:5000/")
