@@ -117,6 +117,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const filtroInput = document.getElementById("filtro-historial");
     const tablaHistorial = document.getElementById("tabla-historial");
 
+    const modalBorrar = document.getElementById("modal-borrar");
+    const modalBtnSi = modalBorrar ? modalBorrar.querySelector(".modal-btn-si") : null;
+    const modalBtnNo = modalBorrar ? modalBorrar.querySelector(".modal-btn-no") : null;
+
+    let borrarPendiente = { id: null, tipo: null, fila: null };
+
     if (filtroInput && tablaHistorial) {
         // Filtro tipo Excel
         filtroInput.addEventListener("input", function () {
@@ -137,7 +143,61 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 
-      
+        // Click en BORRAR → abrir modal
+        tablaHistorial.addEventListener("click", function (e) {
+            const btn = e.target.closest(".btn-borrar");
+            if (!btn) return;
+
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo; // "entrada" o "salida"
+            const fila = btn.closest("tr");
+
+            borrarPendiente = { id, tipo, fila };
+
+            if (modalBorrar) {
+                modalBorrar.style.display = "flex";
+            }
+        });
+    }
+
+    if (modalBorrar && modalBtnSi && modalBtnNo) {
+        // NO → cerrar modal
+        modalBtnNo.addEventListener("click", function () {
+            modalBorrar.style.display = "none";
+            borrarPendiente = { id: null, tipo: null, fila: null };
+        });
+
+        // SI → borrar en servidor y quitar fila
+        modalBtnSi.addEventListener("click", function () {
+            if (!borrarPendiente.id || !borrarPendiente.tipo) {
+                modalBorrar.style.display = "none";
+                return;
+            }
+
+            const url =
+                borrarPendiente.tipo === "entrada"
+                    ? `/entradas/${borrarPendiente.id}/borrar`
+                    : `/salidas/${borrarPendiente.id}/borrar`;
+
+            fetch(url, { method: "POST" })
+                .then((resp) => {
+                    if (resp.ok) {
+                        if (borrarPendiente.fila) {
+                            borrarPendiente.fila.remove();
+                        }
+                    } else {
+                        alert("No se pudo borrar el registro.");
+                    }
+                })
+                .catch(() => {
+                    alert("Error al comunicarse con el servidor.");
+                })
+                .finally(() => {
+                    modalBorrar.style.display = "none";
+                    borrarPendiente = { id: null, tipo: null, fila: null };
+                });
+        });
+    }
 
        // -------------------
     // INVENTARIO: filtro
@@ -558,38 +618,38 @@ document.addEventListener("DOMContentLoaded", function () {
     // -------------------
     // MODAL "¡Registro confirmado!"
     // -------------------
- document.addEventListener("DOMContentLoaded", function () {
-    const params = new URLSearchParams(window.location.search);
-    const ok = params.get("ok");
     const modalOk = document.getElementById("modal-ok");
-
-    if (ok === "1" && modalOk) {
+    if (modalOk && modalOk.dataset.activo === "1") {
+        // Mostrar el modal
         modalOk.style.display = "flex";
 
         setTimeout(function () {
             modalOk.style.display = "none";
 
-            // limpiar el ?ok=1 de la URL
-            params.delete("ok");
-            const nuevaUrl =
-                window.location.pathname +
-                (params.toString() ? "?" + params.toString() : "");
-            window.history.replaceState({}, "", nuevaUrl);
+            // Limpiar ?ok=1 de la URL
+            if (window.location.search.includes("ok=1")) {
+                const nuevaUrl = window.location.pathname;
+                window.history.replaceState(null, "", nuevaUrl);
+            }
+
+            // Limpiar vista previa
+            if (previewSection && previewWrapper) {
+                previewSection.style.display = "none";
+                previewWrapper.innerHTML = "";
+            }
+
+            // Resetear selects
+            if (insumoSelect) insumoSelect.selectedIndex = 0;
+            if (unidadSelect) unidadSelect.selectedIndex = 0;
+
+            // Ocultar imagen de insumo
+            if (insumoImg) {
+                insumoImg.style.display = "none";
+                insumoImg.removeAttribute("src");
+            }
         }, 3000);
     }
 });
-
-// Helpers mínimos para abrir/cerrar el modal de eliminar insumo
-function abrirModalEliminarInsumo() {
-    const m = document.getElementById("modal-insumo-eliminar");
-    if (m) m.style.display = "flex";
-}
-
-function cerrarModalEliminarInsumo() {
-    const m = document.getElementById("modal-insumo-eliminar");
-    if (m) m.style.display = "none";
-}
-
 
     // --------------------------------
     // PEDIDOS: REGISTRAR NUEVO
@@ -703,357 +763,3 @@ function cerrarModalEliminarInsumo() {
             });
         });
     }
-
-    // FILTRO INVENTARIO PAPEL
-const tablaPapel = document.getElementById("tabla-papel");
-const filtroPapel = document.getElementById("filtro-papel");
-
-if (tablaPapel && filtroPapel) {
-    filtroPapel.addEventListener("input", function () {
-        const texto = filtroPapel.value.trim().toLowerCase();
-        const filas = tablaPapel.querySelectorAll("tbody tr");
-
-        filas.forEach((tr) => {
-            const contenido = tr.textContent.toLowerCase();
-            tr.style.display = (!texto || contenido.includes(texto)) ? "" : "none";
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const modalOk = document.getElementById('modal-ok');
-
-    if (modalOk && modalOk.dataset.activo === '1') {
-        // mostrar
-        modalOk.style.display = 'flex';
-
-        // ocultar a los 3 segundos
-        setTimeout(function () {
-            modalOk.style.display = 'none';
-
-            // quitar el ?ok=1 de la URL para que no vuelva a aparecer al refrescar
-            if (window.location.search.includes('ok=1')) {
-                const nuevaUrl = window.location.pathname;
-                window.history.replaceState(null, '', nuevaUrl);
-            }
-        }, 3000);
-    }
-});
-
-document.addEventListener('click', function (e) {
-    // Botón ENTREGADO de pedidos de papel
-    if (e.target.classList.contains('btn-entregado-papel')) {
-        const btn = e.target;
-        const id = btn.dataset.id;
-        if (!id || btn.disabled) return;
-
-        fetch(`/papel/pedidos/${id}/entregado`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.ok) {
-                const fila = btn.closest('tr');
-                if (fila) {
-                    fila.classList.add('pedido-entregado');
-                    const estadoCell = fila.querySelector('.estado-pedido');
-                    if (estadoCell) estadoCell.textContent = 'Entregado';
-                }
-                btn.disabled = true;
-            } else {
-                console.error(data.error || 'Error al marcar entregado');
-            }
-        })
-        .catch(err => console.error(err));
-    }
-});
-
-function configurarFiltro(inputId, tablaId) {
-    const input = document.getElementById(inputId);
-    const tabla = document.getElementById(tablaId);
-    if (!input || !tabla) return;
-
-    input.addEventListener('input', function () {
-        const term = input.value.toLowerCase();
-        const filas = tabla.querySelectorAll('tbody tr');
-        filas.forEach(tr => {
-            const texto = tr.textContent.toLowerCase();
-            tr.style.display = texto.includes(term) ? '' : 'none';
-        });
-    });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    configurarFiltro('filtro-papel-ped', 'tabla-papel-pedidos');
-});
-
-// --------------------------------
-// PAPEL: Confirmar entrada/salida/pedidos
-// --------------------------------
-document.addEventListener('DOMContentLoaded', function () {
-    // Papel - Entradas nueva
-    const btnPapelEntradasConfirmar = document.getElementById('btn-papel-entradas-confirmar');
-    const formPapelEntradasNueva = document.getElementById('form-papel-entradas-nueva');
-    
-    if (btnPapelEntradasConfirmar && formPapelEntradasNueva) {
-        btnPapelEntradasConfirmar.addEventListener('click', function (e) {
-            e.preventDefault();
-            
-            // Validar campos obligatorios
-            const tipoPapel = formPapelEntradasNueva.querySelector('select[name="tipo_papel"]').value;
-            const cantidad = formPapelEntradasNueva.querySelector('input[name="cantidad"]').value;
-            
-            if (!tipoPapel || !cantidad) {
-                alert('Por favor completa los campos obligatorios');
-                return;
-            }
-            
-            // Enviar formulario con tipo POST
-            const tempInput = document.createElement('input');
-            tempInput.type = 'hidden';
-            tempInput.name = 'paso';
-            tempInput.value = 'pre';
-            formPapelEntradasNueva.appendChild(tempInput);
-            
-            formPapelEntradasNueva.submit();
-        });
-    }
-    
-    // Papel - Salidas nueva
-    const btnPapelSalidasConfirmar = document.getElementById('btn-papel-salidas-confirmar');
-    const formPapelSalidasNueva = document.getElementById('form-papel-salidas-nueva');
-    
-    if (btnPapelSalidasConfirmar && formPapelSalidasNueva) {
-        btnPapelSalidasConfirmar.addEventListener('click', function (e) {
-            e.preventDefault();
-            
-            const tipoPapel = formPapelSalidasNueva.querySelector('select[name="tipo_papel"]').value;
-            const cantidad = formPapelSalidasNueva.querySelector('input[name="cantidad"]').value;
-            
-            if (!tipoPapel || !cantidad) {
-                alert('Por favor completa los campos obligatorios');
-                return;
-            }
-            
-            const tempInput = document.createElement('input');
-            tempInput.type = 'hidden';
-            tempInput.name = 'paso';
-            tempInput.value = 'pre';
-            formPapelSalidasNueva.appendChild(tempInput);
-            
-            formPapelSalidasNueva.submit();
-        });
-    }
-    
-    // Papel - Pedidos nuevo
-    const btnPapelPedidosConfirmar = document.getElementById('btn-papel-pedidos-confirmar');
-    const formPapelPedidosNuevo = document.getElementById('form-papel-pedidos-nuevo');
-    
-    if (btnPapelPedidosConfirmar && formPapelPedidosNuevo) {
-        btnPapelPedidosConfirmar.addEventListener('click', function (e) {
-            e.preventDefault();
-            
-            const tipoPapel = formPapelPedidosNuevo.querySelector('select[name="tipo_papel"]').value;
-            const cantidad = formPapelPedidosNuevo.querySelector('input[name="cantidad"]').value;
-            
-            if (!tipoPapel || !cantidad) {
-                alert('Por favor completa los campos obligatorios');
-                return;
-            }
-            
-            const tempInput = document.createElement('input');
-            tempInput.type = 'hidden';
-            tempInput.name = 'paso';
-            tempInput.value = 'pre';
-            formPapelPedidosNuevo.appendChild(tempInput);
-            
-            formPapelPedidosNuevo.submit();
-        });
-    }
-});
-
-function openModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = "flex";
-}
-function closeModal(id) {
-  const el = document.getElementById(id);
-  if (el) el.style.display = "none";
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-  // Filtros (inventario/historial)
-  const filtroTabla = document.getElementById("filtro-tabla");
-  if (filtroTabla) {
-    filtroTabla.addEventListener("input", () => {
-      const q = filtroTabla.value.toLowerCase();
-      document.querySelectorAll("#tabla-inventario tbody tr").forEach(tr => {
-        tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-  const filtroHist = document.getElementById("filtro-hist");
-  if (filtroHist) {
-    filtroHist.addEventListener("input", () => {
-      const q = filtroHist.value.toLowerCase();
-      document.querySelectorAll("#tabla-historial tbody tr").forEach(tr => {
-        tr.style.display = tr.innerText.toLowerCase().includes(q) ? "" : "none";
-      });
-    });
-  }
-
-  // -------- MOVIMIENTOS: NUEVO (entrada/salida) --------
-  const movWrap = document.querySelector(".mov-wrap");
-  let pending = null; // {tipo,codigo,cantidad}
-
-  if (movWrap) {
-    const tipo = movWrap.dataset.movTipo; // "entrada" | "salida"
-    const selCodigo = document.getElementById("mov-codigo");
-    const selCant = document.getElementById("mov-cantidad");
-    const btnConfirmar = document.getElementById("mov-confirmar");
-    const errBox = document.getElementById("mov-error");
-
-    const showErr = (msg) => {
-      errBox.textContent = msg;
-      errBox.style.display = "block";
-    };
-    const clearErr = () => {
-      errBox.textContent = "";
-      errBox.style.display = "none";
-    };
-
-    btnConfirmar.addEventListener("click", async () => {
-      clearErr();
-      const codigo = (selCodigo.value || "").trim();
-      const cantidad = (selCant.value || "").trim();
-
-      if (!codigo || !cantidad) {
-        showErr("Tenés que seleccionar un insumo y una cantidad.");
-        return;
-      }
-
-      const payload = { tipo, codigo, cantidad: Number(cantidad) };
-
-      try {
-        const res = await fetch("/api/movimiento/preview", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        if (!data.ok) {
-          showErr(data.error || "Error al generar vista previa.");
-          return;
-        }
-
-        pending = payload;
-
-        // Pintar preview
-        const p = data.preview;
-        document.getElementById("pv-codigo").textContent = p.codigo;
-        document.getElementById("pv-insumo").textContent = p.insumo;
-        document.getElementById("pv-desc").textContent = p.descripcion;
-        document.getElementById("pv-stock").textContent = p.stock_inicial;
-        document.getElementById("pv-entradas").textContent = p.entradas;
-        document.getElementById("pv-salidas").textContent = p.salidas;
-        document.getElementById("pv-total").textContent = p.total;
-
-        openModal("modal-preview");
-      } catch (e) {
-        showErr("Error de red. Intente nuevamente.");
-      }
-    });
-
-    // Volver en preview
-    const btnVolver = document.getElementById("preview-volver");
-    btnVolver.addEventListener("click", () => {
-      closeModal("modal-preview");
-    });
-
-    // Finalizar registro
-    const btnFinalizar = document.getElementById("preview-finalizar");
-    btnFinalizar.addEventListener("click", async () => {
-      if (!pending) return;
-
-      try {
-        const res = await fetch("/api/movimiento/confirm", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(pending),
-        });
-        const data = await res.json();
-        if (!data.ok) {
-          closeModal("modal-preview");
-          showErr(data.error || "No se pudo confirmar el registro.");
-          return;
-        }
-
-        closeModal("modal-preview");
-
-        // Modal OK 3s
-        document.getElementById("ok-text").textContent =
-          `Cantidad registrada: ${data.cantidad}`;
-        openModal("modal-ok");
-
-        setTimeout(() => {
-          closeModal("modal-ok");
-          // volver al menú correspondiente
-          window.location = (pending.tipo === "entrada") ? "/entradas" : "/salidas";
-        }, 3000);
-      } catch (e) {
-        closeModal("modal-preview");
-        showErr("Error de red al confirmar.");
-      }
-    });
-  }
-
-  // -------- HISTORIAL: BORRAR con confirmación --------
-  const histWrap = document.querySelector(".hist-wrap");
-  let deletePending = null; // {tipo,id}
-
-  if (histWrap) {
-    const tipo = histWrap.dataset.movTipo; // entrada|salida
-
-    document.querySelectorAll(".btn-borrar").forEach(btn => {
-      btn.addEventListener("click", () => {
-        deletePending = { tipo, id: Number(btn.dataset.id) };
-        openModal("modal-confirm-borrar");
-      });
-    });
-
-    document.getElementById("borrar-no").addEventListener("click", () => {
-      deletePending = null;
-      closeModal("modal-confirm-borrar");
-    });
-
-    document.getElementById("borrar-si").addEventListener("click", async () => {
-      if (!deletePending) return;
-
-      try {
-        const res = await fetch("/api/movimiento/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(deletePending),
-        });
-        const data = await res.json();
-        closeModal("modal-confirm-borrar");
-        deletePending = null;
-
-        if (!data.ok) {
-          alert(data.error || "No se pudo borrar.");
-          return;
-        }
-        // recargar historial
-        window.location.reload();
-      } catch (e) {
-        closeModal("modal-confirm-borrar");
-        alert("Error de red al borrar.");
-      }
-    });
-  }
-});
-
-    // -------------------
