@@ -706,6 +706,294 @@ def pedido_entregado(pedido_id):
     conn.close()
     return redirect(url_for("pedidos_historial"))
 
+# ==========================================
+# SECCIÓN PAPEL (Agrega esto al final de app.py)
+# ==========================================
+
+# 1. ADMIN / INVENTARIO PAPEL
+@app.route("/papel/admin", methods=["GET", "POST"])
+def papel_admin():
+    # Login simple separado para papel (opcional, o usa el mismo de insumos)
+    if request.method == "POST":
+        usuario = request.form.get("usuario", "").strip()
+        contrasena = request.form.get("contrasena", "").strip()
+        # Credenciales harcodeadas (puedes cambiarlas)
+        if (usuario == "nicolas" and contrasena == "nnapoli") or \
+           (usuario == "luis" and contrasena == "lonapoli"):
+            session["papel_admin_logueado"] = True
+        else:
+            return render_template("base.html", vista="admin_login", modo="papel", error="Datos incorrectos")
+
+    if not session.get("papel_admin_logueado"):
+        return render_template("base.html", vista="admin_login", modo="papel")
+
+    # Si está logueado, mostrar inventario admin
+    conn = get_conn()
+    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros)
+
+@app.route("/papel/inventario")
+def papel_inventario():
+    # Inventario modo lectura (para el menú principal)
+    conn = get_conn()
+    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_inventario_simple", modo="papel", registros=registros)
+
+# 2. ENTRADAS DE PAPEL
+@app.route("/papel/entradas")
+def papel_entradas():
+    return render_template("base.html", vista="papel_entradas_menu", modo="papel")
+
+@app.route("/papel/entradas/nuevo", methods=["GET", "POST"])
+def papel_entradas_nuevo():
+    conn = get_conn()
+    if request.method == "POST":
+        # Recibir los 7 datos específicos
+        tipo_papel = request.form.get("tipo_papel", "").strip()
+        gramaje = request.form.get("gramaje", "").strip()
+        formato = request.form.get("formato", "").strip()
+        marca = request.form.get("marca", "").strip()
+        proveedor = request.form.get("proveedor", "").strip()
+        cantidad = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        # Guardar en historial entradas
+        conn.execute("""
+            INSERT INTO papel_entradas 
+            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+        
+        # Actualizar stock en inventario
+        conn.execute("""
+            UPDATE papel_inventario 
+            SET entradas = entradas + ?, total = total + ? 
+            WHERE nombre = ?
+        """, (cantidad, cantidad, tipo_papel))
+        
+        conn.commit()
+        conn.close()
+        return redirect(url_for("papel_entradas_historial", ok=1))
+
+    # GET: Cargar lista de papeles para el select
+    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles)
+
+@app.route("/papel/entradas/historial")
+def papel_entradas_historial():
+    conn = get_conn()
+    registros = conn.execute("SELECT * FROM papel_entradas ORDER BY id DESC").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_entradas_historial", modo="papel", registros=registros)
+
+
+# 3. SALIDAS DE PAPEL
+@app.route("/papel/salidas")
+def papel_salidas():
+    return render_template("base.html", vista="papel_salidas_menu", modo="papel")
+
+@app.route("/papel/salidas/nuevo", methods=["GET", "POST"])
+def papel_salidas_nuevo():
+    conn = get_conn()
+    if request.method == "POST":
+        tipo_papel = request.form.get("tipo_papel", "").strip()
+        gramaje = request.form.get("gramaje", "").strip()
+        formato = request.form.get("formato", "").strip()
+        marca = request.form.get("marca", "").strip()
+        proveedor = request.form.get("proveedor", "").strip()
+        cantidad = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        # Guardar en historial salidas
+        conn.execute("""
+            INSERT INTO papel_salidas 
+            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+
+        # Restar stock en inventario
+        conn.execute("""
+            UPDATE papel_inventario 
+            SET salidas = salidas + ?, total = total - ? 
+            WHERE nombre = ?
+        """, (cantidad, cantidad, tipo_papel))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("papel_salidas_historial", ok=1))
+
+    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles)
+
+@app.route("/papel/salidas/historial")
+def papel_salidas_historial():
+    conn = get_conn()
+    registros = conn.execute("SELECT * FROM papel_salidas ORDER BY id DESC").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_salidas_historial", modo="papel", registros=registros)
+
+
+# 4. PEDIDOS DE PAPEL
+@app.route("/papel/pedidos")
+def papel_pedidos():
+    return render_template("base.html", vista="papel_pedidos_menu", modo="papel")
+
+@app.route("/papel/pedidos/nuevo", methods=["GET", "POST"])
+def papel_pedidos_nuevo():
+    conn = get_conn()
+    if request.method == "POST":
+        tipo_papel = request.form.get("tipo_papel", "").strip()
+        gramaje = request.form.get("gramaje", "").strip()
+        formato = request.form.get("formato", "").strip()
+        marca = request.form.get("marca", "").strip()
+        proveedor = request.form.get("proveedor", "").strip()
+        cantidad = request.form.get("cantidad", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
+
+        fecha = datetime.now().strftime("%Y-%m-%d")
+
+        conn.execute("""
+            INSERT INTO papel_pedidos 
+            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'En espera')
+        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+
+        conn.commit()
+        conn.close()
+        return redirect(url_for("papel_pedidos_historial", ok=1))
+
+    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles)
+
+@app.route("/papel/pedidos/historial")
+def papel_pedidos_historial():
+    conn = get_conn()
+    registros = conn.execute("SELECT * FROM papel_pedidos ORDER BY id DESC").fetchall()
+    conn.close()
+    return render_template("base.html", vista="papel_pedidos_historial", modo="papel", registros=registros)
+
+@app.route("/papel/pedidos/<int:pedido_id>/entregado", methods=["POST"])
+def papel_pedido_entregado(pedido_id):
+    conn = get_conn()
+    # Verificar pedido
+    pedido = conn.execute("SELECT * FROM papel_pedidos WHERE id = ?", (pedido_id,)).fetchone()
+    
+    if pedido and pedido["estado"] != "Entregado":
+        # Marcar entregado
+        conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
+        # Sumar al stock automáticamente (opcional, si quieres que al llegar el pedido suba el stock)
+        conn.execute("""
+            UPDATE papel_inventario 
+            SET entradas = entradas + ?, total = total + ? 
+            WHERE nombre = ?
+        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
+        conn.commit()
+        
+    conn.close()
+    return jsonify({"ok": True})
+
+# ==========================================
+# GESTIÓN DE INVENTARIO PAPEL (Agregar al final de app.py)
+# ==========================================
+
+# 1. AGREGAR NUEVO PAPEL
+@app.route("/papel/agregar", methods=["POST"])
+def papel_agregar():
+    if not session.get("papel_admin_logueado"):
+        return jsonify({"ok": False, "error": "No autorizado"}), 403
+
+    data = request.get_json(silent=True) or {}
+    nombre = (data.get("nombre") or "").strip()
+    stock = int(data.get("stock") or 0)
+
+    if not nombre:
+        return jsonify({"ok": False, "error": "El nombre es obligatorio"}), 400
+
+    conn = get_conn()
+    try:
+        conn.execute("""
+            INSERT INTO papel_inventario (nombre, stock_inicial, entradas, salidas, total)
+            VALUES (?, ?, 0, 0, ?)
+        """, (nombre, stock, stock))
+        conn.commit()
+        # Recuperar ID generado
+        row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ?", (nombre,)).fetchone()
+        new_id = row["id"]
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
+    
+    conn.close()
+    return jsonify({"ok": True, "id": new_id, "nombre": nombre, "stock": stock, "total": stock})
+
+# 2. ELIMINAR PAPEL
+@app.route("/papel/eliminar", methods=["POST"])
+def papel_eliminar():
+    if not session.get("papel_admin_logueado"):
+        return jsonify({"ok": False, "error": "No autorizado"}), 403
+
+    data = request.get_json(silent=True) or {}
+    papel_id = data.get("id")
+
+    if not papel_id:
+        return jsonify({"ok": False, "error": "Falta ID del papel"}), 400
+
+    conn = get_conn()
+    # Obtenemos nombre para borrar historial si quisieras (opcional)
+    # row = conn.execute("SELECT nombre FROM papel_inventario WHERE id = ?", (papel_id,)).fetchone()
+    
+    conn.execute("DELETE FROM papel_inventario WHERE id = ?", (papel_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
+# 3. MODIFICAR PAPEL (Nombre y Stock Manual)
+@app.route("/papel/modificar", methods=["POST"])
+def papel_modificar():
+    if not session.get("papel_admin_logueado"):
+        return jsonify({"ok": False, "error": "No autorizado"}), 403
+
+    data = request.get_json(silent=True) or {}
+    papel_id = data.get("id")
+    nuevo_nombre = (data.get("nombre") or "").strip()
+    
+    # Datos numéricos opcionales (si se editan manualmente)
+    stock_inicial = data.get("stock_inicial")
+    entradas = data.get("entradas")
+    salidas = data.get("salidas")
+
+    if not papel_id or not nuevo_nombre:
+        return jsonify({"ok": False, "error": "Faltan datos"}), 400
+
+    conn = get_conn()
+    try:
+        # Si vienen datos numéricos, actualizamos todo, sino solo nombre
+        if stock_inicial is not None:
+            total = int(stock_inicial) + int(entradas) - int(salidas)
+            conn.execute("""
+                UPDATE papel_inventario
+                SET nombre = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
+                WHERE id = ?
+            """, (nuevo_nombre, stock_inicial, entradas, salidas, total, papel_id))
+        else:
+            conn.execute("UPDATE papel_inventario SET nombre = ? WHERE id = ?", (nuevo_nombre, papel_id))
+            
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
+
+    conn.close()
+    return jsonify({"ok": True})
 
 # ---------------- ARRANQUE APP ----------------
 

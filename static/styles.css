@@ -913,3 +913,62 @@ body {
     box-shadow: 2px 2px 0 #333;
 }
 
+/* =========================================
+   ARREGLO MENU PRINCIPAL (TARJETAS RETRO)
+   ========================================= */
+
+/* 1. El contenedor que centra todo */
+.menu-wrapper {
+    display: flex;
+    justify-content: center; /* Centrar horizontalmente */
+    align-items: center;     /* Centrar verticalmente */
+    gap: 5rem;               /* Separación entre Insumos y Papel */
+    width: 100%;
+    min-height: 70vh;        /* Altura suficiente para que se centre en pantalla */
+    margin: 0 auto;
+}
+
+/* 2. La Tarjeta (Caja Blanca) */
+.menu-card {
+    background-color: #ffffff; /* Fondo blanco IMPORTANTE */
+    width: 350px;              /* Ancho fijo */
+    height: 350px;             /* Alto fijo */
+    
+    /* Estilo Retro */
+    border: 4px solid #000000; /* Borde negro grueso */
+    box-shadow: 10px 10px 0px #333333; /* Sombra sólida desplazada */
+    border-radius: 15px;       /* Bordes redondeados */
+    
+    /* Centrar contenido interno */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    cursor: pointer;
+    transition: all 0.2s ease; /* Suavizar movimiento */
+}
+
+/* 3. Efecto al pasar el mouse (Hover) */
+.menu-card:hover {
+    transform: translate(-3px, -3px); /* Se levanta un poco */
+    box-shadow: 14px 14px 0px #000000; /* La sombra crece */
+    background-color: #fffef0; /* Un color crema muy sutil opcional */
+}
+
+/* 4. Controlar el tamaño de las imágenes */
+.menu-card-img {
+    width: 160px;        /* Tamaño controlado */
+    height: 160px;       /* Tamaño controlado */
+    object-fit: contain; /* Asegura que la imagen no se deforme */
+    margin-bottom: 20px; /* Espacio entre imagen y texto */
+}
+
+/* 5. Texto de la tarjeta */
+.menu-card-title {
+    font-size: 2.2rem;
+    font-weight: 800;    /* Letra bien gruesa */
+    color: #000000;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}

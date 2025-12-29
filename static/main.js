@@ -763,3 +763,165 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
     }
+
+    /* ==========================================
+   LÓGICA PAPEL (Pegar al final de main.js)
+   ========================================== */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Validar Formulario Entrada Papel
+    const btnEntradaPapel = document.getElementById('btn-papel-entradas-confirmar');
+    if (btnEntradaPapel) {
+        btnEntradaPapel.addEventListener('click', function() {
+            const form = document.getElementById('form-papel-entradas-nueva');
+            if (form.checkValidity()) {
+                form.submit();
+            } else {
+                alert("Por favor completa todos los campos obligatorios.");
+            }
+        });
+    }
+
+    // Validar Formulario Salida Papel
+    const btnSalidaPapel = document.getElementById('btn-papel-salidas-confirmar');
+    if (btnSalidaPapel) {
+        btnSalidaPapel.addEventListener('click', function() {
+            const form = document.getElementById('form-papel-salidas-nueva');
+            if (form.checkValidity()) {
+                form.submit();
+            } else {
+                alert("Por favor completa todos los campos obligatorios.");
+            }
+        });
+    }
+
+    // Validar Formulario Pedido Papel
+    const btnPedidoPapel = document.getElementById('btn-papel-pedidos-confirmar');
+    if (btnPedidoPapel) {
+        btnPedidoPapel.addEventListener('click', function() {
+            const form = document.getElementById('form-papel-pedidos-nuevo');
+            if (form.checkValidity()) {
+                form.submit();
+            } else {
+                alert("Por favor completa todos los campos obligatorios.");
+            }
+        });
+    }
+
+    // Filtros de Tablas (Papel)
+    const configurarFiltro = (idInput, idTabla) => {
+        const input = document.getElementById(idInput);
+        const tabla = document.getElementById(idTabla);
+        if (input && tabla) {
+            input.addEventListener('input', function() {
+                const term = input.value.toLowerCase();
+                const filas = tabla.querySelectorAll('tbody tr');
+                filas.forEach(row => {
+                    const texto = row.textContent.toLowerCase();
+                    row.style.display = texto.includes(term) ? '' : 'none';
+                });
+            });
+        }
+    };
+
+    // Configurar los filtros si existen en el HTML
+    configurarFiltro('filtro-papel', 'tabla-papel');           // Inventario Admin
+    configurarFiltro('filtro-papel-simple', 'tabla-papel-simple'); // Inventario Simple
+    configurarFiltro('filtro-papel-ent', 'tabla-papel-ent');   // Historial Entradas
+    configurarFiltro('filtro-papel-sal', 'tabla-papel-sal');   // Historial Salidas
+    configurarFiltro('filtro-papel-ped', 'tabla-papel-pedidos'); // Historial Pedidos
+});
+
+/* ==========================================
+   GESTIÓN PAPEL (Admin: Agregar, Eliminar, Modificar)
+   ========================================== */
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 1. AGREGAR PAPEL
+    const btnAdd = document.getElementById('btn-confirmar-add-papel');
+    if (btnAdd) {
+        btnAdd.addEventListener('click', function() {
+            const nombre = document.getElementById('add-papel-nombre').value;
+            const stock = document.getElementById('add-papel-stock').value;
+
+            fetch('/papel/agregar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre: nombre, stock: stock })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.ok) {
+                    location.reload(); // Recargar para ver cambios
+                } else {
+                    alert("Error: " + data.error);
+                }
+            });
+        });
+    }
+
+    // 2. ELIMINAR PAPEL
+    const btnDel = document.getElementById('btn-confirmar-del-papel');
+    if (btnDel) {
+        btnDel.addEventListener('click', function() {
+            const select = document.getElementById('del-papel-select');
+            const id = select.value;
+            if(!id) return alert("Seleccione un papel");
+
+            if(!confirm("¿Seguro que desea eliminar este papel? Se perderá el historial asociado.")) return;
+
+            fetch('/papel/eliminar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: id })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.ok) location.reload();
+                else alert("Error: " + data.error);
+            });
+        });
+    }
+
+    // 3. MODIFICAR PAPEL (Cargar datos al seleccionar)
+    const selMod = document.getElementById('mod-papel-select');
+    if (selMod) {
+        selMod.addEventListener('change', function() {
+            const opt = this.options[this.selectedIndex];
+            if(opt.value) {
+                document.getElementById('mod-papel-nombre').value = opt.dataset.nombre;
+                document.getElementById('mod-papel-stock').value = opt.dataset.stock;
+                document.getElementById('mod-papel-entradas').value = opt.dataset.entradas;
+                document.getElementById('mod-papel-salidas').value = opt.dataset.salidas;
+            }
+        });
+    }
+
+    // Confirmar Modificación
+    const btnMod = document.getElementById('btn-confirmar-mod-papel');
+    if (btnMod) {
+        btnMod.addEventListener('click', function() {
+            const id = document.getElementById('mod-papel-select').value;
+            if(!id) return alert("Seleccione un papel");
+
+            const payload = {
+                id: id,
+                nombre: document.getElementById('mod-papel-nombre').value,
+                stock_inicial: document.getElementById('mod-papel-stock').value,
+                entradas: document.getElementById('mod-papel-entradas').value,
+                salidas: document.getElementById('mod-papel-salidas').value
+            };
+
+            fetch('/papel/modificar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if(data.ok) location.reload();
+                else alert("Error: " + data.error);
+            });
+        });
+    }
+});

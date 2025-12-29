@@ -1,8 +1,9 @@
 import sqlite3
 
-DB_PATH = "stock.db"   # mismo nombre que usás en get_db_connection()
+DB_PATH = "stock.db"
 
-papeles = [
+# Lista completa provista
+raw_papeles = [
     "Obra",
     "Ilustración Mate",
     "Ilustración Brillo",
@@ -31,13 +32,16 @@ papeles = [
     "Quimico CB Amarillo",
     "Quimico CB Rosa",
     "Quimico CB Celeste",
-    # el último "Quimico CF Verde" estaba repetido, lo dejamos una sola vez
+    "Quimico CF Verde"
 ]
+
+# Eliminamos duplicados y ordenamos alfabéticamente
+papeles = sorted(list(set(raw_papeles)))
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-# Crear tabla de inventario de papel
+# Crear tabla de inventario de papel si no existe
 cur.execute("""
 CREATE TABLE IF NOT EXISTS papel_inventario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -49,7 +53,7 @@ CREATE TABLE IF NOT EXISTS papel_inventario (
 );
 """)
 
-# Insertar tipos de papel (si ya existen, no los duplica)
+# Insertar tipos de papel (IGNORE para no duplicar si ya existen)
 for nombre in papeles:
     cur.execute(
         "INSERT OR IGNORE INTO papel_inventario (nombre) VALUES (?)",
@@ -58,4 +62,4 @@ for nombre in papeles:
 
 conn.commit()
 conn.close()
-print("Tabla papel_inventario creada/cargada.")
+print(f"Base de datos de papel actualizada con {len(papeles)} tipos ordenados.")
