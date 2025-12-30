@@ -6,7 +6,7 @@
 }
 
 body {
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     background-color: #cfcfcf; 
 }
 
@@ -63,14 +63,33 @@ body {
     justify-content: center;
     font-size: 2rem;
     font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
     text-decoration: none;
-    border-right: 2px solid #000;
     color: #000;
-    background-color: #dbeeff;   /* celeste por defecto */
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-right: 2px solid #000;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.menu-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #4a86c5 0%, #2563eb 100%);
 }
 
 .menu-item:last-child {
     border-right: none;
+}
+
+.menu-item:hover {
+    filter: brightness(0.92);
+    transform: scale(1.02);
 }
 
 /* Colores específicos para cada menú */
@@ -78,42 +97,34 @@ body {
 .menu-item.admin,
 .menu-item.inventario,
 .menu-item.pedidos {
-    background-color: #dbeeff;   /* celeste */
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
-
-.menu-item.entradas {
-    background-color: #b7ff1f;   /* verde */
-}
-
-.menu-item.salidas {
-    background-color: #ff3333;   /* rojo */
-    color: #ffffff;
-    text-shadow: 1px 1px 2px #000;
-}
-
-
 
 .inventario {
     background-color: #ffffff;
 }
 
 .entradas {
-    background-color: #b7ff1f; 
+    background: linear-gradient(135deg, #c8f0c8 0%, #90ee90 100%) !important;
+    color: #000 !important;
+}
+
+.entradas::before {
+    background: linear-gradient(90deg, #6ba86b 0%, #5a9a5a 100%) !important;
 }
 
 .salidas {
-    background-color: #ff3333;  
-    color: #ffffff;
+    background: linear-gradient(135deg, #ff6666 0%, #ff3333 100%) !important;
+    color: #ffffff !important;
     text-shadow: 1px 1px 2px #000;
 }
 
-.pedidos {
-    background-color: #ffffff;
+.salidas::before {
+    background: linear-gradient(90deg, #cc0000 0%, #990000 100%) !important;
 }
 
-
-.menu-item:hover {
-    filter: brightness(0.95);
+.pedidos {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
 
@@ -204,8 +215,12 @@ body {
 }
 
 .form-titulo {
-    font-size: 2.4rem;
-    margin-bottom: 2rem;
+    font-size: 2.6rem;
+    margin-bottom: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #000;
 }
 
 
@@ -213,66 +228,104 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 2.5rem;
+    gap: 2rem;
+    margin: 2.5rem auto;
+    max-width: 100%;
+    width: 100%;
 }
 
 
 .form-row {
     display: flex;
     justify-content: center;
-    gap: 4rem;
+    gap: 2.5rem;
+    width: 100%;
+    max-width: 1000px;
 }
 
 .form-card {
-    background-color: #ffffff;
-    border: 3px solid #000;
-    padding: 2.5rem 3.5rem;
-    min-width: 380px;  
-    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #333;
+    padding: 2.5rem 2.2rem;
+    border-radius: 12px;
+    text-align: left;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     align-items: stretch;
+    flex: 1;
+    min-width: 320px;
+    max-width: 420px;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #4a86c5 0%, #2563eb 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.form-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 6px 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .form-card label {
-    font-size: 1.6rem;  
+    font-size: 1.2rem;  
     font-weight: 700;
     margin-bottom: 0.8rem;
     text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #333;
 }
 
 
 .form-card input,
 .form-card select {
-    font-size: 1.5rem;
-    padding: 0.9rem 1.1rem;
-    border: 2px solid #000;
+    font-size: 1.1rem;
+    padding: 0.8rem;
+    border: 2px solid #ddd;
     outline: none;
     background-color: #ffffff;
     margin-bottom: 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
-.form-card input:focus {
-    box-shadow: 0 0 0 2px #555;
+.form-card input:focus,
+.form-card select:focus {
+    border-color: #4a86c5;
+    box-shadow: 0 0 0 3px rgba(74, 134, 197, 0.15);
+    background-color: #f0f7ff;
 }
 
 
 .confirm-button {
-    background-color: #b7ff1f;
-    border: 3px solid #000;
-    padding: 1rem 3rem;
-    font-size: 1.4rem;
+    background-color: #5fbf3b;
+    border: 2px solid #333;
+    padding: 0.7rem 2.5rem;
+    font-size: 1rem;
     font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.4);
-    transition: transform 0.1s ease, box-shadow 0.1s ease, filter 0.1s ease;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-radius: 8px;
 }
 
 .confirm-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.5);
-    filter: brightness(0.97);
+    transform: translateY(-3px);
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.2);
+    filter: brightness(0.93);
 }
 
 
@@ -820,38 +873,121 @@ body {
 }
 
 .registro-section {
-    text-align: center;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
 }
 
 .registro-cards-grid {
     display: grid;
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin: 2rem auto;
-    max-width: 1100px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.8rem;
+    margin: 2.5rem auto;
+    max-width: 1300px;
 }
 
 .registro-card {
-    background-color: #ffffff;
-    border: 3px solid #000;
-    padding: 1rem;
-    border-radius: 10px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #333;
+    padding: 1.8rem;
+    border-radius: 12px;
     text-align: left;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.registro-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #4a86c5 0%, #2563eb 100%);
+    border-radius: 12px 12px 0 0;
+}
+
+.registro-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 6px 8px 16px rgba(0, 0, 0, 0.2);
 }
 
 .registro-card label {
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .registro-card input {
     width: 100%;
-    padding: 0.4rem 0.6rem;
+    padding: 0.75rem 0.9rem;
+    font-size: 1.05rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background-color: #fff;
+    transition: all 0.2s ease;
+    margin-bottom: 0.3rem;
+}
+
+.registro-card input:focus {
+    outline: none;
+    border-color: #4a86c5;
+    box-shadow: 0 0 0 3px rgba(74, 134, 197, 0.15);
+    background-color: #f0f7ff;
+}
+
+.registro-card select {
+    width: 100%;
+    padding: 0.8rem 0.9rem;
+    font-size: 1.15rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    height: 2.8rem;
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.2s ease;
+}
+
+.registro-card select:focus {
+    outline: none;
+    border-color: #4a86c5;
+    box-shadow: 0 0 0 3px rgba(74, 134, 197, 0.15);
+    background-color: #f0f7ff;
+}
+
+.registro-card textarea {
+    width: 100%;
+    padding: 0.75rem 0.9rem;
     font-size: 1rem;
-    border: 2px solid #000;
-    border-radius: 6px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.registro-card textarea:focus {
+    outline: none;
+    border-color: #4a86c5;
+    box-shadow: 0 0 0 3px rgba(74, 134, 197, 0.15);
+    background-color: #f0f7ff;
+}
+
+/* Estilo especial para la tarjeta de observaciones */
+.registro-card[style*="grid-column"] {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #f0f7ff 0%, #ffffff 100%);
+}
+
+.registro-card[style*="grid-column"]::before {
+    background: linear-gradient(90deg, #2196F3 0%, #1976D2 100%);
 }
 
 .registro-acciones {
@@ -861,14 +997,24 @@ body {
 }
 
 .btn-confirmar {
-    padding: 0.8rem 3rem;
-    font-size: 1.1rem;
+    padding: 1rem 3.5rem;
+    font-size: 1.15rem;
     font-weight: 700;
     border-radius: 10px;
     border: 2px solid #000;
     background-color: #28b44b;
+    color: white;
     cursor: pointer;
-    box-shadow: 3px 3px 0 #333;
+    box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-confirmar:hover {
+    background-color: #22932f;
+    transform: translateY(-2px);
+    box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.25);
 }
 
 /* Errores bajo los campos */
@@ -972,3 +1118,129 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
 }
+
+/* =========================================
+   COLORES DEL MENU (Entradas y Salidas)
+   ========================================= */
+
+/* Item ENTRADAS: Verde Clarito */
+.menu-item.entradas {
+    background-color: #90ee90 !important; /* Verde claro pastel */
+    color: #000000 !important;            /* Texto negro para contraste */
+}
+
+/* Item SALIDAS: Rojo */
+.menu-item.salidas {
+    background-color: #ff4d4d !important; /* Rojo suave pero alerta */
+    color: #ffffff !important;            /* Texto blanco */
+    text-shadow: 1px 1px 0 #000;          /* Sombra texto para leer mejor */
+}
+
+/* Efecto Hover (al pasar el mouse) para que se note que es clickeable */
+.menu-item.entradas:hover,
+.menu-item.salidas:hover {
+    filter: brightness(0.95);             /* Oscurece un poquito al tocar */
+}
+
+/* =========================================
+   ESTILOS DE HISTORIAL E INVENTARIO
+   ========================================= */
+
+/* Contenedor principal de la sección */
+.historial, .inventario {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Títulos de estas secciones */
+.historial-titulo, .section-title {
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    text-align: left;
+    text-transform: uppercase;
+    font-weight: 800;
+    border-bottom: 3px solid #000;
+    display: inline-block;
+    padding-bottom: 0.5rem;
+}
+
+/* Encabezado donde van los filtros y botones superiores */
+.historial-header, .inventario-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+/* Filtros de búsqueda */
+.historial-filtro, .inventario-filtro {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.historial-filtro label, .inventario-filtro label {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.historial-filtro input, .inventario-filtro input {
+    font-size: 1.1rem;
+    padding: 0.4rem 0.8rem;
+    border: 2px solid #000;
+    width: 300px;
+    background-color: #fff;
+}
+
+/* --- LA TABLA Y SU CAJA (Lo que más te gustó) --- */
+
+/* La caja que contiene la tabla (con borde grueso y sombra) */
+.historial-tabla-wrapper, .tabla-wrapper {
+    background: #fff;
+    border: 3px solid #000;
+    box-shadow: 8px 8px 0 rgba(0,0,0,0.2); /* Sombra retro */
+    max-height: 70vh; /* Para que tenga scroll si es muy larga */
+    overflow-y: auto;
+    border-radius: 4px;
+}
+
+/* La tabla en sí */
+.historial-tabla, .tabla-inventario {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+}
+
+/* Celdas de encabezado (TH) */
+.historial-tabla th, .tabla-inventario th {
+    background-color: #4a86c5; /* Azul retro */
+    color: #ffffff;
+    border: 1px solid #000;
+    padding: 1rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    position: sticky; /* Para que el encabezado quede fijo al scrollear */
+    top: 0;
+    z-index: 10;
+}
+
+/* Celdas de datos (TD) */
+.historial-tabla td, .tabla-inventario td {
+    border: 1px solid #000;
+    padding: 0.8rem;
+    color: #000;
+}
+
+/* Efecto cebra (filas pares de otro color para leer mejor) */
+.historial-tabla tr:nth-child(even), .tabla-inventario tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Efecto hover en las filas */
+.historial-tabla tr:hover, .tabla-inventario tr:hover {
+    background-color: #e6f7ff;
+}
+

@@ -1,13 +1,25 @@
 import sqlite3
+import os
 from collections import Counter
 from datetime import datetime
 from sqlite3 import IntegrityError
-from flask import Flask, render_template, request, redirect, url_for, session
+# AGREGADO: 'jsonify' en la lista de imports
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "stock.db")
 
+# DEFINICIÓN DE LA CONEXIÓN (IMPORTANTE)
+def get_conn():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+# Alias para que el código viejo también funcione
+get_db_connection = get_conn
 
 app = Flask(__name__)
-# Clave para firmar la cookie de sesión (podés cambiarla por otra)
+# Clave para firmar la cookie de sesión
 app.secret_key = "nextprint-stock-super-secreto"
 
 # Usuarios habilitados para ADMIN
@@ -684,7 +696,7 @@ def pedido_entregado(pedido_id):
         cantidad = pedido["cantidad"]
         insumo_codigo = pedido["insumo_codigo"]
 
-        # Si el pedido está vinculado a un insumo del inventario
+        # Si el pedido está vinculado a un insumo del inventario, sumar al stock
         if insumo_codigo:
             conn.execute(
                 """
@@ -733,6 +745,131 @@ def papel_admin():
     conn.close()
     return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros)
 
+# ==========================================
+# NUEVAS RUTAS PARA GESTIÓN DE PAPEL
+# ==========================================
+
+# 1. BORRAR MOVIMIENTO DE HISTORIAL (ENTRADA O SALIDA)
+@app.route("/papel/historial/eliminar", methods=["POST"])
+def papel_eliminar_movimiento():
+    # Solo borra el registro del historial SIN modificar el inventario
+    data = request.get_json() or {}
+    mov_id = data.get("id")
+    tipo = data.get("tipo") # "entrada" o "salida"
+
+    if not mov_id or not tipo:
+        return jsonify({"ok": False, "error": "Datos incompletos"}), 400
+
+    conn = get_conn()
+    try:
+        # Tabla del historial
+        tabla = "papel_entradas" if tipo == "entrada" else "papel_salidas"
+        
+        # Verificar que el registro existe
+        registro = conn.execute(f"SELECT * FROM {tabla} WHERE id = ?", (mov_id,)).fetchone()
+        if not registro:
+            return jsonify({"ok": False, "error": "Registro no encontrado"}), 404
+
+        # Eliminar SOLO el registro del historial, sin tocar el inventario
+        conn.execute(f"DELETE FROM {tabla} WHERE id = ?", (mov_id,))
+        conn.commit()
+        
+        return jsonify({"ok": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
+    finally:
+        conn.close()
+# ==========================================
+# RUTAS DE GESTIÓN Y MODIFICACIÓN PAPEL (Solo una vez)
+# ==========================================
+
+# 1. BORRAR MOVIMIENTO DE HISTORIAL (ENTRADA O SALIDA)
+@app.route("/papel/historial/eliminar", methods=["POST"])
+def papel_eliminar_movimiento_historial():
+    data = request.get_json() or {}
+    mov_id = data.get("id")
+    tipo = data.get("tipo") # "entrada" o "salida"
+
+    if not mov_id or not tipo:
+        return jsonify({"ok": False, "error": "Datos incompletos"}), 400
+
+    conn = get_conn()
+    try:
+        # Buscar el registro para saber cantidad y tipo de papel
+        tabla = "papel_entradas" if tipo == "entrada" else "papel_salidas"
+        registro = conn.execute(f"SELECT * FROM {tabla} WHERE id = ?", (mov_id,)).fetchone()
+        
+        if not registro:
+            return jsonify({"ok": False, "error": "Registro no encontrado"}), 404
+
+        cantidad = registro["cantidad"]
+        nombre_papel = registro["tipo_papel"] 
+
+        # Eliminar el registro del historial
+        conn.execute(f"DELETE FROM {tabla} WHERE id = ?", (mov_id,))
+
+        # Actualizar el stock (INVERSO a la operación original)
+        if tipo == "entrada":
+            # Si borro una entrada, RESTO al stock
+            conn.execute("""
+                UPDATE papel_inventario 
+                SET entradas = entradas - ?, total = total - ?
+                WHERE nombre = ?
+            """, (cantidad, cantidad, nombre_papel))
+        else:
+            # Si borro una salida, SUMO al stock (devuelvo el papel)
+            conn.execute("""
+                UPDATE papel_inventario 
+                SET salidas = salidas - ?, total = total + ?
+                WHERE nombre = ?
+            """, (cantidad, cantidad, nombre_papel))
+
+        conn.commit()
+        return jsonify({"ok": True})
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"ok": False, "error": str(e)}), 500
+    finally:
+        conn.close()
+
+# 2. MODIFICAR PAPEL (ADMIN) - Recalculando total
+# IMPORTANTE: Asegúrate de que esta función aparezca solo una vez en todo el archivo
+@app.route("/papel/modificar", methods=["POST"])
+def papel_modificar():
+    data = request.get_json(silent=True) or {}
+    papel_id = data.get("id")
+    nuevo_nombre = (data.get("nombre") or "").strip()
+    
+    # Datos numéricos
+    stock_inicial = data.get("stock_inicial")
+    entradas = data.get("entradas")
+    salidas = data.get("salidas")
+
+    if not papel_id:
+        return jsonify({"ok": False, "error": "Falta ID"}), 400
+
+    conn = get_conn()
+    try:
+        # Si vienen datos numéricos, recalculamos el total: (StockInicial + Entradas - Salidas)
+        if stock_inicial is not None:
+            total = int(stock_inicial) + int(entradas) - int(salidas)
+            conn.execute("""
+                UPDATE papel_inventario
+                SET nombre = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
+                WHERE id = ?
+            """, (nuevo_nombre, stock_inicial, entradas, salidas, total, papel_id))
+        else:
+            # Solo cambio de nombre
+            conn.execute("UPDATE papel_inventario SET nombre = ? WHERE id = ?", (nuevo_nombre, papel_id))
+            
+        conn.commit()
+    except sqlite3.IntegrityError:
+        conn.close()
+        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
+    
+    conn.close()
+    return jsonify({"ok": True})
 @app.route("/papel/inventario")
 def papel_inventario():
     # Inventario modo lectura (para el menú principal)
@@ -841,6 +978,24 @@ def papel_salidas_historial():
     return render_template("base.html", vista="papel_salidas_historial", modo="papel", registros=registros)
 
 
+@app.route("/papel/entradas/<int:id>/borrar", methods=["POST"])
+def papel_borrar_entrada(id):
+    conn = get_conn()
+    # Borrado simple (igual que insumos), no toca el stock
+    conn.execute("DELETE FROM papel_entradas WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return ("", 204)
+
+@app.route("/papel/salidas/<int:id>/borrar", methods=["POST"])
+def papel_borrar_salida(id):
+    conn = get_conn()
+    # Borrado simple (igual que insumos), no toca el stock
+    conn.execute("DELETE FROM papel_salidas WHERE id = ?", (id,))
+    conn.commit()
+    conn.close()
+    return ("", 204)
+
 # 4. PEDIDOS DE PAPEL
 @app.route("/papel/pedidos")
 def papel_pedidos():
@@ -890,15 +1045,16 @@ def papel_pedido_entregado(pedido_id):
     if pedido and pedido["estado"] != "Entregado":
         # Marcar entregado
         conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
-        # Sumar al stock automáticamente (opcional, si quieres que al llegar el pedido suba el stock)
+        # Sumar al stock automáticamente cuando se entrega
         conn.execute("""
             UPDATE papel_inventario 
-            SET entradas = entradas + ?, total = total + ? 
+            SET stock_inicial = stock_inicial + ?, total = total + ? 
             WHERE nombre = ?
         """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
         conn.commit()
         
     conn.close()
+    return jsonify({"ok": True})
     return jsonify({"ok": True})
 
 # ==========================================
@@ -956,44 +1112,7 @@ def papel_eliminar():
     conn.close()
     return jsonify({"ok": True})
 
-# 3. MODIFICAR PAPEL (Nombre y Stock Manual)
-@app.route("/papel/modificar", methods=["POST"])
-def papel_modificar():
-    if not session.get("papel_admin_logueado"):
-        return jsonify({"ok": False, "error": "No autorizado"}), 403
 
-    data = request.get_json(silent=True) or {}
-    papel_id = data.get("id")
-    nuevo_nombre = (data.get("nombre") or "").strip()
-    
-    # Datos numéricos opcionales (si se editan manualmente)
-    stock_inicial = data.get("stock_inicial")
-    entradas = data.get("entradas")
-    salidas = data.get("salidas")
-
-    if not papel_id or not nuevo_nombre:
-        return jsonify({"ok": False, "error": "Faltan datos"}), 400
-
-    conn = get_conn()
-    try:
-        # Si vienen datos numéricos, actualizamos todo, sino solo nombre
-        if stock_inicial is not None:
-            total = int(stock_inicial) + int(entradas) - int(salidas)
-            conn.execute("""
-                UPDATE papel_inventario
-                SET nombre = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
-                WHERE id = ?
-            """, (nuevo_nombre, stock_inicial, entradas, salidas, total, papel_id))
-        else:
-            conn.execute("UPDATE papel_inventario SET nombre = ? WHERE id = ?", (nuevo_nombre, papel_id))
-            
-        conn.commit()
-    except sqlite3.IntegrityError:
-        conn.close()
-        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
-
-    conn.close()
-    return jsonify({"ok": True})
 
 # ---------------- ARRANQUE APP ----------------
 

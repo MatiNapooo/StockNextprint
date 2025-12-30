@@ -16,17 +16,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const esSalida = formSalida !== null;
 
     if (insumoSelect && unidadSelect && errorInsumo && errorUnidad) {
-        // Actualizar imagen del insumo al cambiar el select
         function actualizarImagenInsumo() {
             if (!insumoImg || !imgBase) return;
-
             const codigo = insumoSelect.value;
             if (!codigo) {
                 insumoImg.style.display = "none";
                 insumoImg.removeAttribute("src");
                 return;
             }
-
             insumoImg.style.display = "block";
             insumoImg.src = imgBase + codigo + ".png";
             insumoImg.onerror = function () {
@@ -38,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function () {
             insumoSelect.addEventListener("change", actualizarImagenInsumo);
         }
 
-        // Selector para el botón correcto
         let confirmButton = null;
         let modalPrevia = null;
         let btnCancelar = null;
@@ -54,38 +50,29 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         if (confirmButton && modalPrevia && btnCancelar) {
-            // Confirmar - validar + generar vista previa en modal
             confirmButton.addEventListener("click", function () {
-                // Limpiar errores
                 errorInsumo.textContent = "";
                 errorUnidad.textContent = "";
-
                 let hayError = false;
 
                 if (!insumoSelect.value) {
                     errorInsumo.textContent = "*Tenes que rellenar esta casilla";
                     hayError = true;
                 }
-
                 if (!unidadSelect.value) {
                     errorUnidad.textContent = "*Tenes que rellenar esta casilla";
                     hayError = true;
                 }
-
-                if (hayError) {
-                    return;
-                }
+                if (hayError) return;
 
                 const selectedOption = insumoSelect.options[insumoSelect.selectedIndex];
                 const codigo = selectedOption.value || "";
                 const nombre = selectedOption.dataset.nombre || "";
                 const descripcion = selectedOption.dataset.descripcion || "";
                 const cantidad = unidadSelect.value || "";
-
                 const hoy = new Date();
                 const fecha = hoy.toLocaleDateString("es-AR");
 
-                // Llenar los campos del modal según tipo
                 if (esEntrada) {
                     document.getElementById("prev-entrada-fecha").textContent = fecha;
                     document.getElementById("prev-entrada-codigo").textContent = codigo;
@@ -99,12 +86,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     document.getElementById("prev-salida-descripcion").textContent = descripcion;
                     document.getElementById("prev-salida-cantidad").textContent = cantidad;
                 }
-
-                // Mostrar modal
                 modalPrevia.style.display = "flex";
             });
 
-            // Cancelar → cerrar modal
             btnCancelar.addEventListener("click", function () {
                 modalPrevia.style.display = "none";
             });
@@ -112,86 +96,60 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // -------------------
-    // HISTORIAL: filtro + modal BORRAR
+    // HISTORIAL: filtro + modal BORRAR (Generico)
     // -------------------
     const filtroInput = document.getElementById("filtro-historial");
     const tablaHistorial = document.getElementById("tabla-historial");
-
     const modalBorrar = document.getElementById("modal-borrar");
     const modalBtnSi = modalBorrar ? modalBorrar.querySelector(".modal-btn-si") : null;
     const modalBtnNo = modalBorrar ? modalBorrar.querySelector(".modal-btn-no") : null;
-
     let borrarPendiente = { id: null, tipo: null, fila: null };
 
     if (filtroInput && tablaHistorial) {
-        // Filtro tipo Excel
         filtroInput.addEventListener("input", function () {
             const filtro = filtroInput.value.trim().toLowerCase();
             const filas = tablaHistorial.querySelectorAll("tbody tr");
-
             filas.forEach((tr) => {
                 const textoFila = tr.textContent.toLowerCase();
-
-                if (!filtro) {
-                    // sin filtro -> mostrar todo
-                    tr.style.display = "";
-                } else if (textoFila.includes(filtro)) {
-                    tr.style.display = "";
-                } else {
-                    tr.style.display = "none";
-                }
+                tr.style.display = (!filtro || textoFila.includes(filtro)) ? "" : "none";
             });
         });
 
-        // Click en BORRAR → abrir modal
         tablaHistorial.addEventListener("click", function (e) {
             const btn = e.target.closest(".btn-borrar");
             if (!btn) return;
-
             const id = btn.dataset.id;
-            const tipo = btn.dataset.tipo; // "entrada" o "salida"
+            const tipo = btn.dataset.tipo; 
             const fila = btn.closest("tr");
-
             borrarPendiente = { id, tipo, fila };
-
-            if (modalBorrar) {
-                modalBorrar.style.display = "flex";
-            }
+            if (modalBorrar) modalBorrar.style.display = "flex";
         });
     }
 
     if (modalBorrar && modalBtnSi && modalBtnNo) {
-        // NO → cerrar modal
         modalBtnNo.addEventListener("click", function () {
             modalBorrar.style.display = "none";
             borrarPendiente = { id: null, tipo: null, fila: null };
         });
 
-        // SI → borrar en servidor y quitar fila
-        modalBtnSi.addEventListener("click", function () {
+            modalBtnSi.addEventListener("click", function () {
             if (!borrarPendiente.id || !borrarPendiente.tipo) {
                 modalBorrar.style.display = "none";
                 return;
             }
-
-            const url =
-                borrarPendiente.tipo === "entrada"
+            const url = borrarPendiente.tipo === "entrada"
                     ? `/entradas/${borrarPendiente.id}/borrar`
                     : `/salidas/${borrarPendiente.id}/borrar`;
 
             fetch(url, { method: "POST" })
                 .then((resp) => {
                     if (resp.ok) {
-                        if (borrarPendiente.fila) {
-                            borrarPendiente.fila.remove();
-                        }
+                        if (borrarPendiente.fila) borrarPendiente.fila.remove();
                     } else {
                         alert("No se pudo borrar el registro.");
                     }
                 })
-                .catch(() => {
-                    alert("Error al comunicarse con el servidor.");
-                })
+                .catch(() => alert("Error al comunicarse con el servidor."))
                 .finally(() => {
                     modalBorrar.style.display = "none";
                     borrarPendiente = { id: null, tipo: null, fila: null };
@@ -199,53 +157,37 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-       // -------------------
-    // INVENTARIO: filtro
+    // -------------------
+    // INVENTARIO: filtros
     // -------------------
     const tablaInventario = document.getElementById("tabla-inventario");
     const filtroInv = document.getElementById("filtro-inventario");
-
     if (tablaInventario && filtroInv) {
         filtroInv.addEventListener("input", function () {
             const filtro = filtroInv.value.trim().toLowerCase();
             const filas = tablaInventario.querySelectorAll("tbody tr");
-
             filas.forEach((tr) => {
                 const texto = tr.textContent.toLowerCase();
-                if (!filtro || texto.includes(filtro)) {
-                    tr.style.display = "";
-                } else {
-                    tr.style.display = "none";
-                }
+                tr.style.display = (!filtro || texto.includes(filtro)) ? "" : "none";
             });
         });
     }
 
-         // -------------------
-        // INVENTARIO SIMPLE (solo lectura): filtro
-        // -------------------
-        const tablaInventarioSimple = document.getElementById("tabla-inventario-simple");
-        const filtroInvSimple = document.getElementById("filtro-inventario-simple");
-
-        if (tablaInventarioSimple && filtroInvSimple) {
-            filtroInvSimple.addEventListener("input", function () {
-                const filtro = filtroInvSimple.value.trim().toLowerCase();
-                const filas = tablaInventarioSimple.querySelectorAll("tbody tr");
-
-                filas.forEach((tr) => {
-                    const texto = tr.textContent.toLowerCase();
-                    if (!filtro || texto.includes(filtro)) {
-                        tr.style.display = "";
-                    } else {
-                        tr.style.display = "none";
-                    }
-                });
+    const tablaInventarioSimple = document.getElementById("tabla-inventario-simple");
+    const filtroInvSimple = document.getElementById("filtro-inventario-simple");
+    if (tablaInventarioSimple && filtroInvSimple) {
+        filtroInvSimple.addEventListener("input", function () {
+            const filtro = filtroInvSimple.value.trim().toLowerCase();
+            const filas = tablaInventarioSimple.querySelectorAll("tbody tr");
+            filas.forEach((tr) => {
+                const texto = tr.textContent.toLowerCase();
+                tr.style.display = (!filtro || texto.includes(filtro)) ? "" : "none";
             });
+        });
     }
 
-
     // -------------------
-    // INVENTARIO: popup MODIFICAR cantidades
+    // INVENTARIO: MODIFICAR CANTIDADES
     // -------------------
     const modalInv = document.getElementById("modal-inventario");
     const invCerrar = document.getElementById("inv-modal-cerrar");
@@ -254,7 +196,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const inputEntradas = document.getElementById("inv-entradas");
     const inputSalidas = document.getElementById("inv-salidas");
     const inputTotal = document.getElementById("inv-total");
-
     let inventarioFilaActual = null;
     let inventarioIdActual = null;
 
@@ -262,96 +203,61 @@ document.addEventListener("DOMContentLoaded", function () {
         tablaInventario.addEventListener("click", function (e) {
             const btn = e.target.closest(".btn-modificar");
             if (!btn) return;
-
             inventarioIdActual = btn.dataset.id;
             inventarioFilaActual = btn.closest("tr");
-
             inputStock.value = btn.dataset.stock || "0";
             inputEntradas.value = btn.dataset.entradas || "0";
             inputSalidas.value = btn.dataset.salidas || "0";
             inputTotal.value = btn.dataset.total || "0";
-
             modalInv.style.display = "flex";
         });
 
         invCerrar.addEventListener("click", function () {
             modalInv.style.display = "none";
-            inventarioFilaActual = null;
-            inventarioIdActual = null;
         });
 
         invConfirmar.addEventListener("click", function () {
-            if (!inventarioIdActual || !inventarioFilaActual) {
-                modalInv.style.display = "none";
-                return;
-            }
-
+            if (!inventarioIdActual) return;
             const payload = {
                 stock_inicial: parseInt(inputStock.value || "0", 10),
                 entradas: parseInt(inputEntradas.value || "0", 10),
                 salidas: parseInt(inputSalidas.value || "0", 10),
             };
-
             fetch(`/inventario/${inventarioIdActual}/actualizar`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             })
-                .then((resp) => resp.json())
-                .then((data) => {
-                    if (!data.ok) throw new Error("Error al actualizar inventario");
-
-                    const celdas = inventarioFilaActual.querySelectorAll("td");
-                    celdas[3].textContent = data.stock_inicial;
-                    celdas[4].textContent = data.entradas;
-                    celdas[5].textContent = data.salidas;
-                    celdas[6].textContent = data.total;
-
-                    const btn = inventarioFilaActual.querySelector(".btn-modificar");
-                    if (btn) {
-                        btn.dataset.stock = data.stock_inicial;
-                        btn.dataset.entradas = data.entradas;
-                        btn.dataset.salidas = data.salidas;
-                        btn.dataset.total = data.total;
-                    }
-
-                    modalInv.style.display = "none";
-                    inventarioFilaActual = null;
-                    inventarioIdActual = null;
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert("No se pudo actualizar el inventario.");
-                    modalInv.style.display = "none";
-                });
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok) throw new Error("Error");
+                const celdas = inventarioFilaActual.querySelectorAll("td");
+                celdas[3].textContent = data.stock_inicial;
+                celdas[4].textContent = data.entradas;
+                celdas[5].textContent = data.salidas;
+                celdas[6].textContent = data.total;
+                const btn = inventarioFilaActual.querySelector(".btn-modificar");
+                btn.dataset.stock = data.stock_inicial;
+                btn.dataset.entradas = data.entradas;
+                btn.dataset.salidas = data.salidas;
+                btn.dataset.total = data.total;
+                modalInv.style.display = "none";
+            })
+            .catch(e => alert("No se pudo actualizar."));
         });
     }
+
     // -------------------
-    // INVENTARIO: ELIMINAR INSUMO
+    // INVENTARIO: ELIMINAR INSUMO (Lógica Interna)
     // -------------------
     const delSelect = document.getElementById("del-insumo-select");
     const delEliminar = document.getElementById("del-insumo-eliminar");
     const modalDelConfirm = document.getElementById("modal-insumo-confirm");
     const delConfSi = document.getElementById("insumo-conf-si");
     const delConfNo = document.getElementById("insumo-conf-no");
-
     let codigoAEliminar = null;
 
-    document.addEventListener("DOMContentLoaded", function () {
-
-            // Funciones globales para abrir/cerrar el modal de ELIMINAR INSUMO
-   
-    });
-
-    if (
-        tablaInventario &&
-        delSelect &&
-        delEliminar &&
-        modalDelConfirm &&
-        delConfSi &&
-        delConfNo
-    ) {
-        // Click en "Eliminar" dentro del primer popup
+    if (delEliminar && modalDelConfirm) {
         delEliminar.addEventListener("click", function () {
             const codigo = delSelect.value;
             if (!codigo) {
@@ -362,550 +268,315 @@ document.addEventListener("DOMContentLoaded", function () {
             modalDelConfirm.style.display = "flex";
         });
 
-        // Click en "NO" en el popup de confirmación
         delConfNo.addEventListener("click", function () {
             modalDelConfirm.style.display = "none";
             codigoAEliminar = null;
         });
 
-        // Click en "SI" en el popup de confirmación
         delConfSi.addEventListener("click", function () {
-            if (!codigoAEliminar) {
-                modalDelConfirm.style.display = "none";
-                return;
-            }
-
-            fetch(`/insumos/${codigoAEliminar}/eliminar`, {
-                method: "POST",
+            if (!codigoAEliminar) return;
+            fetch(`/insumos/${codigoAEliminar}/eliminar`, { method: "POST" })
+            .then(r => r.json())
+            .then(data => {
+                if (!data.ok) throw new Error("Error");
+                location.reload(); // Recargar para ver cambios
             })
-                .then((resp) => resp.json())
-                .then((data) => {
-                    if (!data.ok) throw new Error("No se pudo eliminar insumo");
-
-                    // ... (borrado de fila y opciones)
-
-                    modalDelConfirm.style.display = "none";
-                    const modalEliminar = document.getElementById("modal-insumo-eliminar");
-                    if (modalEliminar) modalEliminar.style.display = "none";
-                    document.body.classList.remove("modal-eliminar-open");
-                    codigoAEliminar = null;
-                })
-
-                .catch((err) => {
-                    console.error(err);
-                    alert("Error al eliminar insumo.");
-                    modalDelConfirm.style.display = "none";
-                });
+            .catch(() => alert("Error al eliminar."));
         });
     }
 
     // -------------------
-    // INVENTARIO: MODIFICAR INSUMO (datos del insumo)
+    // INVENTARIO: MODIFICAR DATOS INSUMO
     // -------------------
-    const btnEditarInsumo = document.querySelector(".btn-editar-insumo");
     const modalEditInsumo = document.getElementById("modal-insumo-editar");
     const editCerrar = document.getElementById("edit-insumo-cerrar");
     const editConfirmar = document.getElementById("edit-insumo-confirmar");
-
     const editSelectInsumo = document.getElementById("edit-insumo-select");
-    const editCodigo = document.getElementById("edit-codigo");
-    const editNombre = document.getElementById("edit-nombre");
-    const editDescripcion = document.getElementById("edit-descripcion");
-    const editUnidad = document.getElementById("edit-unidad");
+    
+    if (modalEditInsumo && editSelectInsumo) {
+        const editCodigo = document.getElementById("edit-codigo");
+        const editNombre = document.getElementById("edit-nombre");
+        const editDescripcion = document.getElementById("edit-descripcion");
+        const editUnidad = document.getElementById("edit-unidad");
 
-    function cargarDatosEdicion() {
-        const opt = editSelectInsumo.options[editSelectInsumo.selectedIndex];
-        if (!opt) return;
-        editCodigo.value = opt.value;
-        editNombre.value = opt.dataset.nombre || "";
-        editDescripcion.value = opt.dataset.descripcion || "";
-        editUnidad.value = opt.dataset.unidad || "";
-    }
-
-    if (
-        tablaInventario &&
-        btnEditarInsumo &&
-        modalEditInsumo &&
-        editCerrar &&
-        editConfirmar &&
-        editSelectInsumo
-    ) {
-        btnEditarInsumo.addEventListener("click", function () {
-            cargarDatosEdicion();
-            modalEditInsumo.style.display = "flex";
-        });
+        function cargarDatosEdicion() {
+            const opt = editSelectInsumo.options[editSelectInsumo.selectedIndex];
+            if (!opt) return;
+            editCodigo.value = opt.value;
+            editNombre.value = opt.dataset.nombre || "";
+            editDescripcion.value = opt.dataset.descripcion || "";
+            editUnidad.value = opt.dataset.unidad || "";
+        }
 
         editSelectInsumo.addEventListener("change", cargarDatosEdicion);
+        // Cargar datos iniciales al abrir se maneja via onclick en HTML, 
+        // pero necesitamos el listener aqui si se cambia el select.
+        
+        if(editCerrar) {
+            editCerrar.addEventListener("click", () => modalEditInsumo.style.display = "none");
+        }
 
-        editCerrar.addEventListener("click", function () {
-            modalEditInsumo.style.display = "none";
-        });
+        if(editConfirmar) {
+            editConfirmar.addEventListener("click", function () {
+                const payload = {
+                    codigo_original: editSelectInsumo.value,
+                    codigo_nuevo: editCodigo.value.trim(),
+                    nombre: editNombre.value.trim(),
+                    descripcion: editDescripcion.value.trim(),
+                    unidad: editUnidad.value.trim(),
+                };
+                if (!payload.codigo_nuevo || !payload.nombre) return alert("Faltan datos");
 
-        editConfirmar.addEventListener("click", function () {
-            const codigoOriginal = editSelectInsumo.value;
-
-            const payload = {
-                codigo_original: codigoOriginal,
-                codigo_nuevo: editCodigo.value.trim(),
-                nombre: editNombre.value.trim(),
-                descripcion: editDescripcion.value.trim(),
-                unidad: editUnidad.value.trim(),
-            };
-
-            if (!payload.codigo_nuevo || !payload.nombre) {
-                alert("Código e insumo son obligatorios.");
-                return;
-            }
-
-            fetch("/insumos/modificar", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            })
-                .then((resp) => resp.json().then((data) => ({ ok: resp.ok, data })))
-                .then(({ ok, data }) => {
-                    if (!ok || !data.ok) {
-                        alert(data.error || "No se pudo modificar el insumo.");
-                        return;
-                    }
-
-                    // actualizar option del selector de edición
-                    const opt = editSelectInsumo.options[editSelectInsumo.selectedIndex];
-                    opt.value = data.codigo;
-                    opt.dataset.nombre = data.nombre;
-                    opt.dataset.descripcion = data.descripcion || "";
-                    opt.dataset.unidad = data.unidad || "";
-                    opt.textContent =
-                        data.codigo +
-                        " - " +
-                        data.nombre +
-                        " " +
-                        (data.descripcion || "");
-
-                    // actualizar option en selector de eliminar
-                    if (delSelect) {
-                        [...delSelect.options].forEach((o) => {
-                            if (o.value === codigoOriginal) {
-                                o.value = data.codigo;
-                                o.textContent =
-                                    data.codigo +
-                                    " - " +
-                                    data.nombre +
-                                    " " +
-                                    (data.descripcion || "");
-                            }
-                        });
-                    }
-
-                    // actualizar fila en tabla inventario
-                    const fila = tablaInventario.querySelector(
-                        `tr[data-codigo="${codigoOriginal}"]`
-                    );
-                    if (fila) {
-                        fila.dataset.codigo = data.codigo;
-                        const celdas = fila.querySelectorAll("td");
-                        celdas[0].textContent = data.codigo;
-                        celdas[1].textContent = data.nombre;
-                        celdas[2].textContent = data.descripcion || "";
-                    }
-
-                    modalEditInsumo.style.display = "none";
+                fetch("/insumos/modificar", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
                 })
-                .catch((err) => {
-                    console.error(err);
-                    alert("Error al comunicarse con el servidor.");
-                });
-        });
+                .then(r => r.json())
+                .then(data => {
+                    if(!data.ok) throw new Error(data.error);
+                    location.reload();
+                })
+                .catch(e => alert(e.message));
+            });
+        }
     }
 
+   // -------------------
+    // INVENTARIO: AGREGAR INSUMO (Corregido)
     // -------------------
-    // INVENTARIO: popup AGREGAR INSUMO
-    // -------------------
-    const btnAgregarInsumo = document.querySelector(".btn-agregar-insumo");
     const modalInsumo = document.getElementById("modal-insumo");
     const insCerrar = document.getElementById("insumo-modal-cerrar");
     const insConfirmar = document.getElementById("insumo-modal-confirmar");
 
+    // Inputs del modal
     const insCodigo = document.getElementById("ins-codigo");
     const insNombre = document.getElementById("ins-nombre");
     const insDescripcion = document.getElementById("ins-descripcion");
     const insUnidad = document.getElementById("ins-unidad");
     const insStock = document.getElementById("ins-stock");
 
-    if (
-        tablaInventario &&
-        btnAgregarInsumo &&
-        modalInsumo &&
-        insCerrar &&
-        insConfirmar
-    ) {
-        btnAgregarInsumo.addEventListener("click", function () {
-            insCodigo.value = "";
-            insNombre.value = "";
-            insDescripcion.value = "";
-            insUnidad.value = "";
-            insStock.value = "0";
-
-            modalInsumo.style.display = "flex";
-        });
-
-        insCerrar.addEventListener("click", function () {
-            modalInsumo.style.display = "none";
-        });
-
-        insConfirmar.addEventListener("click", function () {
+    if (modalInsumo && insConfirmar) {
+        // Cerrar modal
+        if (insCerrar) {
+            insCerrar.addEventListener("click", () => modalInsumo.style.display = "none");
+        }
+        
+        // Confirmar guardado
+        insConfirmar.addEventListener("click", function() {
             const payload = {
                 codigo: insCodigo.value.trim(),
                 nombre: insNombre.value.trim(),
                 descripcion: insDescripcion.value.trim(),
                 unidad: insUnidad.value.trim(),
-                stock_inicial: parseInt(insStock.value || "0", 10),
+                stock: insStock.value || "0" // 'stock' es lo que espera tu app.py
             };
 
-            if (!payload.codigo || !payload.nombre) {
-                alert("Código e insumo son obligatorios.");
+            if(!payload.codigo || !payload.nombre) {
+                alert("Código e Insumo son obligatorios.");
                 return;
             }
 
-            fetch("/insumos/nuevo", {
+            fetch("/insumo/agregar", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             })
-                .then((resp) => resp.json().then((data) => ({ ok: resp.ok, data })))
-                .then(({ ok, data }) => {
-                    if (!ok || !data.ok) {
-                        alert(data.error || "No se pudo agregar el insumo.");
-                        return;
-                    }
-
-                    const tbody = tablaInventario.querySelector("tbody");
-                    const tr = document.createElement("tr");
-                    tr.setAttribute("data-item-id", data.inventario_id);
-                    tr.setAttribute("data-codigo", data.codigo);
-
-                    tr.innerHTML = `
-                        <td>${data.codigo}</td>
-                        <td>${data.nombre}</td>
-                        <td>${data.descripcion || ""}</td>
-                        <td>${data.stock_inicial}</td>
-                        <td>${data.entradas}</td>
-                        <td>${data.salidas}</td>
-                        <td>${data.total}</td>
-                        <td>
-                            <button type="button"
-                                    class="btn-modificar"
-                                    data-id="${data.inventario_id}"
-                                    data-stock="${data.stock_inicial}"
-                                    data-entradas="${data.entradas}"
-                                    data-salidas="${data.salidas}"
-                                    data-total="${data.total}">
-                                Modificar
-                            </button>
-                        </td>
-                    `;
-
-                    tbody.appendChild(tr);
-                    modalInsumo.style.display = "none";
-                })
-                .catch((err) => {
-                    console.error(err);
-                    alert("Error al comunicarse con el servidor.");
-                });
+            .then(r => {
+                if(r.ok) {
+                    location.reload();
+                } else {
+                    alert("Error al agregar. Verifica si el código ya existe.");
+                }
+            })
+            .catch(err => alert("Error de conexión."));
         });
     }
 
-    // -------------------
-    // MODAL "¡Registro confirmado!"
-    // -------------------
-    const modalOk = document.getElementById("modal-ok");
-    if (modalOk && modalOk.dataset.activo === "1") {
-        // Mostrar el modal
-        modalOk.style.display = "flex";
-
-        setTimeout(function () {
-            modalOk.style.display = "none";
-
-            // Limpiar ?ok=1 de la URL
-            if (window.location.search.includes("ok=1")) {
-                const nuevaUrl = window.location.pathname;
-                window.history.replaceState(null, "", nuevaUrl);
-            }
-
-            // Limpiar vista previa
-            if (previewSection && previewWrapper) {
-                previewSection.style.display = "none";
-                previewWrapper.innerHTML = "";
-            }
-
-            // Resetear selects
-            if (insumoSelect) insumoSelect.selectedIndex = 0;
-            if (unidadSelect) unidadSelect.selectedIndex = 0;
-
-            // Ocultar imagen de insumo
-            if (insumoImg) {
-                insumoImg.style.display = "none";
-                insumoImg.removeAttribute("src");
-            }
-        }, 3000);
-    }
-});
-
     // --------------------------------
-    // PEDIDOS: REGISTRAR NUEVO
+    // PEDIDOS: REGISTRAR NUEVO (Lógica JS)
     // --------------------------------
-    const pedidoPorInput = document.getElementById("pedido_por");
-    const proveedorInput = document.getElementById("proveedor");
     const insumoPedidoInput = document.getElementById("insumo_pedido");
-    const presentacionInput = document.getElementById("presentacion");
-    const descripcionPedidoInput = document.getElementById("descripcion_pedido");
-    const cantidadPedidoInput = document.getElementById("cantidad_pedido");
     const insumoCodigoHidden = document.getElementById("insumo_codigo");
-
-
     const btnPedidoConfirmar = document.getElementById("btn-pedido-confirmar");
     const modalPedidoPrevia = document.getElementById("modal-pedido-previa");
     const pedidoPreviaCancelar = document.getElementById("pedido-previa-cancelar");
 
-    const prevPedidoFecha = document.getElementById("prev-pedido-fecha");
-    const prevPedidoPor = document.getElementById("prev-pedido-por");
-    const prevPedidoProveedor = document.getElementById("prev-pedido-proveedor");
-    const prevPedidoInsumo = document.getElementById("prev-pedido-insumo");
-    const prevPedidoPresentacion = document.getElementById("prev-pedido-presentacion");
-    const prevPedidoDescripcion = document.getElementById("prev-pedido-descripcion");
-    const prevPedidoCantidad = document.getElementById("prev-pedido-cantidad");
-
-    // Vincular input de insumo con datalist y guardar el código
-        if (insumoPedidoInput && insumoCodigoHidden) {
-            insumoPedidoInput.addEventListener("input", function () {
-                const val = this.value;
-                const lista = document.getElementById("lista-insumos-pedido");
-                let codigo = "";
-
-                if (lista) {
-                    for (const opt of lista.options) {
-                        if (opt.value === val) {
-                            codigo = opt.dataset.codigo || "";
-                            break;
-                        }
+    if (insumoPedidoInput && insumoCodigoHidden) {
+        insumoPedidoInput.addEventListener("input", function () {
+            const val = this.value;
+            const lista = document.getElementById("lista-insumos-pedido");
+            let codigo = "";
+            if (lista) {
+                for (const opt of lista.options) {
+                    if (opt.value === val) {
+                        codigo = opt.dataset.codigo || "";
+                        break;
                     }
                 }
-                insumoCodigoHidden.value = codigo;
-            });
-        }
+            }
+            insumoCodigoHidden.value = codigo;
+        });
+    }
 
-            
     if (btnPedidoConfirmar && modalPedidoPrevia) {
         btnPedidoConfirmar.addEventListener("click", function () {
-            // Borramos mensajes de error
-            const campos = [
-                ["pedido_por", pedidoPorInput],
-                ["proveedor", proveedorInput],
-                ["insumo_pedido", insumoPedidoInput],
-                ["presentacion", presentacionInput],
-                ["descripcion_pedido", descripcionPedidoInput],
-                ["cantidad_pedido", cantidadPedidoInput],
-            ];
-
-            let hayError = false;
-            campos.forEach(([id, input]) => {
-                const errElem = document.getElementById("err-" + id);
-                if (!input.value.trim()) {
-                    hayError = true;
-                    if (errElem) errElem.textContent = "Tenés que rellenar esta casilla";
-                } else {
-                    if (errElem) errElem.textContent = "";
+            // Validacion simple visual
+            const ids = ["pedido_por", "proveedor", "insumo_pedido", "presentacion", "descripcion_pedido", "cantidad_pedido"];
+            let error = false;
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                const err = document.getElementById("err-" + id);
+                if(el && !el.value.trim()) {
+                    if(err) err.textContent = "Campo requerido";
+                    error = true;
+                } else if(err) {
+                    err.textContent = "";
                 }
             });
+            if(error) return;
 
-            if (hayError) return;
-
-            // Armar la vista previa
-            const hoy = new Date();
-            const fechaStr = hoy.toLocaleDateString("es-AR");
-
-            prevPedidoFecha.textContent = fechaStr;
-            prevPedidoPor.textContent = pedidoPorInput.value.trim();
-            prevPedidoProveedor.textContent = proveedorInput.value.trim();
-            prevPedidoInsumo.textContent = insumoPedidoInput.value.trim();
-            prevPedidoPresentacion.textContent = presentacionInput.value.trim();
-            prevPedidoDescripcion.textContent = descripcionPedidoInput.value.trim();
-            prevPedidoCantidad.textContent = cantidadPedidoInput.value.trim();
+            // Rellenar previa
+            document.getElementById("prev-pedido-por").textContent = document.getElementById("pedido_por").value;
+            document.getElementById("prev-pedido-proveedor").textContent = document.getElementById("proveedor").value;
+            document.getElementById("prev-pedido-insumo").textContent = document.getElementById("insumo_pedido").value;
+            document.getElementById("prev-pedido-presentacion").textContent = document.getElementById("presentacion").value;
+            document.getElementById("prev-pedido-descripcion").textContent = document.getElementById("descripcion_pedido").value;
+            document.getElementById("prev-pedido-cantidad").textContent = document.getElementById("cantidad_pedido").value;
+            document.getElementById("prev-pedido-fecha").textContent = new Date().toLocaleDateString("es-AR");
 
             modalPedidoPrevia.style.display = "flex";
         });
 
-        if (pedidoPreviaCancelar) {
-            pedidoPreviaCancelar.addEventListener("click", function () {
-                modalPedidoPrevia.style.display = "none";
-            });
+        if(pedidoPreviaCancelar) {
+            pedidoPreviaCancelar.addEventListener("click", () => modalPedidoPrevia.style.display = "none");
         }
     }
 
-    // --------------------------------
-    // PEDIDOS: HISTORIAL, filtro
-    // --------------------------------
-    const tablaPedidos = document.getElementById("tabla-pedidos");
+    // Filtros Pedidos
     const filtroPedidos = document.getElementById("filtro-pedidos");
+    const tablaPedidos = document.getElementById("tabla-pedidos");
+    if(filtroPedidos && tablaPedidos) {
+        filtroPedidos.addEventListener("input", function() {
+            const q = this.value.toLowerCase();
+            tablaPedidos.querySelectorAll("tbody tr").forEach(tr => {
+                tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+            });
+        });
+    }
 
-    if (tablaPedidos && filtroPedidos) {
-        filtroPedidos.addEventListener("input", function () {
-            const texto = filtroPedidos.value.trim().toLowerCase();
-            const filas = tablaPedidos.querySelectorAll("tbody tr");
+    // Boton Entregado Papel
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('btn-entregado-papel')) {
+            const btn = e.target;
+            const id = btn.dataset.id;
+            if (!id || btn.disabled) return;
 
-            filas.forEach((tr) => {
-                const contenido = tr.textContent.toLowerCase();
-                if (!texto || contenido.includes(texto)) {
-                    tr.style.display = "";
-                } else {
-                    tr.style.display = "none";
+            fetch(`/papel/pedidos/${id}/entregado`, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.ok) {
+                    const fila = btn.closest('tr');
+                    if (fila) {
+                        fila.classList.add('pedido-entregado');
+                        fila.querySelector('.estado-pedido').textContent = 'Entregado';
+                    }
+                    btn.disabled = true;
+                    btn.textContent = "✔";
                 }
             });
-        });
-    }
-
-    /* ==========================================
-   LÓGICA PAPEL (Pegar al final de main.js)
-   ========================================== */
-document.addEventListener('DOMContentLoaded', function () {
-
-    // Validar Formulario Entrada Papel
-    const btnEntradaPapel = document.getElementById('btn-papel-entradas-confirmar');
-    if (btnEntradaPapel) {
-        btnEntradaPapel.addEventListener('click', function() {
-            const form = document.getElementById('form-papel-entradas-nueva');
-            if (form.checkValidity()) {
-                form.submit();
-            } else {
-                alert("Por favor completa todos los campos obligatorios.");
-            }
-        });
-    }
-
-    // Validar Formulario Salida Papel
-    const btnSalidaPapel = document.getElementById('btn-papel-salidas-confirmar');
-    if (btnSalidaPapel) {
-        btnSalidaPapel.addEventListener('click', function() {
-            const form = document.getElementById('form-papel-salidas-nueva');
-            if (form.checkValidity()) {
-                form.submit();
-            } else {
-                alert("Por favor completa todos los campos obligatorios.");
-            }
-        });
-    }
-
-    // Validar Formulario Pedido Papel
-    const btnPedidoPapel = document.getElementById('btn-papel-pedidos-confirmar');
-    if (btnPedidoPapel) {
-        btnPedidoPapel.addEventListener('click', function() {
-            const form = document.getElementById('form-papel-pedidos-nuevo');
-            if (form.checkValidity()) {
-                form.submit();
-            } else {
-                alert("Por favor completa todos los campos obligatorios.");
-            }
-        });
-    }
-
-    // Filtros de Tablas (Papel)
-    const configurarFiltro = (idInput, idTabla) => {
-        const input = document.getElementById(idInput);
-        const tabla = document.getElementById(idTabla);
-        if (input && tabla) {
-            input.addEventListener('input', function() {
-                const term = input.value.toLowerCase();
-                const filas = tabla.querySelectorAll('tbody tr');
-                filas.forEach(row => {
-                    const texto = row.textContent.toLowerCase();
-                    row.style.display = texto.includes(term) ? '' : 'none';
-                });
-            });
         }
-    };
+    });
 
-    // Configurar los filtros si existen en el HTML
-    configurarFiltro('filtro-papel', 'tabla-papel');           // Inventario Admin
-    configurarFiltro('filtro-papel-simple', 'tabla-papel-simple'); // Inventario Simple
-    configurarFiltro('filtro-papel-ent', 'tabla-papel-ent');   // Historial Entradas
-    configurarFiltro('filtro-papel-sal', 'tabla-papel-sal');   // Historial Salidas
-    configurarFiltro('filtro-papel-ped', 'tabla-papel-pedidos'); // Historial Pedidos
+    // Filtros Papel
+    const filtroPapel = document.getElementById("filtro-papel");
+    const tablaPapel = document.getElementById("tabla-papel");
+    if(filtroPapel && tablaPapel) {
+        filtroPapel.addEventListener("input", function() {
+            const q = this.value.toLowerCase();
+            tablaPapel.querySelectorAll("tbody tr").forEach(tr => {
+                tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+            });
+        });
+    }
 });
 
-/* ==========================================
-   GESTIÓN PAPEL (Admin: Agregar, Eliminar, Modificar)
-   ========================================== */
-document.addEventListener('DOMContentLoaded', function () {
+// FUNCIONES GLOBALES (Fuera del DOMContentLoaded para que funcionen con onclick="")
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "flex";
+}
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+}
+function abrirModalEliminarInsumo() {
+    const m = document.getElementById("modal-insumo-eliminar");
+    if (m) m.style.display = "flex";
+}
+function cerrarModalEliminarInsumo() {
+    const m = document.getElementById("modal-insumo-eliminar");
+    if (m) m.style.display = "none";
+}
 
-    // 1. AGREGAR PAPEL
-    const btnAdd = document.getElementById('btn-confirmar-add-papel');
-    if (btnAdd) {
-        btnAdd.addEventListener('click', function() {
-            const nombre = document.getElementById('add-papel-nombre').value;
-            const stock = document.getElementById('add-papel-stock').value;
+// ============================================
+    // GESTIÓN PAPEL: BORRAR HISTORIAL Y MODIFICAR
+    // ============================================
 
-            fetch('/papel/agregar', {
+    // 1. BORRAR HISTORIAL PAPEL (Entradas/Salidas)
+    // Delegación de eventos para los botones de la tabla
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-borrar-papel')) {
+            const btn = e.target;
+            const id = btn.dataset.id;
+            const tipo = btn.dataset.tipo; // "entrada" o "salida"
+            
+            if(!confirm("¿Seguro que deseas borrar este registro del historial? Solo se borrará el registro, el inventario no se modificará.")) return;
+
+            fetch('/papel/historial/eliminar', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ nombre: nombre, stock: stock })
+                body: JSON.stringify({ id: id, tipo: tipo })
             })
             .then(r => r.json())
             .then(data => {
                 if(data.ok) {
-                    location.reload(); // Recargar para ver cambios
+                    // Borrar fila visualmente o recargar
+                    btn.closest('tr').remove();
                 } else {
                     alert("Error: " + data.error);
                 }
-            });
-        });
-    }
-
-    // 2. ELIMINAR PAPEL
-    const btnDel = document.getElementById('btn-confirmar-del-papel');
-    if (btnDel) {
-        btnDel.addEventListener('click', function() {
-            const select = document.getElementById('del-papel-select');
-            const id = select.value;
-            if(!id) return alert("Seleccione un papel");
-
-            if(!confirm("¿Seguro que desea eliminar este papel? Se perderá el historial asociado.")) return;
-
-            fetch('/papel/eliminar', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ id: id })
             })
-            .then(r => r.json())
-            .then(data => {
-                if(data.ok) location.reload();
-                else alert("Error: " + data.error);
-            });
-        });
-    }
+            .catch(err => alert("Error de conexión"));
+        }
+    });
 
-    // 3. MODIFICAR PAPEL (Cargar datos al seleccionar)
-    const selMod = document.getElementById('mod-papel-select');
-    if (selMod) {
-        selMod.addEventListener('change', function() {
-            const opt = this.options[this.selectedIndex];
-            if(opt.value) {
-                document.getElementById('mod-papel-nombre').value = opt.dataset.nombre;
-                document.getElementById('mod-papel-stock').value = opt.dataset.stock;
-                document.getElementById('mod-papel-entradas').value = opt.dataset.entradas;
-                document.getElementById('mod-papel-salidas').value = opt.dataset.salidas;
-            }
-        });
-    }
+    // 2. MODIFICAR PAPEL (Botón en la fila)
+    const modalModPapel = document.getElementById('modal-papel-modificar');
+    const btnGuardarModPapel = document.getElementById('btn-confirmar-mod-papel');
 
-    // Confirmar Modificación
-    const btnMod = document.getElementById('btn-confirmar-mod-papel');
-    if (btnMod) {
-        btnMod.addEventListener('click', function() {
-            const id = document.getElementById('mod-papel-select').value;
-            if(!id) return alert("Seleccione un papel");
+    // Al hacer clic en "MODIFICAR" en la tabla
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('btn-modificar-papel-row')) {
+            const btn = e.target;
+            
+            // Llenar el modal con los datos del botón
+            document.getElementById('mod-papel-id').value = btn.dataset.id;
+            document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
+            document.getElementById('mod-papel-stock').value = btn.dataset.stock;
+            document.getElementById('mod-papel-entradas').value = btn.dataset.entradas;
+            document.getElementById('mod-papel-salidas').value = btn.dataset.salidas;
 
+            // Abrir modal
+            if(modalModPapel) modalModPapel.style.display = 'flex';
+        }
+    });
+
+    // Al hacer clic en "Guardar Cambios" dentro del modal
+    if (btnGuardarModPapel) {
+        btnGuardarModPapel.addEventListener('click', function() {
             const payload = {
-                id: id,
+                id: document.getElementById('mod-papel-id').value,
                 nombre: document.getElementById('mod-papel-nombre').value,
                 stock_inicial: document.getElementById('mod-papel-stock').value,
                 entradas: document.getElementById('mod-papel-entradas').value,
@@ -924,4 +595,3 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     }
-});
