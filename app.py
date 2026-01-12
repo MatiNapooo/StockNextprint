@@ -3,31 +3,28 @@ import os
 from collections import Counter
 from datetime import datetime
 from sqlite3 import IntegrityError
-# AGREGADO: 'jsonify' en la lista de imports
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "stock.db")
 
-# DEFINICIÓN DE LA CONEXIÓN (IMPORTANTE)
+# ===== CONEXIÓN A BASE DE DATOS =====
 def get_conn():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
-# Alias para que el código viejo también funcione
 get_db_connection = get_conn
 
+# ===== CONFIGURACIÓN FLASK =====
 app = Flask(__name__)
-# Clave para firmar la cookie de sesión
 app.secret_key = "nextprint-stock-super-secreto"
 
-# Usuarios habilitados para ADMIN
+# ===== USUARIOS ADMIN =====
 USUARIOS_ADMIN = {
     "nicolas": "nnapoli",
     "luis": "lonapoli",
 }
-
 
 def credenciales_validas(usuario, contrasena):
     if not usuario or not contrasena:
@@ -35,7 +32,7 @@ def credenciales_validas(usuario, contrasena):
     esperado = USUARIOS_ADMIN.get(usuario.strip())
     return esperado is not None and esperado == contrasena.strip()
 
-
+# ===== INSUMOS =====
 @app.route("/insumos/nuevo", methods=["POST"])
 def insumo_nuevo():
     data = request.get_json(force=True)
