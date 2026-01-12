@@ -343,7 +343,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
    // -------------------
-    // INVENTARIO: AGREGAR INSUMO (Corregido)
+    // INVENTARIO: AGREGAR INSUMO (Corregido Definitivo)
     // -------------------
     const modalInsumo = document.getElementById("modal-insumo");
     const insCerrar = document.getElementById("insumo-modal-cerrar");
@@ -369,7 +369,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 nombre: insNombre.value.trim(),
                 descripcion: insDescripcion.value.trim(),
                 unidad: insUnidad.value.trim(),
-                stock: insStock.value || "0" // 'stock' es lo que espera tu app.py
+                stock_inicial: insStock.value || "0" // CAMBIO: Debe llamarse stock_inicial
             };
 
             if(!payload.codigo || !payload.nombre) {
@@ -377,16 +377,19 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            fetch("/insumo/agregar", {
+            // CAMBIO: La ruta correcta en tu Python es /insumos/nuevo
+            fetch("/insumos/nuevo", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             })
-            .then(r => {
+            .then(async r => {
                 if(r.ok) {
                     location.reload();
                 } else {
-                    alert("Error al agregar. Verifica si el código ya existe.");
+                    // Intentamos leer el error real del servidor
+                    const errData = await r.json().catch(() => ({}));
+                    alert("Error: " + (errData.error || "No se pudo agregar el insumo."));
                 }
             })
             .catch(err => alert("Error de conexión."));
@@ -552,8 +555,9 @@ function cerrarModalEliminarInsumo() {
     });
 
     // 2. MODIFICAR PAPEL (Botón en la fila)
-    const modalModPapel = document.getElementById('modal-papel-modificar');
+    const modalModPapel = document.getElementById('modal-papel-modificar-general');
     const btnGuardarModPapel = document.getElementById('btn-confirmar-mod-papel');
+    const modPapelSelect = document.getElementById('mod-papel-select');
 
     // Al hacer clic en "MODIFICAR" en la tabla
     document.addEventListener('click', function(e) {
@@ -561,7 +565,7 @@ function cerrarModalEliminarInsumo() {
             const btn = e.target;
             
             // Llenar el modal con los datos del botón
-            document.getElementById('mod-papel-id').value = btn.dataset.id;
+            modPapelSelect.value = btn.dataset.id;
             document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
             document.getElementById('mod-papel-stock').value = btn.dataset.stock;
             document.getElementById('mod-papel-entradas').value = btn.dataset.entradas;
@@ -572,11 +576,24 @@ function cerrarModalEliminarInsumo() {
         }
     });
 
+    // Cargar datos cuando se cambia el select
+    if (modPapelSelect) {
+        modPapelSelect.addEventListener('change', function() {
+            const selectedOption = modPapelSelect.options[modPapelSelect.selectedIndex];
+            if (modPapelSelect.value) {
+                document.getElementById('mod-papel-nombre').value = selectedOption.dataset.nombre || '';
+                document.getElementById('mod-papel-stock').value = selectedOption.dataset.stock || '0';
+                document.getElementById('mod-papel-entradas').value = selectedOption.dataset.entradas || '0';
+                document.getElementById('mod-papel-salidas').value = selectedOption.dataset.salidas || '0';
+            }
+        });
+    }
+
     // Al hacer clic en "Guardar Cambios" dentro del modal
     if (btnGuardarModPapel) {
         btnGuardarModPapel.addEventListener('click', function() {
             const payload = {
-                id: document.getElementById('mod-papel-id').value,
+                id: modPapelSelect.value,
                 nombre: document.getElementById('mod-papel-nombre').value,
                 stock_inicial: document.getElementById('mod-papel-stock').value,
                 entradas: document.getElementById('mod-papel-entradas').value,
@@ -595,3 +612,88 @@ function cerrarModalEliminarInsumo() {
             });
         });
     }
+
+    // =========================================================
+// CORRECCIÓN: FUNCIONES ADMIN PAPEL (Agregar y Eliminar)
+// =========================================================
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    // --- 1. LÓGICA PARA AGREGAR PAPEL ---
+    const btnAddPapel = document.getElementById('btn-confirmar-add-papel');
+    
+    if (btnAddPapel) {
+        // Clonamos el botón para eliminar eventos viejos que no funcionen
+        const newBtnAdd = btnAddPapel.cloneNode(true);
+        btnAddPapel.parentNode.replaceChild(newBtnAdd, btnAddPapel);
+
+        newBtnAdd.addEventListener('click', function() {
+            const nombreInput = document.getElementById('add-papel-nombre');
+            const stockInput = document.getElementById('add-papel-stock');
+            
+            const nombre = nombreInput ? nombreInput.value.trim() : "";
+            const stock = stockInput ? stockInput.value : "0";
+
+            if (!nombre) {
+                alert("Por favor, escribí un nombre para el papel.");
+                return;
+            }
+
+            // Enviar al servidor
+            fetch('/papel/agregar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ nombre: nombre, stock: stock })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    location.reload(); // Recargar para ver el nuevo papel
+                } else {
+                    alert("Error: " + (data.error || "No se pudo agregar"));
+                }
+            })
+            .catch(err => alert("Error de conexión al agregar."));
+        });
+    }
+
+    // --- 2. LÓGICA PARA ELIMINAR PAPEL ---
+    const btnDelPapel = document.getElementById('btn-confirmar-del-papel');
+
+    if (btnDelPapel) {
+        // Clonamos para limpiar eventos anteriores
+        const newBtnDel = btnDelPapel.cloneNode(true);
+        btnDelPapel.parentNode.replaceChild(newBtnDel, btnDelPapel);
+
+        newBtnDel.addEventListener('click', function() {
+            const selectDel = document.getElementById('del-papel-select');
+            const idPapel = selectDel ? selectDel.value : "";
+
+            if (!idPapel) {
+                alert("Tenés que seleccionar un papel de la lista.");
+                return;
+            }
+
+            // AQUI ESTA EL POPUP QUE PEDISTE
+            if (!confirm("¿ESTÁS SEGURO? Se eliminará el papel y todo su historial de entradas y salidas.")) {
+                return; // Si dice que no, cancelamos todo
+            }
+
+            // Enviar al servidor
+            fetch('/papel/eliminar', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id: idPapel })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    location.reload(); // Recargar para ver que desapareció
+                } else {
+                    alert("Error al eliminar: " + (data.error || "Desconocido"));
+                }
+            })
+            .catch(err => alert("Error de conexión al eliminar."));
+        });
+    }
+});

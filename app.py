@@ -25,7 +25,7 @@ app.secret_key = "nextprint-stock-super-secreto"
 # Usuarios habilitados para ADMIN
 USUARIOS_ADMIN = {
     "nicolas": "nnapoli",
-    "luis": "nnapoli",
+    "luis": "lonapoli",
 }
 
 
@@ -1005,6 +1005,9 @@ def papel_pedidos():
 def papel_pedidos_nuevo():
     conn = get_conn()
     if request.method == "POST":
+        # AGREGADO: Obtener 'pedido_por'
+        pedido_por = request.form.get("pedido_por", "").strip()
+        
         tipo_papel = request.form.get("tipo_papel", "").strip()
         gramaje = request.form.get("gramaje", "").strip()
         formato = request.form.get("formato", "").strip()
@@ -1015,11 +1018,14 @@ def papel_pedidos_nuevo():
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
+        # AGREGADO: Incluir 'pedido_por' en el INSERT
+        # Nota: Asegúrate de que tu tabla 'papel_pedidos' tenga la columna 'pedido_por'.
+        # Si no la tiene, tendrás que agregarla manualmente a la base de datos o el código dará error.
         conn.execute("""
             INSERT INTO papel_pedidos 
-            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'En espera')
-        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'En espera')
+        """, (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
 
         conn.commit()
         conn.close()

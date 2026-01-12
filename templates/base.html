@@ -18,7 +18,7 @@
 
             <nav class="menu-principal">
                 <a href="{{ url_for('menu_principal') }}" class="menu-item">
-                    🏠 MENU PRINCIPAL
+                     MENU PRINCIPAL
                 </a>
 
                 {% if is_menu %}
@@ -91,10 +91,11 @@
                         </div>
                     </div>
                     <div class="historial-header-right">
-                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion">Cerrar sesión</a>
-                        <button type="button" class="btn-agregar-insumo" onclick="document.getElementById('modal-insumo').style.display='flex'">Agregar insumo</button>
-                        <button type="button" class="btn-eliminar-insumo" onclick="abrirModalEliminarInsumo()">Eliminar insumo</button>
-                        <button type="button" class="btn-editar-insumo" onclick="document.getElementById('modal-insumo-editar').style.display='flex'">Modificar insumo</button>
+                        <button type="button" class="btn-agregar-insumo" onclick="document.getElementById('modal-insumo').style.display='flex'">+ Agregar</button>
+                        <button type="button" class="btn-eliminar-insumo" onclick="abrirModalEliminarInsumo()">Eliminar</button>
+                        <button type="button" class="btn-editar-insumo" onclick="document.getElementById('modal-insumo-editar').style.display='flex'">Modificar</button>
+                        
+                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion" style="margin-left: 10px;">Salir</a>
                     </div>
                 </div>
 
@@ -117,9 +118,13 @@
                                     <td>{{ r['total'] }}</td>
                                     <td>
                                         <button type="button" class="btn-modificar" 
-                                                data-id="{{ r['id'] }}" data-stock="{{ r['stock_inicial'] }}" 
-                                                data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}" 
-                                                data-total="{{ r['total'] }}">Modificar</button>
+                                                data-id="{{ r['id'] }}" 
+                                                data-stock="{{ r['stock_inicial'] }}" 
+                                                data-entradas="{{ r['entradas'] }}" 
+                                                data-salidas="{{ r['salidas'] }}" 
+                                                data-total="{{ r['total'] }}">
+                                            MODIFICAR
+                                        </button>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -730,13 +735,17 @@
                 </div>
             </section>
 
-   {% elif vista == "papel_inventario_admin" %}
+   
+        {% elif vista == "papel_inventario_admin" %}
             <section class="inventario">
                 <h1 class="section-title">Administración – Papel</h1>
                 <div class="inventario-header">
                     <div class="historial-header-right">
-                        <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">Agregar Papel</button>
-                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion" style="margin-left: auto;">Cerrar sesión</a>
+                        <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+ Agregar</button>
+                        <button type="button" class="btn-eliminar-insumo" onclick="openModal('modal-papel-eliminar')">Eliminar</button>
+                        <button type="button" class="btn-editar-insumo" onclick="openModal('modal-papel-modificar-general')">Modificar</button>
+                        
+                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion" style="margin-left: 10px;">Salir</a>
                     </div>
                 </div>
                 <div class="inventario-filtro" style="margin-top: 1rem;">
@@ -755,7 +764,8 @@
                                     <td>{{ r['id'] }}</td><td>{{ r['nombre'] }}</td><td>{{ r['stock_inicial'] }}</td>
                                     <td>{{ r['entradas'] }}</td><td>{{ r['salidas'] }}</td><td>{{ r['total'] }}</td>
                                     <td>
-                                        <button class="btn-editar-insumo btn-modificar-papel-row"
+                                        <button class="btn-modificar-papel-row"
+                                                type="button" 
                                                 data-id="{{ r['id'] }}"
                                                 data-nombre="{{ r['nombre'] }}"
                                                 data-stock="{{ r['stock_inicial'] }}"
@@ -785,11 +795,46 @@
                 </div>
             </div>
 
-            <div class="modal-overlay" id="modal-papel-modificar">
+            <div class="modal-overlay" id="modal-papel-eliminar">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">Eliminar Papel</h2>
+                    <div class="modal-form">
+                        <div class="modal-form-row">
+                            <label>Seleccionar</label>
+                            <select id="del-papel-select">
+                                <option value="">-- Seleccione --</option>
+                                {% for r in registros %}
+                                    <option value="{{ r['id'] }}">{{ r['nombre'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-form-actions">
+                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-eliminar')">Cancelar</button>
+                        <button class="modal-btn modal-btn-si" id="btn-confirmar-del-papel" style="background-color: var(--color-danger);">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-papel-modificar-general">
                 <div class="modal-content">
                     <h2 class="modal-titulo">Modificar Papel</h2>
                     <div class="modal-form">
-                        <input type="hidden" id="mod-papel-id">
+                        <div class="modal-form-row">
+                            <label>Seleccionar</label>
+                            <select id="mod-papel-select">
+                                <option value="">-- Seleccione --</option>
+                                {% for r in registros %}
+                                    <option value="{{ r['id'] }}" 
+                                            data-nombre="{{ r['nombre'] }}" 
+                                            data-stock="{{ r['stock_inicial'] }}"
+                                            data-entradas="{{ r['entradas'] }}"
+                                            data-salidas="{{ r['salidas'] }}">
+                                        {{ r['nombre'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         
                         <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
                         <div class="modal-form-row"><label>Stock Inicial</label><input type="number" id="mod-papel-stock"></div>
@@ -797,7 +842,7 @@
                         <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas"></div>
                     </div>
                     <div class="modal-form-actions">
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-modificar')">Cancelar</button>
+                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
                         <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
                     </div>
                 </div>
@@ -948,6 +993,10 @@
                 <form method="post" action="{{ url_for('papel_pedidos_nuevo') }}" id="form-papel-pedidos-nuevo">
                     <div class="registro-cards-grid">
                         <div class="registro-card">
+                            <label>Pedido por</label>
+                            <input type="text" name="pedido_por" required>
+                        </div>
+                        <div class="registro-card">
                             <label>Tipo de Papel</label>
                             <select name="tipo_papel" required>
                                 <option value="">-- Seleccione --</option>
@@ -973,27 +1022,49 @@
         {% elif vista == "papel_pedidos_historial" %}
             <section class="historial">
                 <h1 class="historial-titulo">Historial Pedidos - Papel</h1>
-                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-ped" type="text"></div>
+                <div class="historial-filtro">
+                    <label>Filtrar:</label>
+                    <input id="filtro-papel-ped" type="text" placeholder="Buscar...">
+                </div>
                 <div class="historial-tabla-wrapper">
                     <table class="historial-tabla" id="tabla-papel-pedidos">
-                        <thead><tr><th>Fecha</th><th>Papel</th><th>Gramaje</th><th>Formato</th><th>Marca</th><th>Cant</th><th>Estado</th><th>Acción</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>POR</th> <th>Papel</th>
+                                <th>Gramaje</th>
+                                <th>Formato</th>
+                                <th>Marca</th>
+                                <th>Cant</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
                         <tbody>
                             {% for r in registros %}
                                 <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
-                                    <td>{{ r['fecha'] }}</td><td>{{ r['tipo_papel'] }}</td><td>{{ r['gramaje'] }}</td>
-                                    <td>{{ r['formato'] }}</td><td>{{ r['marca'] }}</td><td>{{ r['cantidad'] }}</td>
+                                    <td>{{ r['fecha'] }}</td>
+                                    <td>{{ r['pedido_por'] }}</td> <td>{{ r['tipo_papel'] }}</td>
+                                    <td>{{ r['gramaje'] }}</td>
+                                    <td>{{ r['formato'] }}</td>
+                                    <td>{{ r['marca'] }}</td>
+                                    <td>{{ r['cantidad'] }}</td>
                                     <td class="estado-pedido">{{ r['estado'] }}</td>
                                     <td>
                                         {% if r['estado'] != 'Entregado' %}
-                                            <button type="button" class="btn-entregado btn-entregado-papel" data-id="{{ r['id'] }}">Entregado</button>
-                                        {% else %}✔{% endif %}
+                                            <button type="button" class="btn-entregado btn-entregado-papel" data-id="{{ r['id'] }}">
+                                                Entregado
+                                            </button>
+                                        {% else %}
+                                            ✔
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
-            </section>
+            </section>      
 
         {% endif %} <div class="modal-overlay" id="modal-borrar">
             <div class="modal-content">
