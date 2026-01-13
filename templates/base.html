@@ -1,1070 +1,1177 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Stock</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
+    {% if vista != 'login_global' %}
     <header class="top-bar">
         <div class="header-inner">
-            
+
             <button type="button" class="btn-volver" onclick="window.history.back()">
                 <span>⬅ Volver</span>
             </button>
 
-           {% set is_papel = (modo == 'papel') %}
-           {% set is_menu = (vista == 'menu') %}
+            {% set is_papel = (modo == 'papel') %}
+            {% set is_menu = (vista == 'menu') %}
 
             <nav class="menu-principal">
                 <a href="{{ url_for('menu_principal') }}" class="menu-item">
-                     MENU PRINCIPAL
+                    MENU PRINCIPAL
                 </a>
 
                 {% if is_menu %}
-                    <div style="padding: 20px; color: #47626d; text-align: center; font-size: 13px;">
-                        Seleccione una opción <br> del panel principal
-                    </div>
+                <div style="padding: 20px; color: #47626d; text-align: center; font-size: 13px;">
+                    Seleccione una opción <br> del panel principal
+                </div>
 
                 {% elif is_papel %}
-                    <a href="{{ url_for('papel_admin') }}" class="menu-item">🔐 ADMIN</a>
-                    <a href="{{ url_for('papel_inventario') }}" class="menu-item">📋 Inventario</a>
-                    <a href="{{ url_for('papel_entradas') }}" class="menu-item entradas">📥 Entradas</a>
-                    <a href="{{ url_for('papel_salidas') }}" class="menu-item salidas">📤 Salidas</a>
-                    <a href="{{ url_for('papel_pedidos') }}" class="menu-item">🚚 Pedidos</a>
+                <a href="{{ url_for('papel_admin') }}" class="menu-item">🔐 ADMIN</a>
+                <a href="{{ url_for('papel_inventario') }}" class="menu-item">📋 Inventario</a>
+                <a href="{{ url_for('papel_entradas') }}" class="menu-item entradas">📥 Entradas</a>
+                <a href="{{ url_for('papel_salidas') }}" class="menu-item salidas">📤 Salidas</a>
+                <a href="{{ url_for('papel_pedidos') }}" class="menu-item">🚚 Pedidos</a>
 
                 {% else %}
-                    <a href="{{ url_for('inventario') }}" class="menu-item">🔐 ADMIN</a>
-                    <a href="{{ url_for('inventario_simple') }}" class="menu-item">📋 Inventario</a>
-                    <a href="{{ url_for('entradas') }}" class="menu-item entradas">📥 Entradas</a>
-                    <a href="{{ url_for('salidas') }}" class="menu-item salidas">📤 Salidas</a>
-                    <a href="{{ url_for('pedidos') }}" class="menu-item">🚚 Pedidos</a>
+                <a href="{{ url_for('inventario') }}" class="menu-item">🔐 ADMIN</a>
+                <a href="{{ url_for('inventario_simple') }}" class="menu-item">📋 Inventario</a>
+                <a href="{{ url_for('entradas') }}" class="menu-item entradas">📥 Entradas</a>
+                <a href="{{ url_for('salidas') }}" class="menu-item salidas">📤 Salidas</a>
+                <a href="{{ url_for('pedidos') }}" class="menu-item">🚚 Pedidos</a>
                 {% endif %}
             </nav>
         </div>
     </header>
+    {% endif %}
 
     <main class="contenido {% if vista == 'menu' %}contenido-menu{% else %}contenido-app{% endif %}">
 
-        {% if vista == "menu" %}
-            <section class="menu-wrapper">
-                <div class="menu-card" onclick="window.location='{{ url_for('inventario_simple') }}'">
-                    <img src="{{ url_for('static', filename='img/insumos_menu.png') }}" alt="Insumos" class="menu-card-img">
-                    <div class="menu-card-title">Insumos</div>
+        {% if vista == "login_global" %}
+        <div class="login-container">
+            <form class="login-form" method="POST" action="{{ url_for('login') }}">
+                <h2 class="login-title">Bienvenido</h2>
+
+                {% if error %}
+                <div class="login-error">{{ error }}</div>
+                {% endif %}
+
+                <div class="form-group-login">
+                    <label for="usuario">Usuario</label>
+                    <input type="text" name="usuario" id="usuario" required autofocus placeholder="Ingresá tu usuario">
                 </div>
 
-                <div class="menu-card" onclick="window.location='{{ url_for('papel_inventario') }}'">
-                    <img src="{{ url_for('static', filename='img/papel_menu.png') }}" alt="Papel" class="menu-card-img">
-                    <div class="menu-card-title">Papel</div>
+                <div class="form-group-login">
+                    <label for="contrasena">Contraseña</label>
+                    <input type="password" name="contrasena" id="contrasena" required placeholder="••••••••">
                 </div>
-            </section>
+
+                <div class="chk-container">
+                    <input type="checkbox" name="recordar" id="recordar">
+                    <label for="recordar">Recordar mi dispositivo</label>
+                </div>
+
+                <button type="submit" class="btn-login-submit">Ingresar</button>
+
+                <div class="login-footer">
+                    © 2026 Nextprint Stock
+                </div>
+            </form>
+        </div>
+
+        {% elif vista == "menu" %}
+        <section class="menu-wrapper">
+            <div class="menu-card" onclick="window.location='{{ url_for('inventario_simple') }}'">
+                <img src="{{ url_for('static', filename='img/insumos_menu.png') }}" alt="Insumos" class="menu-card-img">
+                <div class="menu-card-title">Insumos</div>
+            </div>
+
+            <div class="menu-card" onclick="window.location='{{ url_for('papel_inventario') }}'">
+                <img src="{{ url_for('static', filename='img/papel_menu.png') }}" alt="Papel" class="menu-card-img">
+                <div class="menu-card-title">Papel</div>
+            </div>
+        </section>
 
         {% elif vista == "login_admin" or vista == "admin_login" %}
-            <section class="login-section">
-                <h1 class="welcome-title">Iniciar Sesión</h1>
-                <form class="login-form" method="post" action="{{ url_for('papel_admin' if modo=='papel' else 'inventario') }}">
-                    <div class="login-row">
-                        <label for="login-usuario">Usuario</label>
-                        <input type="text" id="login-usuario" name="usuario" autocomplete="username">
-                    </div>
-                    <div class="login-row">
-                        <label for="login-contrasena">Contraseña</label>
-                        <input type="password" id="login-contrasena" name="contrasena" autocomplete="current-password">
-                    </div>
-                    {% if login_error or error %}
-                        <p class="login-error">Usuario o contraseña incorrecta</p>
-                    {% endif %}
-                    <div class="login-actions">
-                        <button type="submit" class="login-button">INGRESAR</button>
-                    </div>
-                </form>
-            </section>
+        <section class="login-section">
+            <h1 class="welcome-title">Iniciar Sesión</h1>
+            <form class="login-form" method="post"
+                action="{{ url_for('papel_admin' if modo=='papel' else 'inventario') }}">
+                <div class="login-row">
+                    <label for="login-usuario">Usuario</label>
+                    <input type="text" id="login-usuario" name="usuario" autocomplete="username">
+                </div>
+                <div class="login-row">
+                    <label for="login-contrasena">Contraseña</label>
+                    <input type="password" id="login-contrasena" name="contrasena" autocomplete="current-password">
+                </div>
+                {% if login_error or error %}
+                <p class="login-error">Usuario o contraseña incorrecta</p>
+                {% endif %}
+                <div class="login-actions">
+                    <button type="submit" class="login-button">INGRESAR</button>
+                </div>
+            </form>
+        </section>
 
         {% elif vista == "inventario_admin" or vista == "inventario" %}
-            <section class="historial historial-admin">
-                <div class="historial-header">
-                    <div class="historial-header-left">
-                        <h1 class="historial-titulo">Inventario (Admin)</h1>
-                        <div class="historial-filtro inventario-filtro">
-                            <label for="filtro-inventario">Filtrar:</label>
-                            <input id="filtro-inventario" type="text" placeholder="Escriba para filtrar">
-                        </div>
-                    </div>
-                    <div class="historial-header-right">
-                        <button type="button" class="btn-agregar-insumo" onclick="document.getElementById('modal-insumo').style.display='flex'">+ Agregar</button>
-                        <button type="button" class="btn-eliminar-insumo" onclick="abrirModalEliminarInsumo()">Eliminar</button>
-                        <button type="button" class="btn-editar-insumo" onclick="document.getElementById('modal-insumo-editar').style.display='flex'">Modificar</button>
-                        
-                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion" style="margin-left: 10px;">Salir</a>
+        <section class="historial historial-admin">
+            <div class="historial-header">
+                <div class="historial-header-left">
+                    <h1 class="historial-titulo">Inventario (Admin)</h1>
+                    <div class="historial-filtro inventario-filtro">
+                        <label for="filtro-inventario">Filtrar:</label>
+                        <input id="filtro-inventario" type="text" placeholder="Escriba para filtrar">
                     </div>
                 </div>
+                <div class="historial-header-right">
+                    <button type="button" class="btn-agregar-insumo"
+                        onclick="document.getElementById('modal-insumo').style.display='flex'">+ Agregar</button>
+                    <button type="button" class="btn-eliminar-insumo"
+                        onclick="abrirModalEliminarInsumo()">Eliminar</button>
+                    <button type="button" class="btn-editar-insumo"
+                        onclick="document.getElementById('modal-insumo-editar').style.display='flex'">Modificar</button>
 
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-inventario">
-                        <thead>
-                            <tr>
-                                <th>CÓDIGO</th><th>INSUMO</th><th>DESCRIPCIÓN</th><th>STOCK</th><th>ENTRADAS</th><th>SALIDAS</th><th>TOTAL</th><th>ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                    <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
+                        style="margin-left: 10px;">Salir</a>
+                </div>
+            </div>
+
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-inventario">
+                    <thead>
+                        <tr>
+                            <th>CÓDIGO</th>
+                            <th>INSUMO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>STOCK</th>
+                            <th>ENTRADAS</th>
+                            <th>SALIDAS</th>
+                            <th>TOTAL</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr data-item-id="{{ r['id'] }}" data-codigo="{{ r['codigo'] }}" data-nombre="{{ r['nombre'] }}"
+                            data-descripcion="{{ r['descripcion'] }}" data-unidad="{{ r['unidad'] or '' }}">
+                            <td>{{ r['codigo'] }}</td>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['descripcion'] }}</td>
+                            <td>{{ r['stock_inicial'] }}</td>
+                            <td>{{ r['entradas'] }}</td>
+                            <td>{{ r['salidas'] }}</td>
+                            <td>{{ r['total'] }}</td>
+                            <td>
+                                <button type="button" class="btn-modificar" data-id="{{ r['id'] }}"
+                                    data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
+                                    data-salidas="{{ r['salidas'] }}" data-total="{{ r['total'] }}">
+                                    MODIFICAR
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="modal-overlay" id="modal-inventario">
+            <div class="modal-content modal-inventario-content">
+                <button type="button" class="btn-volver-modal" id="inv-modal-cerrar">Volver</button>
+                <h2 class="modal-titulo">Modificar inventario</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row"><label>Stock inicial</label><input type="number" id="inv-stock" min="0">
+                    </div>
+                    <div class="modal-form-row"><label>Entradas</label><input type="number" id="inv-entradas" min="0">
+                    </div>
+                    <div class="modal-form-row"><label>Salidas</label><input type="number" id="inv-salidas" min="0">
+                    </div>
+                    <div class="modal-form-row"><label>Total</label><input type="number" id="inv-total"></div>
+                    <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si"
+                            id="inv-modal-confirmar">Confirmar</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="modal-insumo">
+            <div class="modal-content modal-inventario-content">
+                <button type="button" class="btn-volver-modal" id="insumo-modal-cerrar">Volver</button>
+                <h2 class="modal-titulo">Agregar insumo</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row"><label>Código</label><input type="text" id="ins-codigo"></div>
+                    <div class="modal-form-row"><label>Insumo</label><input type="text" id="ins-nombre"></div>
+                    <div class="modal-form-row"><label>Descripción</label><input type="text" id="ins-descripcion"></div>
+                    <div class="modal-form-row"><label>Unidad</label><input type="text" id="ins-unidad"></div>
+                    <div class="modal-form-row"><label>Stock inicial</label><input type="number" id="ins-stock"
+                            value="0"></div>
+                    <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si"
+                            id="insumo-modal-confirmar">Confirmar</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="modal-insumo-eliminar">
+            <div class="modal-content modal-inventario-content">
+                <button type="button" class="btn-volver-modal" id="del-insumo-cerrar"
+                    onclick="cerrarModalEliminarInsumo()">Volver</button>
+                <h2 class="modal-titulo">Eliminar insumo</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row">
+                        <label>Seleccionar insumo</label>
+                        <select id="del-insumo-select">
+                            <option value="">-- Seleccione --</option>
+                            {% for r in registros %}<option value="{{ r['codigo'] }}">{{ r['codigo'] }} - {{ r['nombre']
+                                }}</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-no"
+                            id="del-insumo-eliminar">Eliminar</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="modal-insumo-editar">
+            <div class="modal-content modal-inventario-content">
+                <button type="button" class="btn-volver-modal" id="edit-insumo-cerrar">Volver</button>
+                <h2 class="modal-titulo">Modificar datos insumo</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row">
+                        <label>Seleccionar</label>
+                        <select id="edit-insumo-select">
                             {% for r in registros %}
-                                <tr data-item-id="{{ r['id'] }}" data-codigo="{{ r['codigo'] }}" data-nombre="{{ r['nombre'] }}" data-descripcion="{{ r['descripcion'] }}" data-unidad="{{ r['unidad'] or '' }}">
-                                    <td>{{ r['codigo'] }}</td>
-                                    <td>{{ r['nombre'] }}</td>
-                                    <td>{{ r['descripcion'] }}</td>
-                                    <td>{{ r['stock_inicial'] }}</td>
-                                    <td>{{ r['entradas'] }}</td>
-                                    <td>{{ r['salidas'] }}</td>
-                                    <td>{{ r['total'] }}</td>
-                                    <td>
-                                        <button type="button" class="btn-modificar" 
-                                                data-id="{{ r['id'] }}" 
-                                                data-stock="{{ r['stock_inicial'] }}" 
-                                                data-entradas="{{ r['entradas'] }}" 
-                                                data-salidas="{{ r['salidas'] }}" 
-                                                data-total="{{ r['total'] }}">
-                                            MODIFICAR
-                                        </button>
-                                    </td>
-                                </tr>
+                            <option value="{{ r['codigo'] }}" data-nombre="{{ r['nombre'] }}"
+                                data-descripcion="{{ r['descripcion'] }}" data-unidad="{{ r['unidad'] }}">{{ r['codigo']
+                                }} - {{ r['nombre'] }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <div class="modal-overlay" id="modal-inventario">
-                <div class="modal-content modal-inventario-content">
-                    <button type="button" class="btn-volver-modal" id="inv-modal-cerrar">Volver</button>
-                    <h2 class="modal-titulo">Modificar inventario</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row"><label>Stock inicial</label><input type="number" id="inv-stock" min="0"></div>
-                        <div class="modal-form-row"><label>Entradas</label><input type="number" id="inv-entradas" min="0"></div>
-                        <div class="modal-form-row"><label>Salidas</label><input type="number" id="inv-salidas" min="0"></div>
-                        <div class="modal-form-row"><label>Total</label><input type="number" id="inv-total"></div>
-                        <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si" id="inv-modal-confirmar">Confirmar</button></div>
+                        </select>
                     </div>
+                    <div class="modal-form-row"><label>Código</label><input type="text" id="edit-codigo"></div>
+                    <div class="modal-form-row"><label>Insumo</label><input type="text" id="edit-nombre"></div>
+                    <div class="modal-form-row"><label>Descripción</label><input type="text" id="edit-descripcion">
+                    </div>
+                    <div class="modal-form-row"><label>Unidad</label><input type="text" id="edit-unidad"></div>
+                    <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si"
+                            id="edit-insumo-confirmar">Confirmar</button></div>
                 </div>
             </div>
-            <div class="modal-overlay" id="modal-insumo">
-                <div class="modal-content modal-inventario-content">
-                    <button type="button" class="btn-volver-modal" id="insumo-modal-cerrar">Volver</button>
-                    <h2 class="modal-titulo">Agregar insumo</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row"><label>Código</label><input type="text" id="ins-codigo"></div>
-                        <div class="modal-form-row"><label>Insumo</label><input type="text" id="ins-nombre"></div>
-                        <div class="modal-form-row"><label>Descripción</label><input type="text" id="ins-descripcion"></div>
-                        <div class="modal-form-row"><label>Unidad</label><input type="text" id="ins-unidad"></div>
-                        <div class="modal-form-row"><label>Stock inicial</label><input type="number" id="ins-stock" value="0"></div>
-                        <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si" id="insumo-modal-confirmar">Confirmar</button></div>
-                    </div>
+        </div>
+        <div class="modal-overlay" id="modal-insumo-confirm">
+            <div class="modal-content">
+                <p class="modal-texto">¿ESTÁS SEGURO QUE QUERÉS ELIMINAR ESTE INSUMO?</p>
+                <div class="modal-botones">
+                    <button type="button" class="modal-btn modal-btn-si" id="insumo-conf-si">SI</button>
+                    <button type="button" class="modal-btn modal-btn-no" id="insumo-conf-no">NO</button>
                 </div>
             </div>
-            <div class="modal-overlay" id="modal-insumo-eliminar">
-                <div class="modal-content modal-inventario-content">
-                    <button type="button" class="btn-volver-modal" id="del-insumo-cerrar" onclick="cerrarModalEliminarInsumo()">Volver</button>
-                    <h2 class="modal-titulo">Eliminar insumo</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row">
-                            <label>Seleccionar insumo</label>
-                            <select id="del-insumo-select">
-                                <option value="">-- Seleccione --</option>
-                                {% for r in registros %}<option value="{{ r['codigo'] }}">{{ r['codigo'] }} - {{ r['nombre'] }}</option>{% endfor %}
-                            </select>
-                        </div>
-                        <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-no" id="del-insumo-eliminar">Eliminar</button></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-overlay" id="modal-insumo-editar">
-                <div class="modal-content modal-inventario-content">
-                    <button type="button" class="btn-volver-modal" id="edit-insumo-cerrar">Volver</button>
-                    <h2 class="modal-titulo">Modificar datos insumo</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row">
-                            <label>Seleccionar</label>
-                            <select id="edit-insumo-select">
-                                {% for r in registros %}
-                                    <option value="{{ r['codigo'] }}" data-nombre="{{ r['nombre'] }}" data-descripcion="{{ r['descripcion'] }}" data-unidad="{{ r['unidad'] }}">{{ r['codigo'] }} - {{ r['nombre'] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="modal-form-row"><label>Código</label><input type="text" id="edit-codigo"></div>
-                        <div class="modal-form-row"><label>Insumo</label><input type="text" id="edit-nombre"></div>
-                        <div class="modal-form-row"><label>Descripción</label><input type="text" id="edit-descripcion"></div>
-                        <div class="modal-form-row"><label>Unidad</label><input type="text" id="edit-unidad"></div>
-                        <div class="modal-form-actions"><button type="button" class="modal-btn modal-btn-si" id="edit-insumo-confirmar">Confirmar</button></div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-overlay" id="modal-insumo-confirm">
-                <div class="modal-content">
-                    <p class="modal-texto">¿ESTÁS SEGURO QUE QUERÉS ELIMINAR ESTE INSUMO?</p>
-                    <div class="modal-botones">
-                        <button type="button" class="modal-btn modal-btn-si" id="insumo-conf-si">SI</button>
-                        <button type="button" class="modal-btn modal-btn-no" id="insumo-conf-no">NO</button>
-                    </div>
-                </div>
-            </div>
+        </div>
 
         {% elif vista == "inventario_simple" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Inventario</h1>
-                <div class="historial-filtro inventario-filtro">
-                    <label for="filtro-inventario-simple">Filtrar:</label>
-                    <input id="filtro-inventario-simple" type="text" placeholder="Escriba para filtrar">
-                </div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-inventario-simple">
-                        <thead><tr><th>CÓDIGO</th><th>INSUMO</th><th>DESCRIPCIÓN</th><th>STOCK</th><th>ENTRADAS</th><th>SALIDAS</th><th>TOTAL</th></tr></thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr>
-                                    <td>{{ r['codigo'] }}</td><td>{{ r['nombre'] }}</td><td>{{ r['descripcion'] }}</td>
-                                    <td>{{ r['stock_inicial'] }}</td><td>{{ r['entradas'] }}</td><td>{{ r['salidas'] }}</td><td>{{ r['total'] }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <section class="historial">
+            <h1 class="historial-titulo">Inventario</h1>
+            <div class="historial-filtro inventario-filtro">
+                <label for="filtro-inventario-simple">Filtrar:</label>
+                <input id="filtro-inventario-simple" type="text" placeholder="Escriba para filtrar">
+            </div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-inventario-simple">
+                    <thead>
+                        <tr>
+                            <th>CÓDIGO</th>
+                            <th>INSUMO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>STOCK</th>
+                            <th>ENTRADAS</th>
+                            <th>SALIDAS</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r['codigo'] }}</td>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['descripcion'] }}</td>
+                            <td>{{ r['stock_inicial'] }}</td>
+                            <td>{{ r['entradas'] }}</td>
+                            <td>{{ r['salidas'] }}</td>
+                            <td>{{ r['total'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {# ENTRADAS #}
         {% elif vista == "entradas" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('entradas_historial') }}" class="accion-card">
-                        Ver historial de entradas
-                    </a>
-                    <a href="{{ url_for('entradas_nueva') }}" class="accion-card">
-                        Registrar nueva entrada
-                    </a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('entradas_historial') }}" class="accion-card">
+                    Ver historial de entradas
+                </a>
+                <a href="{{ url_for('entradas_nueva') }}" class="accion-card">
+                    Registrar nueva entrada
+                </a>
+            </div>
+        </section>
 
         {# SALIDAS #}
         {% elif vista == "salidas" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('salidas_historial') }}" class="accion-card">
-                        Ver historial de salidas
-                    </a>
-                    <a href="{{ url_for('salidas_nueva') }}" class="accion-card">
-                        Registrar nueva salida
-                    </a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('salidas_historial') }}" class="accion-card">
+                    Ver historial de salidas
+                </a>
+                <a href="{{ url_for('salidas_nueva') }}" class="accion-card">
+                    Registrar nueva salida
+                </a>
+            </div>
+        </section>
 
 
         {# PEDIDOS - menú con tarjetas #}
         {% elif vista == "pedidos" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('pedidos_historial') }}" class="accion-card">
-                        Ver historial de pedidos
-                    </a>
-                    <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">
-                        Registrar nuevo pedido
-                    </a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('pedidos_historial') }}" class="accion-card">
+                    Ver historial de pedidos
+                </a>
+                <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">
+                    Registrar nuevo pedido
+                </a>
+            </div>
+        </section>
 
         {# REGISTRAR NUEVA ENTRADA #}
         {% elif vista == "entradas_nueva" %}
-            <section class="form-registro">
-                <h1 class="form-titulo">Registrar nueva entrada</h1>
-                <form class="form-container" method="post" id="form-entrada-nueva">
-                    <div class="form-row">
-                      <div class="form-card">
+        <section class="form-registro">
+            <h1 class="form-titulo">Registrar nueva entrada</h1>
+            <form class="form-container" method="post" id="form-entrada-nueva">
+                <div class="form-row">
+                    <div class="form-card">
                         <p id="error-insumo" class="error-msg"></p>
                         <label for="insumo_seleccionado">Seleccionar insumo</label>
-                        <select id="insumo_seleccionado"
-                                name="insumo_seleccionado"
-                                class="select-insumo"
-                                data-img-base="{{ url_for('static', filename='img/insumos/') }}">
+                        <select id="insumo_seleccionado" name="insumo_seleccionado" class="select-insumo"
+                            data-img-base="{{ url_for('static', filename='img/insumos/') }}">
                             <option value="">-- Seleccionar insumo --</option>
                             {% for i in insumos %}
-                                <option
-                                    value="{{ i['codigo'] }}"
-                                    data-nombre="{{ i['nombre_mostrar'] }}"
-                                    data-descripcion="{{ i['descripcion'] }}"
-                                >
-                                    {{ i['nombre_mostrar'] }}
-                                </option>
+                            <option value="{{ i['codigo'] }}" data-nombre="{{ i['nombre_mostrar'] }}"
+                                data-descripcion="{{ i['descripcion'] }}">
+                                {{ i['nombre_mostrar'] }}
+                            </option>
                             {% endfor %}
                         </select>
 
-                        <img id="insumo-imagen"
-                            class="insumo-imagen"
-                            src=""
-                            alt="Imagen del insumo seleccionado">
+                        <img id="insumo-imagen" class="insumo-imagen" src="" alt="Imagen del insumo seleccionado">
                     </div>
 
-                        <div class="form-card">
-                            <p id="error-unidad" class="error-msg"></p>
-                            <label for="unidad_seleccionada">Seleccionar unidad</label>
-                            <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
-                                <option value="">-- Seleccionar unidad --</option>
-                                {% for n in range(1, 21) %}
-                                    <option value="{{ n }}">{{ n }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <button type="button" class="confirm-button" id="btn-entrada-confirmar">
-                        Confirmar registro
-                    </button>
-                </form>
-
-                <!-- MODAL VISTA PREVIA ENTRADA -->
-                <div class="modal-overlay" id="modal-entrada-previa">
-                    <div class="modal-content modal-previa">
-                        <h2 class="modal-titulo">Vista previa del registro</h2>
-
-                        <div class="historial-tabla-wrapper">
-                            <table class="historial-tabla">
-                                <thead>
-                                    <tr>
-                                        <th>FECHA</th>
-                                        <th>CÓDIGO</th>
-                                        <th>INSUMO</th>
-                                        <th>DESCRIPCIÓN</th>
-                                        <th>CANTIDAD</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td id="prev-entrada-fecha"></td>
-                                        <td id="prev-entrada-codigo"></td>
-                                        <td id="prev-entrada-insumo"></td>
-                                        <td id="prev-entrada-descripcion"></td>
-                                        <td id="prev-entrada-cantidad"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="modal-form-actions">
-                            <button type="button"
-                                    class="modal-btn modal-btn-no"
-                                    id="entrada-previa-cancelar">
-                                Volver
-                            </button>
-
-                            <button type="submit"
-                                    class="modal-btn modal-btn-si modal-btn-azul"
-                                    form="form-entrada-nueva"
-                                    id="entrada-finalizar">
-                                Finalizar registro
-                            </button>
-                        </div>
+                    <div class="form-card">
+                        <p id="error-unidad" class="error-msg"></p>
+                        <label for="unidad_seleccionada">Seleccionar unidad</label>
+                        <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
+                            <option value="">-- Seleccionar unidad --</option>
+                            {% for n in range(1, 21) %}
+                            <option value="{{ n }}">{{ n }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <div id="modal-ok" class="modal-overlay"
-                    data-activo="{{ '1' if registro_ok else '0' }}">
-                    <div class="modal-content">
-                        <p class="modal-texto">¡Registro confirmado!</p>
+                <button type="button" class="confirm-button" id="btn-entrada-confirmar">
+                    Confirmar registro
+                </button>
+            </form>
+
+            <!-- MODAL VISTA PREVIA ENTRADA -->
+            <div class="modal-overlay" id="modal-entrada-previa">
+                <div class="modal-content modal-previa">
+                    <h2 class="modal-titulo">Vista previa del registro</h2>
+
+                    <div class="historial-tabla-wrapper">
+                        <table class="historial-tabla">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>CÓDIGO</th>
+                                    <th>INSUMO</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>CANTIDAD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="prev-entrada-fecha"></td>
+                                    <td id="prev-entrada-codigo"></td>
+                                    <td id="prev-entrada-insumo"></td>
+                                    <td id="prev-entrada-descripcion"></td>
+                                    <td id="prev-entrada-cantidad"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal-form-actions">
+                        <button type="button" class="modal-btn modal-btn-no" id="entrada-previa-cancelar">
+                            Volver
+                        </button>
+
+                        <button type="submit" class="modal-btn modal-btn-si modal-btn-azul" form="form-entrada-nueva"
+                            id="entrada-finalizar">
+                            Finalizar registro
+                        </button>
                     </div>
                 </div>
+            </div>
 
-            </section>
+            <div id="modal-ok" class="modal-overlay" data-activo="{{ '1' if registro_ok else '0' }}">
+                <div class="modal-content">
+                    <p class="modal-texto">¡Registro confirmado!</p>
+                </div>
+            </div>
+
+        </section>
 
         {# REGISTRAR NUEVA SALIDA #}
         {% elif vista == "salidas_nueva" %}
-            <section class="form-registro">
-                <h1 class="form-titulo">Registrar nueva salida</h1>
-                <form class="form-container" method="post" id="form-salida-nueva">
-                    <div class="form-row">
-                        <div class="form-card">
-                            <p id="error-insumo" class="error-msg"></p>
-                            <label for="insumo_seleccionado">Seleccionar insumo</label>
-                            <select id="insumo_seleccionado"
-                                    name="insumo_seleccionado"
-                                    class="select-insumo"
-                                    data-img-base="{{ url_for('static', filename='img/insumos/') }}">
-                                <option value="">-- Seleccionar insumo --</option>
-                                {% for i in insumos %}
-                                    <option
-                                        value="{{ i['codigo'] }}"
-                                        data-nombre="{{ i['nombre_mostrar'] }}"
-                                        data-descripcion="{{ i['descripcion'] }}"
-                                    >
-                                        {{ i['nombre_mostrar'] }}
-                                    </option>
-                                {% endfor %}
-                            </select>
+        <section class="form-registro">
+            <h1 class="form-titulo">Registrar nueva salida</h1>
+            <form class="form-container" method="post" id="form-salida-nueva">
+                <div class="form-row">
+                    <div class="form-card">
+                        <p id="error-insumo" class="error-msg"></p>
+                        <label for="insumo_seleccionado">Seleccionar insumo</label>
+                        <select id="insumo_seleccionado" name="insumo_seleccionado" class="select-insumo"
+                            data-img-base="{{ url_for('static', filename='img/insumos/') }}">
+                            <option value="">-- Seleccionar insumo --</option>
+                            {% for i in insumos %}
+                            <option value="{{ i['codigo'] }}" data-nombre="{{ i['nombre_mostrar'] }}"
+                                data-descripcion="{{ i['descripcion'] }}">
+                                {{ i['nombre_mostrar'] }}
+                            </option>
+                            {% endfor %}
+                        </select>
 
-                            <img id="insumo-imagen"
-                                class="insumo-imagen"
-                                src=""
-                                alt="Imagen del insumo seleccionado">
-                        </div>
-
-                        <div class="form-card">
-                            <p id="error-unidad" class="error-msg"></p>
-                            <label for="unidad_seleccionada">Seleccionar unidad</label>
-                            <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
-                                <option value="">-- Seleccionar unidad --</option>
-                                {% for n in range(1, 21) %}
-                                    <option value="{{ n }}">{{ n }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                        <img id="insumo-imagen" class="insumo-imagen" src="" alt="Imagen del insumo seleccionado">
                     </div>
 
-                    <button type="button" class="confirm-button" id="btn-salida-confirmar">
-                        Confirmar registro
-                    </button>
-                </form>
-
-                <!-- MODAL VISTA PREVIA SALIDA -->
-                <div class="modal-overlay" id="modal-salida-previa">
-                    <div class="modal-content modal-previa">
-                        <h2 class="modal-titulo">Vista previa del registro</h2>
-
-                        <div class="historial-tabla-wrapper">
-                            <table class="historial-tabla">
-                                <thead>
-                                    <tr>
-                                        <th>FECHA</th>
-                                        <th>CÓDIGO</th>
-                                        <th>INSUMO</th>
-                                        <th>DESCRIPCIÓN</th>
-                                        <th>CANTIDAD</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td id="prev-salida-fecha"></td>
-                                        <td id="prev-salida-codigo"></td>
-                                        <td id="prev-salida-insumo"></td>
-                                        <td id="prev-salida-descripcion"></td>
-                                        <td id="prev-salida-cantidad"></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="modal-form-actions">
-                            <button type="button"
-                                    class="modal-btn modal-btn-no"
-                                    id="salida-previa-cancelar">
-                                Volver
-                            </button>
-
-                            <button type="submit"
-                                    class="modal-btn modal-btn-si modal-btn-azul"
-                                    form="form-salida-nueva"
-                                    id="salida-finalizar">
-                                Finalizar registro
-                            </button>
-                        </div>
+                    <div class="form-card">
+                        <p id="error-unidad" class="error-msg"></p>
+                        <label for="unidad_seleccionada">Seleccionar unidad</label>
+                        <select id="unidad_seleccionada" name="unidad_seleccionada" class="select-unidad">
+                            <option value="">-- Seleccionar unidad --</option>
+                            {% for n in range(1, 21) %}
+                            <option value="{{ n }}">{{ n }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
 
-                <div id="modal-ok" class="modal-overlay"
-                    data-activo="{{ '1' if registro_ok else '0' }}">
-                    <div class="modal-content">
-                        <p class="modal-texto">¡Registro confirmado!</p>
+                <button type="button" class="confirm-button" id="btn-salida-confirmar">
+                    Confirmar registro
+                </button>
+            </form>
+
+            <!-- MODAL VISTA PREVIA SALIDA -->
+            <div class="modal-overlay" id="modal-salida-previa">
+                <div class="modal-content modal-previa">
+                    <h2 class="modal-titulo">Vista previa del registro</h2>
+
+                    <div class="historial-tabla-wrapper">
+                        <table class="historial-tabla">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>CÓDIGO</th>
+                                    <th>INSUMO</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>CANTIDAD</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="prev-salida-fecha"></td>
+                                    <td id="prev-salida-codigo"></td>
+                                    <td id="prev-salida-insumo"></td>
+                                    <td id="prev-salida-descripcion"></td>
+                                    <td id="prev-salida-cantidad"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal-form-actions">
+                        <button type="button" class="modal-btn modal-btn-no" id="salida-previa-cancelar">
+                            Volver
+                        </button>
+
+                        <button type="submit" class="modal-btn modal-btn-si modal-btn-azul" form="form-salida-nueva"
+                            id="salida-finalizar">
+                            Finalizar registro
+                        </button>
                     </div>
                 </div>
+            </div>
 
-            </section>
+            <div id="modal-ok" class="modal-overlay" data-activo="{{ '1' if registro_ok else '0' }}">
+                <div class="modal-content">
+                    <p class="modal-texto">¡Registro confirmado!</p>
+                </div>
+            </div>
+
+        </section>
 
         {# HISTORIAL DE ENTRADAS #}
         {% elif vista == "entradas_historial" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Historial de entradas</h1>
+        <section class="historial">
+            <h1 class="historial-titulo">Historial de entradas</h1>
 
-                <div class="historial-filtro">
-                    <label for="filtro-historial">Filtrar:</label>
-                    <input id="filtro-historial" type="text"
-                        placeholder="Escriba para filtrar (código, insumo, descripción...)">
-                </div>
+            <div class="historial-filtro">
+                <label for="filtro-historial">Filtrar:</label>
+                <input id="filtro-historial" type="text"
+                    placeholder="Escriba para filtrar (código, insumo, descripción...)">
+            </div>
 
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-historial" data-tipo="entrada">
-                        <thead>
-                            <tr>
-                                <th>FECHA</th>
-                                <th>CÓDIGO</th>
-                                <th>INSUMO</th>
-                                <th>DESCRIPCIÓN</th>
-                                <th>CANTIDAD</th>
-                                <th>ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr data-row-id="{{ r['id'] }}">
-                                    <td>{{ r['fecha'] }}</td>
-                                    <td>{{ r['codigo'] }}</td>
-                                    <td>{{ r['nombre'] }}</td>
-                                    <td>{{ r['descripcion'] }}</td>
-                                    <td>{{ r['cantidad'] }}</td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn-borrar"
-                                                data-id="{{ r['id'] }}"
-                                                data-tipo="entrada">
-                                            Borrar
-                                        </button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-historial" data-tipo="entrada">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>CÓDIGO</th>
+                            <th>INSUMO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>CANTIDAD</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr data-row-id="{{ r['id'] }}">
+                            <td>{{ r['fecha'] }}</td>
+                            <td>{{ r['codigo'] }}</td>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['descripcion'] }}</td>
+                            <td>{{ r['cantidad'] }}</td>
+                            <td>
+                                <button type="button" class="btn-borrar" data-id="{{ r['id'] }}" data-tipo="entrada">
+                                    Borrar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {# HISTORIAL DE SALIDAS #}
         {% elif vista == "salidas_historial" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Historial de salidas</h1>
+        <section class="historial">
+            <h1 class="historial-titulo">Historial de salidas</h1>
 
-                <div class="historial-filtro">
-                    <label for="filtro-historial">Filtrar:</label>
-                    <input id="filtro-historial" type="text"
-                        placeholder="Escriba para filtrar (código, insumo, descripción...)">
-                </div>
+            <div class="historial-filtro">
+                <label for="filtro-historial">Filtrar:</label>
+                <input id="filtro-historial" type="text"
+                    placeholder="Escriba para filtrar (código, insumo, descripción...)">
+            </div>
 
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-historial" data-tipo="salida">
-                        <thead>
-                            <tr>
-                                <th>FECHA</th>
-                                <th>CÓDIGO</th>
-                                <th>INSUMO</th>
-                                <th>DESCRIPCIÓN</th>
-                                <th>CANTIDAD</th>
-                                <th>ACCIÓN</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr data-row-id="{{ r['id'] }}">
-                                    <td>{{ r['fecha'] }}</td>
-                                    <td>{{ r['codigo'] }}</td>
-                                    <td>{{ r['nombre'] }}</td>
-                                    <td>{{ r['descripcion'] }}</td>
-                                    <td>{{ r['cantidad'] }}</td>
-                                    <td>
-                                        <button type="button"
-                                                class="btn-borrar"
-                                                data-id="{{ r['id'] }}"
-                                                data-tipo="salida">
-                                            Borrar
-                                        </button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-historial" data-tipo="salida">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>CÓDIGO</th>
+                            <th>INSUMO</th>
+                            <th>DESCRIPCIÓN</th>
+                            <th>CANTIDAD</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr data-row-id="{{ r['id'] }}">
+                            <td>{{ r['fecha'] }}</td>
+                            <td>{{ r['codigo'] }}</td>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['descripcion'] }}</td>
+                            <td>{{ r['cantidad'] }}</td>
+                            <td>
+                                <button type="button" class="btn-borrar" data-id="{{ r['id'] }}" data-tipo="salida">
+                                    Borrar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {% elif vista == "pedidos" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
-                    <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
+                <a href="{{ url_for('pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
+            </div>
+        </section>
 
-       {% elif vista == "pedidos_nuevo" %}
-            <section class="registro-section">
-                <h1 class="welcome-title">Registrar nuevo pedido</h1>
+        {% elif vista == "pedidos_nuevo" %}
+        <section class="registro-section">
+            <h1 class="welcome-title">Registrar nuevo pedido</h1>
 
-                <form id="form-pedido-nuevo" method="post" action="{{ url_for('pedidos_nuevo') }}">
-                    <div class="registro-cards-grid">
-                        <div class="registro-card">
-                            <label for="pedido_por">Pedido por</label>
-                            <input type="text" id="pedido_por" name="pedido_por">
-                            <p class="campo-error" id="err-pedido_por"></p>
-                        </div>
-
-                        <div class="registro-card">
-                            <label for="proveedor">Proveedor</label>
-                            <input type="text" id="proveedor" name="proveedor">
-                            <p class="campo-error" id="err-proveedor"></p>
-                        </div>
-
-                        <div class="registro-card">
-                            <label for="insumo_pedido">Insumo</label>
-                            <input type="text"
-                                id="insumo_pedido"
-                                name="insumo"
-                                list="lista-insumos-pedido">
-                            <datalist id="lista-insumos-pedido">
-                                {% for i in insumos %}
-                                    <option value="{{ i['nombre'] }} {{ i['descripcion'] }}"
-                                            data-codigo="{{ i['codigo'] }}"></option>
-                                {% endfor %}
-                            </datalist>
-                            <input type="hidden" id="insumo_codigo" name="insumo_codigo">
-                            <p class="campo-error" id="err-insumo_pedido"></p>
-                        </div>
-
-                        <div class="registro-card">
-                            <label for="presentacion">Presentación</label>
-                            <input type="text" id="presentacion" name="presentacion">
-                            <p class="campo-error" id="err-presentacion"></p>
-                        </div>
-
-                        <div class="registro-card">
-                            <label for="descripcion_pedido">Descripción</label>
-                            <input type="text" id="descripcion_pedido" name="descripcion">
-                            <p class="campo-error" id="err-descripcion_pedido"></p>
-                        </div>
-
-                        <div class="registro-card">
-                            <label for="cantidad_pedido">Cantidad</label>
-                            <input type="number" id="cantidad_pedido" name="cantidad" min="1">
-                            <p class="campo-error" id="err-cantidad_pedido"></p>
-                        </div>
+            <form id="form-pedido-nuevo" method="post" action="{{ url_for('pedidos_nuevo') }}">
+                <div class="registro-cards-grid">
+                    <div class="registro-card">
+                        <label for="pedido_por">Pedido por</label>
+                        <input type="text" id="pedido_por" name="pedido_por">
+                        <p class="campo-error" id="err-pedido_por"></p>
                     </div>
 
-                    <div class="registro-acciones">
-                        <button type="button"
-                                id="btn-pedido-confirmar"
-                                class="btn-confirmar">
-                            Confirmar registro
+                    <div class="registro-card">
+                        <label for="proveedor">Proveedor</label>
+                        <input type="text" id="proveedor" name="proveedor">
+                        <p class="campo-error" id="err-proveedor"></p>
+                    </div>
+
+                    <div class="registro-card">
+                        <label for="insumo_pedido">Insumo</label>
+                        <input type="text" id="insumo_pedido" name="insumo" list="lista-insumos-pedido">
+                        <datalist id="lista-insumos-pedido">
+                            {% for i in insumos %}
+                            <option value="{{ i['nombre'] }} {{ i['descripcion'] }}" data-codigo="{{ i['codigo'] }}">
+                            </option>
+                            {% endfor %}
+                        </datalist>
+                        <input type="hidden" id="insumo_codigo" name="insumo_codigo">
+                        <p class="campo-error" id="err-insumo_pedido"></p>
+                    </div>
+
+                    <div class="registro-card">
+                        <label for="presentacion">Presentación</label>
+                        <input type="text" id="presentacion" name="presentacion">
+                        <p class="campo-error" id="err-presentacion"></p>
+                    </div>
+
+                    <div class="registro-card">
+                        <label for="descripcion_pedido">Descripción</label>
+                        <input type="text" id="descripcion_pedido" name="descripcion">
+                        <p class="campo-error" id="err-descripcion_pedido"></p>
+                    </div>
+
+                    <div class="registro-card">
+                        <label for="cantidad_pedido">Cantidad</label>
+                        <input type="number" id="cantidad_pedido" name="cantidad" min="1">
+                        <p class="campo-error" id="err-cantidad_pedido"></p>
+                    </div>
+                </div>
+
+                <div class="registro-acciones">
+                    <button type="button" id="btn-pedido-confirmar" class="btn-confirmar">
+                        Confirmar registro
+                    </button>
+                </div>
+            </form>
+
+            <div class="modal-overlay" id="modal-pedido-previa">
+                <div class="modal-content modal-previa">
+                    <h2 class="modal-titulo">Vista previa del pedido</h2>
+
+                    <div class="historial-tabla-wrapper">
+                        <table class="historial-tabla">
+                            <thead>
+                                <tr>
+                                    <th>FECHA</th>
+                                    <th>PEDIDO POR</th>
+                                    <th>PROVEEDOR</th>
+                                    <th>INSUMO</th>
+                                    <th>PRESENTACIÓN</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>CANTIDAD</th>
+                                    <th>ESTADO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="prev-pedido-fecha"></td>
+                                    <td id="prev-pedido-por"></td>
+                                    <td id="prev-pedido-proveedor"></td>
+                                    <td id="prev-pedido-insumo"></td>
+                                    <td id="prev-pedido-presentacion"></td>
+                                    <td id="prev-pedido-descripcion"></td>
+                                    <td id="prev-pedido-cantidad"></td>
+                                    <td id="prev-pedido-estado">En Espera</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal-form-actions">
+                        <button type="button" class="modal-btn modal-btn-no" id="pedido-previa-cancelar">
+                            Volver
+                        </button>
+
+                        <button type="submit" class="modal-btn modal-btn-si modal-btn-azul" form="form-pedido-nuevo"
+                            id="pedido-finalizar">
+                            Finalizar registro
                         </button>
                     </div>
-                </form>
-
-                <div class="modal-overlay" id="modal-pedido-previa">
-                    <div class="modal-content modal-previa">
-                        <h2 class="modal-titulo">Vista previa del pedido</h2>
-
-                        <div class="historial-tabla-wrapper">
-                            <table class="historial-tabla">
-                                <thead>
-                                    <tr>
-                                        <th>FECHA</th>
-                                        <th>PEDIDO POR</th>
-                                        <th>PROVEEDOR</th>
-                                        <th>INSUMO</th>
-                                        <th>PRESENTACIÓN</th>
-                                        <th>DESCRIPCIÓN</th>
-                                        <th>CANTIDAD</th>
-                                        <th>ESTADO</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td id="prev-pedido-fecha"></td>
-                                        <td id="prev-pedido-por"></td>
-                                        <td id="prev-pedido-proveedor"></td>
-                                        <td id="prev-pedido-insumo"></td>
-                                        <td id="prev-pedido-presentacion"></td>
-                                        <td id="prev-pedido-descripcion"></td>
-                                        <td id="prev-pedido-cantidad"></td>
-                                        <td id="prev-pedido-estado">En Espera</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="modal-form-actions">
-                            <button type="button"
-                                    class="modal-btn modal-btn-no"
-                                    id="pedido-previa-cancelar">
-                                Volver
-                            </button>
-
-                            <button type="submit"
-                                    class="modal-btn modal-btn-si modal-btn-azul"
-                                    form="form-pedido-nuevo"
-                                    id="pedido-finalizar">
-                                Finalizar registro
-                            </button>
-                        </div>
-                    </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
         {% elif vista == "pedidos_historial" %}
-            <section class="historial">
-                <div class="historial-header">
-                    <h1 class="historial-titulo">Historial de pedidos</h1>
-                    <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-pedidos" type="text"></div>
-                </div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-pedidos">
-                        <thead><tr><th>FECHA</th><th>POR</th><th>PROVEEDOR</th><th>INSUMO</th><th>CANT</th><th>ESTADO</th><th>ACCIÓN</th></tr></thead>
-                        <tbody>
-                            {% for p in registros %}
-                                <tr class="{% if p['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
-                                    <td>{{ p['fecha'] }}</td><td>{{ p['pedido_por'] }}</td><td>{{ p['proveedor'] }}</td>
-                                    <td>{{ p['insumo'] }}</td><td>{{ p['cantidad'] }}</td><td>{{ p['estado'] }}</td>
-                                    <td>
-                                        {% if p['estado'] != 'Entregado' %}
-                                            <form method="post" action="{{ url_for('pedido_entregado', pedido_id=p['id']) }}">
-                                                <button type="submit" class="btn-entregado">Entregado</button>
-                                            </form>
-                                        {% else %}✔{% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <section class="historial">
+            <div class="historial-header">
+                <h1 class="historial-titulo">Historial de pedidos</h1>
+                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-pedidos" type="text"></div>
+            </div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-pedidos">
+                    <thead>
+                        <tr>
+                            <th>FECHA</th>
+                            <th>POR</th>
+                            <th>PROVEEDOR</th>
+                            <th>INSUMO</th>
+                            <th>CANT</th>
+                            <th>ESTADO</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in registros %}
+                        <tr class="{% if p['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                            <td>{{ p['fecha'] }}</td>
+                            <td>{{ p['pedido_por'] }}</td>
+                            <td>{{ p['proveedor'] }}</td>
+                            <td>{{ p['insumo'] }}</td>
+                            <td>{{ p['cantidad'] }}</td>
+                            <td>{{ p['estado'] }}</td>
+                            <td>
+                                {% if p['estado'] != 'Entregado' %}
+                                <form method="post" action="{{ url_for('pedido_entregado', pedido_id=p['id']) }}">
+                                    <button type="submit" class="btn-entregado">Entregado</button>
+                                </form>
+                                {% else %}✔{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {% elif vista == "papel_inventario_simple" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Inventario - Papel</h1>
-                <div class="historial-filtro">
-                    <label>Filtrar:</label><input id="filtro-papel-simple" type="text" placeholder="Escriba para filtrar">
-                </div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-papel-simple">
-                        <thead><tr><th>PAPEL</th><th>STOCK</th><th>ENTRADAS</th><th>SALIDAS</th><th>TOTAL</th></tr></thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr>
-                                    <td>{{ r['nombre'] }}</td><td>{{ r['stock_inicial'] }}</td>
-                                    <td>{{ r['entradas'] }}</td><td>{{ r['salidas'] }}</td><td>{{ r['total'] }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+        <section class="historial">
+            <h1 class="historial-titulo">Inventario - Papel</h1>
+            <div class="historial-filtro">
+                <label>Filtrar:</label><input id="filtro-papel-simple" type="text" placeholder="Escriba para filtrar">
+            </div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-papel-simple">
+                    <thead>
+                        <tr>
+                            <th>PAPEL</th>
+                            <th>STOCK</th>
+                            <th>ENTRADAS</th>
+                            <th>SALIDAS</th>
+                            <th>TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['stock_inicial'] }}</td>
+                            <td>{{ r['entradas'] }}</td>
+                            <td>{{ r['salidas'] }}</td>
+                            <td>{{ r['total'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
-   
+
         {% elif vista == "papel_inventario_admin" %}
-            <section class="inventario">
-                <h1 class="section-title">Administración – Papel</h1>
-                <div class="inventario-header">
-                    <div class="historial-header-right">
-                        <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+ Agregar</button>
-                        <button type="button" class="btn-eliminar-insumo" onclick="openModal('modal-papel-eliminar')">Eliminar</button>
-                        <button type="button" class="btn-editar-insumo" onclick="openModal('modal-papel-modificar-general')">Modificar</button>
-                        
-                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion" style="margin-left: 10px;">Salir</a>
+        <section class="inventario">
+            <h1 class="section-title">Administración – Papel</h1>
+            <div class="inventario-header">
+                <div class="historial-header-right">
+                    <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+
+                        Agregar</button>
+                    <button type="button" class="btn-eliminar-insumo"
+                        onclick="openModal('modal-papel-eliminar')">Eliminar</button>
+                    <button type="button" class="btn-editar-insumo"
+                        onclick="openModal('modal-papel-modificar-general')">Modificar</button>
+
+                    <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
+                        style="margin-left: 10px;">Salir</a>
+                </div>
+            </div>
+            <div class="inventario-filtro" style="margin-top: 1rem;">
+                <label>Filtrar:</label><input id="filtro-papel" type="text" placeholder="Buscar papel...">
+            </div>
+            <div class="tabla-wrapper">
+                <table id="tabla-papel" class="tabla-inventario">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NOMBRE</th>
+                            <th>STOCK</th>
+                            <th>ENT</th>
+                            <th>SAL</th>
+                            <th>TOTAL</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r['id'] }}</td>
+                            <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['stock_inicial'] }}</td>
+                            <td>{{ r['entradas'] }}</td>
+                            <td>{{ r['salidas'] }}</td>
+                            <td>{{ r['total'] }}</td>
+                            <td>
+                                <button class="btn-modificar-papel-row" type="button" data-id="{{ r['id'] }}"
+                                    data-nombre="{{ r['nombre'] }}" data-stock="{{ r['stock_inicial'] }}"
+                                    data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
+                                    MODIFICAR
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="modal-overlay" id="modal-papel-agregar">
+            <div class="modal-content">
+                <h2 class="modal-titulo">Agregar Nuevo Papel</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row"><label>Nombre</label><input type="text" id="add-papel-nombre"></div>
+                    <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock" value="0">
                     </div>
                 </div>
-                <div class="inventario-filtro" style="margin-top: 1rem;">
-                    <label>Filtrar:</label><input id="filtro-papel" type="text" placeholder="Buscar papel...">
+                <div class="modal-form-actions">
+                    <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-agregar')">Cancelar</button>
+                    <button class="modal-btn modal-btn-si" id="btn-confirmar-add-papel">Guardar</button>
                 </div>
-                <div class="tabla-wrapper">
-                    <table id="tabla-papel" class="tabla-inventario">
-                        <thead>
-                            <tr>
-                                <th>ID</th><th>NOMBRE</th><th>STOCK</th><th>ENT</th><th>SAL</th><th>TOTAL</th>
-                                <th>ACCIÓN</th> </tr>
-                        </thead>
-                        <tbody>
+            </div>
+        </div>
+
+        <div class="modal-overlay" id="modal-papel-eliminar">
+            <div class="modal-content">
+                <h2 class="modal-titulo">Eliminar Papel</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row">
+                        <label>Seleccionar</label>
+                        <select id="del-papel-select">
+                            <option value="">-- Seleccione --</option>
                             {% for r in registros %}
-                                <tr>
-                                    <td>{{ r['id'] }}</td><td>{{ r['nombre'] }}</td><td>{{ r['stock_inicial'] }}</td>
-                                    <td>{{ r['entradas'] }}</td><td>{{ r['salidas'] }}</td><td>{{ r['total'] }}</td>
-                                    <td>
-                                        <button class="btn-modificar-papel-row"
-                                                type="button" 
-                                                data-id="{{ r['id'] }}"
-                                                data-nombre="{{ r['nombre'] }}"
-                                                data-stock="{{ r['stock_inicial'] }}"
-                                                data-entradas="{{ r['entradas'] }}"
-                                                data-salidas="{{ r['salidas'] }}">
-                                            MODIFICAR
-                                        </button>
-                                    </td>
-                                </tr>
+                            <option value="{{ r['id'] }}">{{ r['nombre'] }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
                 </div>
-            </section>
-
-            <div class="modal-overlay" id="modal-papel-agregar">
-               <div class="modal-content">
-                    <h2 class="modal-titulo">Agregar Nuevo Papel</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row"><label>Nombre</label><input type="text" id="add-papel-nombre"></div>
-                        <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock" value="0"></div>
-                    </div>
-                    <div class="modal-form-actions">
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-agregar')">Cancelar</button>
-                        <button class="modal-btn modal-btn-si" id="btn-confirmar-add-papel">Guardar</button>
-                    </div>
+                <div class="modal-form-actions">
+                    <button class="modal-btn modal-btn-no"
+                        onclick="closeModal('modal-papel-eliminar')">Cancelar</button>
+                    <button class="modal-btn modal-btn-si" id="btn-confirmar-del-papel"
+                        style="background-color: var(--color-danger);">Eliminar</button>
                 </div>
             </div>
+        </div>
 
-            <div class="modal-overlay" id="modal-papel-eliminar">
-                <div class="modal-content">
-                    <h2 class="modal-titulo">Eliminar Papel</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row">
-                            <label>Seleccionar</label>
-                            <select id="del-papel-select">
-                                <option value="">-- Seleccione --</option>
-                                {% for r in registros %}
-                                    <option value="{{ r['id'] }}">{{ r['nombre'] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+        <div class="modal-overlay" id="modal-papel-modificar-general">
+            <div class="modal-content">
+                <h2 class="modal-titulo">Modificar Papel</h2>
+                <div class="modal-form">
+                    <div class="modal-form-row">
+                        <label>Seleccionar</label>
+                        <select id="mod-papel-select">
+                            <option value="">-- Seleccione --</option>
+                            {% for r in registros %}
+                            <option value="{{ r['id'] }}" data-nombre="{{ r['nombre'] }}"
+                                data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
+                                data-salidas="{{ r['salidas'] }}">
+                                {{ r['nombre'] }}
+                            </option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    <div class="modal-form-actions">
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-eliminar')">Cancelar</button>
-                        <button class="modal-btn modal-btn-si" id="btn-confirmar-del-papel" style="background-color: var(--color-danger);">Eliminar</button>
+
+                    <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
+                    <div class="modal-form-row"><label>Stock Inicial</label><input type="number" id="mod-papel-stock">
                     </div>
+                    <div class="modal-form-row"><label>Entradas</label><input type="number" id="mod-papel-entradas">
+                    </div>
+                    <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas"></div>
+                </div>
+                <div class="modal-form-actions">
+                    <button class="modal-btn modal-btn-no"
+                        onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
+                    <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
                 </div>
             </div>
-
-            <div class="modal-overlay" id="modal-papel-modificar-general">
-                <div class="modal-content">
-                    <h2 class="modal-titulo">Modificar Papel</h2>
-                    <div class="modal-form">
-                        <div class="modal-form-row">
-                            <label>Seleccionar</label>
-                            <select id="mod-papel-select">
-                                <option value="">-- Seleccione --</option>
-                                {% for r in registros %}
-                                    <option value="{{ r['id'] }}" 
-                                            data-nombre="{{ r['nombre'] }}" 
-                                            data-stock="{{ r['stock_inicial'] }}"
-                                            data-entradas="{{ r['entradas'] }}"
-                                            data-salidas="{{ r['salidas'] }}">
-                                        {{ r['nombre'] }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        
-                        <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
-                        <div class="modal-form-row"><label>Stock Inicial</label><input type="number" id="mod-papel-stock"></div>
-                        <div class="modal-form-row"><label>Entradas</label><input type="number" id="mod-papel-entradas"></div>
-                        <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas"></div>
-                    </div>
-                    <div class="modal-form-actions">
-                        <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
-                        <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
-                    </div>
-                </div>
-            </div>
+        </div>
 
         {% elif vista == "papel_entradas_menu" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('papel_entradas_historial') }}" class="accion-card">Ver historial de entradas</a>
-                    <a href="{{ url_for('papel_entradas_nuevo') }}" class="accion-card">Registrar nueva entrada</a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('papel_entradas_historial') }}" class="accion-card">Ver historial de entradas</a>
+                <a href="{{ url_for('papel_entradas_nuevo') }}" class="accion-card">Registrar nueva entrada</a>
+            </div>
+        </section>
 
         {% elif vista == "papel_entradas_nueva" %}
-            <section class="registro-section">
-                <h1 class="section-title">Registrar Entrada de Papel</h1>
-                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-                <form method="post" action="{{ url_for('papel_entradas_nuevo') }}" id="form-papel-entradas-nueva">
-                    <div class="registro-cards-grid">
-                        <div class="registro-card">
-                            <label>Tipo de Papel</label>
-                            <select name="tipo_papel" required>
-                                <option value="">-- Seleccione --</option>
-                                {% for p in papeles %}
-                                    {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                                    <option value="{{ nombre }}">{{ nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required></div>
-                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1" required></div>
-                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea name="observaciones" rows="2"></textarea></div>
-                    </div>
-                    <div class="modal-form-actions" style="justify-content: center;">
-                        <button type="submit" class="btn-confirmar">Confirmar Entrada</button>
-                    </div>
-                </form>
-            </section>
-
- {% elif vista == "papel_entradas_historial" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Historial Entradas - Papel</h1>
-                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-ent" type="text"></div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-papel-ent">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th><th>Papel</th><th>Gramaje</th><th>Formato</th><th>Marca</th><th>Cant</th><th>Obs</th>
-                                <th>ACCIÓN</th> </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr>
-                                    <td>{{ r['fecha'] }}</td><td>{{ r['tipo_papel'] }}</td><td>{{ r['gramaje'] }}</td>
-                                    <td>{{ r['formato'] }}</td><td>{{ r['marca'] }}</td><td>{{ r['cantidad'] }}</td><td>{{ r['observaciones'] }}</td>
-                                    <td>
-                                        <button class="btn-borrar btn-borrar-papel" 
-                                                data-id="{{ r['id'] }}" 
-                                                data-tipo="entrada">BORRAR</button>
-                                    </td>
-                                </tr>
+        <section class="registro-section">
+            <h1 class="section-title">Registrar Entrada de Papel</h1>
+            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+            <form method="post" action="{{ url_for('papel_entradas_nuevo') }}" id="form-papel-entradas-nueva">
+                <div class="registro-cards-grid">
+                    <div class="registro-card">
+                        <label>Tipo de Papel</label>
+                        <select name="tipo_papel" required>
+                            <option value="">-- Seleccione --</option>
+                            {% for p in papeles %}
+                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                            <option value="{{ nombre }}">{{ nombre }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
+                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
+                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                    </div>
+                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                            required></div>
+                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                            name="observaciones" rows="2"></textarea></div>
                 </div>
-            </section>
+                <div class="modal-form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn-confirmar">Confirmar Entrada</button>
+                </div>
+            </form>
+        </section>
+
+        {% elif vista == "papel_entradas_historial" %}
+        <section class="historial">
+            <h1 class="historial-titulo">Historial Entradas - Papel</h1>
+            <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-ent" type="text"></div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-papel-ent">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Papel</th>
+                            <th>Gramaje</th>
+                            <th>Formato</th>
+                            <th>Marca</th>
+                            <th>Cant</th>
+                            <th>Obs</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r['fecha'] }}</td>
+                            <td>{{ r['tipo_papel'] }}</td>
+                            <td>{{ r['gramaje'] }}</td>
+                            <td>{{ r['formato'] }}</td>
+                            <td>{{ r['marca'] }}</td>
+                            <td>{{ r['cantidad'] }}</td>
+                            <td>{{ r['observaciones'] }}</td>
+                            <td>
+                                <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
+                                    data-tipo="entrada">BORRAR</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {% elif vista == "papel_salidas_menu" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('papel_salidas_historial') }}" class="accion-card">Ver historial de salidas</a>
-                    <a href="{{ url_for('papel_salidas_nuevo') }}" class="accion-card">Registrar nueva salida</a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('papel_salidas_historial') }}" class="accion-card">Ver historial de salidas</a>
+                <a href="{{ url_for('papel_salidas_nuevo') }}" class="accion-card">Registrar nueva salida</a>
+            </div>
+        </section>
 
         {% elif vista == "papel_salidas_nueva" %}
-            <section class="registro-section">
-                <h1 class="section-title">Registrar Salida de Papel</h1>
-                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-                <form method="post" action="{{ url_for('papel_salidas_nuevo') }}" id="form-papel-salidas-nueva">
-                    <div class="registro-cards-grid">
-                        <div class="registro-card">
-                            <label>Tipo de Papel</label>
-                            <select name="tipo_papel" required>
-                                <option value="">-- Seleccione --</option>
-                                {% for p in papeles %}
-                                    {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                                    <option value="{{ nombre }}">{{ nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required></div>
-                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1" required></div>
-                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea name="observaciones" rows="2"></textarea></div>
-                    </div>
-                    <div class="modal-form-actions" style="justify-content: center;">
-                        <button type="submit" class="btn-confirmar" style="background-color: var(--color-danger);">Confirmar Salida</button>
-                    </div>
-                </form>
-            </section>
-
-       {% elif vista == "papel_salidas_historial" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Historial Salidas - Papel</h1>
-                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-sal" type="text"></div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-papel-sal">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th><th>Papel</th><th>Gramaje</th><th>Formato</th><th>Marca</th><th>Cant</th><th>Obs</th>
-                                <th>ACCIÓN</th> </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr>
-                                    <td>{{ r['fecha'] }}</td><td>{{ r['tipo_papel'] }}</td><td>{{ r['gramaje'] }}</td>
-                                    <td>{{ r['formato'] }}</td><td>{{ r['marca'] }}</td><td>{{ r['cantidad'] }}</td><td>{{ r['observaciones'] }}</td>
-                                    <td>
-                                        <button class="btn-borrar btn-borrar-papel" 
-                                                data-id="{{ r['id'] }}" 
-                                                data-tipo="salida">BORRAR</button>
-                                    </td>
-                                </tr>
+        <section class="registro-section">
+            <h1 class="section-title">Registrar Salida de Papel</h1>
+            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+            <form method="post" action="{{ url_for('papel_salidas_nuevo') }}" id="form-papel-salidas-nueva">
+                <div class="registro-cards-grid">
+                    <div class="registro-card">
+                        <label>Tipo de Papel</label>
+                        <select name="tipo_papel" required>
+                            <option value="">-- Seleccione --</option>
+                            {% for p in papeles %}
+                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                            <option value="{{ nombre }}">{{ nombre }}</option>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
+                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
+                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                    </div>
+                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                            required></div>
+                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                            name="observaciones" rows="2"></textarea></div>
                 </div>
-            </section>
+                <div class="modal-form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn-confirmar" style="background-color: var(--color-danger);">Confirmar
+                        Salida</button>
+                </div>
+            </form>
+        </section>
+
+        {% elif vista == "papel_salidas_historial" %}
+        <section class="historial">
+            <h1 class="historial-titulo">Historial Salidas - Papel</h1>
+            <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-sal" type="text"></div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-papel-sal">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Papel</th>
+                            <th>Gramaje</th>
+                            <th>Formato</th>
+                            <th>Marca</th>
+                            <th>Cant</th>
+                            <th>Obs</th>
+                            <th>ACCIÓN</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr>
+                            <td>{{ r['fecha'] }}</td>
+                            <td>{{ r['tipo_papel'] }}</td>
+                            <td>{{ r['gramaje'] }}</td>
+                            <td>{{ r['formato'] }}</td>
+                            <td>{{ r['marca'] }}</td>
+                            <td>{{ r['cantidad'] }}</td>
+                            <td>{{ r['observaciones'] }}</td>
+                            <td>
+                                <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
+                                    data-tipo="salida">BORRAR</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {% elif vista == "papel_pedidos_menu" %}
-            <section class="acciones">
-                <div class="acciones-container">
-                    <a href="{{ url_for('papel_pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
-                    <a href="{{ url_for('papel_pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
-                </div>
-            </section>
+        <section class="acciones">
+            <div class="acciones-container">
+                <a href="{{ url_for('papel_pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
+                <a href="{{ url_for('papel_pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
+            </div>
+        </section>
 
         {% elif vista == "papel_pedidos_nuevo" %}
-            <section class="registro-section">
-                <h1 class="section-title">Generar Pedido de Papel</h1>
-                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-                <form method="post" action="{{ url_for('papel_pedidos_nuevo') }}" id="form-papel-pedidos-nuevo">
-                    <div class="registro-cards-grid">
-                        <div class="registro-card">
-                            <label>Pedido por</label>
-                            <input type="text" name="pedido_por" required>
-                        </div>
-                        <div class="registro-card">
-                            <label>Tipo de Papel</label>
-                            <select name="tipo_papel" required>
-                                <option value="">-- Seleccione --</option>
-                                {% for p in papeles %}
-                                    {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                                    <option value="{{ nombre }}">{{ nombre }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required></div>
-                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1" required></div>
-                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea name="observaciones" rows="2"></textarea></div>
+        <section class="registro-section">
+            <h1 class="section-title">Generar Pedido de Papel</h1>
+            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+            <form method="post" action="{{ url_for('papel_pedidos_nuevo') }}" id="form-papel-pedidos-nuevo">
+                <div class="registro-cards-grid">
+                    <div class="registro-card">
+                        <label>Pedido por</label>
+                        <input type="text" name="pedido_por" required>
                     </div>
-                    <div class="modal-form-actions" style="justify-content: center;">
-                        <button type="submit" class="btn-confirmar" style="background-color: var(--color-warning);">Registrar Pedido</button>
+                    <div class="registro-card">
+                        <label>Tipo de Papel</label>
+                        <select name="tipo_papel" required>
+                            <option value="">-- Seleccione --</option>
+                            {% for p in papeles %}
+                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                            <option value="{{ nombre }}">{{ nombre }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                </form>
-            </section>
+                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
+                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
+                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                    </div>
+                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                            required></div>
+                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                            name="observaciones" rows="2"></textarea></div>
+                </div>
+                <div class="modal-form-actions" style="justify-content: center;">
+                    <button type="submit" class="btn-confirmar"
+                        style="background-color: var(--color-warning);">Registrar Pedido</button>
+                </div>
+            </form>
+        </section>
 
         {% elif vista == "papel_pedidos_historial" %}
-            <section class="historial">
-                <h1 class="historial-titulo">Historial Pedidos - Papel</h1>
-                <div class="historial-filtro">
-                    <label>Filtrar:</label>
-                    <input id="filtro-papel-ped" type="text" placeholder="Buscar...">
-                </div>
-                <div class="historial-tabla-wrapper">
-                    <table class="historial-tabla" id="tabla-papel-pedidos">
-                        <thead>
-                            <tr>
-                                <th>Fecha</th>
-                                <th>POR</th> <th>Papel</th>
-                                <th>Gramaje</th>
-                                <th>Formato</th>
-                                <th>Marca</th>
-                                <th>Cant</th>
-                                <th>Estado</th>
-                                <th>Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for r in registros %}
-                                <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
-                                    <td>{{ r['fecha'] }}</td>
-                                    <td>{{ r['pedido_por'] }}</td> <td>{{ r['tipo_papel'] }}</td>
-                                    <td>{{ r['gramaje'] }}</td>
-                                    <td>{{ r['formato'] }}</td>
-                                    <td>{{ r['marca'] }}</td>
-                                    <td>{{ r['cantidad'] }}</td>
-                                    <td class="estado-pedido">{{ r['estado'] }}</td>
-                                    <td>
-                                        {% if r['estado'] != 'Entregado' %}
-                                            <button type="button" class="btn-entregado btn-entregado-papel" data-id="{{ r['id'] }}">
-                                                Entregado
-                                            </button>
-                                        {% else %}
-                                            ✔
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </section>      
+        <section class="historial">
+            <h1 class="historial-titulo">Historial Pedidos - Papel</h1>
+            <div class="historial-filtro">
+                <label>Filtrar:</label>
+                <input id="filtro-papel-ped" type="text" placeholder="Buscar...">
+            </div>
+            <div class="historial-tabla-wrapper">
+                <table class="historial-tabla" id="tabla-papel-pedidos">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>POR</th>
+                            <th>Papel</th>
+                            <th>Gramaje</th>
+                            <th>Formato</th>
+                            <th>Marca</th>
+                            <th>Cant</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in registros %}
+                        <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                            <td>{{ r['fecha'] }}</td>
+                            <td>{{ r['pedido_por'] }}</td>
+                            <td>{{ r['tipo_papel'] }}</td>
+                            <td>{{ r['gramaje'] }}</td>
+                            <td>{{ r['formato'] }}</td>
+                            <td>{{ r['marca'] }}</td>
+                            <td>{{ r['cantidad'] }}</td>
+                            <td class="estado-pedido">{{ r['estado'] }}</td>
+                            <td>
+                                {% if r['estado'] != 'Entregado' %}
+                                <button type="button" class="btn-entregado btn-entregado-papel" data-id="{{ r['id'] }}">
+                                    Entregado
+                                </button>
+                                {% else %}
+                                ✔
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
 
         {% endif %} <div class="modal-overlay" id="modal-borrar">
             <div class="modal-content">
@@ -1082,8 +1189,28 @@
                 <h2 class="modal-titulo">Vista Previa</h2>
                 <div class="tabla-wrap">
                     <table>
-                        <thead><tr><th>CÓDIGO</th><th>INSUMO</th><th>DESCRIPCIÓN</th><th>STOCK</th><th>ENTRADAS</th><th>SALIDAS</th><th>TOTAL</th></tr></thead>
-                        <tbody><tr><td id="pv-codigo"></td><td id="pv-insumo"></td><td id="pv-desc"></td><td id="pv-stock"></td><td id="pv-entradas"></td><td id="pv-salidas"></td><td id="pv-total"></td></tr></tbody>
+                        <thead>
+                            <tr>
+                                <th>CÓDIGO</th>
+                                <th>INSUMO</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th>STOCK</th>
+                                <th>ENTRADAS</th>
+                                <th>SALIDAS</th>
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td id="pv-codigo"></td>
+                                <td id="pv-insumo"></td>
+                                <td id="pv-desc"></td>
+                                <td id="pv-stock"></td>
+                                <td id="pv-entradas"></td>
+                                <td id="pv-salidas"></td>
+                                <td id="pv-total"></td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
                 <button id="preview-finalizar" type="button" class="btn-confirmar">Finalizar registro</button>
@@ -1109,8 +1236,11 @@
 
     </main>
 
+    {% if vista != 'login_global' %}
     <img src="{{ url_for('static', filename='img/logo-nextprint.png') }}" alt="Nextprint" class="logo-fixed">
+    {% endif %}
 
     <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
+
 </html>

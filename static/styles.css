@@ -2103,3 +2103,152 @@ body {
         font-size: 1.2rem !important;
     }
 }
+
+/* ==========================================================================
+   LOGIN GLOBAL (OSCURO Y MINIMALISTA)
+   ========================================================================== */
+
+/* Contenedor principal que ocupa toda la pantalla */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    background-color: #212529;
+    /* Fondo oscuro tipo Bootstrap Dark */
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9999;
+}
+
+/* Formulario tipo Tarjeta Flotante */
+.login-form {
+    background-color: transparent;
+    /* Sin fondo de tarjeta marcado */
+    width: 100%;
+    max-width: 330px;
+    padding: 15px;
+    color: #e9ecef;
+    /* Texto claro */
+    text-align: center;
+}
+
+/* Título */
+.login-title {
+    margin-bottom: 2rem;
+    font-size: 1.75rem;
+    font-weight: 400;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+/* Campos de entrada (Inputs) */
+.form-group-login {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+.form-group-login label {
+    display: none;
+    /* Ocultamos etiquetas para estilo minimalista (placeholder only) */
+}
+
+.form-group-login input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    color: #e9ecef;
+    background-color: #212529;
+    border: 1px solid #495057;
+    border-radius: 0.25rem;
+    /* Bordes apenas redondeados (Bootstrap style) */
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-group-login input:focus {
+    color: #e9ecef;
+    background-color: #212529;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    /* Foco azul */
+}
+
+.form-group-login input::placeholder {
+    color: #6c757d;
+}
+
+/* Ajuste específico para que los inputs queden pegados (estilo Login Bootstrap example) */
+.form-group-login:first-of-type input {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: -1px;
+    /* Superposición de bordes */
+}
+
+.form-group-login:last-of-type input {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+/* Checkbox "Recuérdame" */
+.chk-container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-left: 2px;
+}
+
+.chk-container input[type="checkbox"] {
+    accent-color: #0d6efd;
+    cursor: pointer;
+}
+
+.chk-container label {
+    font-size: 0.95rem;
+    color: #ced4da;
+    cursor: pointer;
+}
+
+/* Botón de Ingreso */
+.btn-login-submit {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #fff;
+    background-color: #0d6efd;
+    /* Azul Bootstrap Primary */
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+    margin-top: 10px;
+}
+
+.btn-login-submit:hover {
+    background-color: #0b5ed7;
+}
+
+/* Mensaje de Error */
+.login-error {
+    background-color: rgba(220, 53, 69, 0.2);
+    /* Rojo transparente */
+    color: #ea868f;
+    padding: 0.75rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(220, 53, 69, 0.5);
+    font-size: 0.95rem;
+}
+
+/* Footer (Copyright) */
+.login-footer {
+    margin-top: 3rem;
+    color: #6c757d;
+    font-size: 0.85rem;
+}

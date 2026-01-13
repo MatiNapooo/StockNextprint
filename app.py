@@ -42,6 +42,8 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+get_conn = get_db_connection
+
 # ===== CONFIGURACIÓN FLASK =====
 app = Flask(__name__)
 app.secret_key = "nextprint-stock-super-secreto"
@@ -51,6 +53,47 @@ USUARIOS_ADMIN = {
     "nicolas": "nnapoli",
     "luis": "lonapoli",
 }
+
+# ===== PROTECCIÓN GLOBAL (LOGIN) =====
+@app.before_request
+def requerir_login():
+    # Rutas exentas de login
+    rutas_publicas = ['login', 'static']
+    
+    # Si la petición es a endpoint estático o login, dejamos pasar
+    if request.endpoint == 'static' or request.endpoint == 'login':
+        return
+
+    # Si no tiene sesión autorizada, redirigir a login
+    if not session.get("app_authorized"):
+        return redirect(url_for("login"))
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        usuario = request.form.get("usuario", "").strip()
+        contrasena = request.form.get("contrasena", "").strip()
+        recordar = request.form.get("recordar") # Checkbox
+
+        # Credenciales Globales
+        if usuario == "nextprint" and contrasena == "npsa1141":
+            session["app_authorized"] = True
+            
+            # Recordar sesión (hacerla permanente)
+            if recordar:
+                session.permanent = True
+            else:
+                session.permanent = False
+                
+            return redirect(url_for("menu_principal"))
+        else:
+            return render_template("base.html", vista="login_global", error="Credenciales inválidas")
+
+    # Si ya está logueado, ir al menú
+    if session.get("app_authorized"):
+        return redirect(url_for("menu_principal"))
+
+    return render_template("base.html", vista="login_global")
 
 def credenciales_validas(usuario, contrasena):
     if not usuario or not contrasena:
@@ -153,10 +196,7 @@ def insumo_actualizar(codigo):
     return {"ok": True}, 200
 
 
-def get_db_connection():
-    conn = sqlite3.connect("stock.db")
-    conn.row_factory = sqlite3.Row
-    return conn
+
 
 def obtener_registros_inventario():
     conn = get_db_connection()
