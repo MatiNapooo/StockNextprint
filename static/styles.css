@@ -6,7 +6,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-    background-color: #cfcfcf; 
+    background-color: #cfcfcf;
 }
 
 /* ===== HEADER SUPERIOR ===== */
@@ -34,7 +34,7 @@ body {
     font-weight: 700;
     text-decoration: none;
     color: #000;
-    box-shadow: 2px 2px 0px rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4);
     cursor: pointer;
     white-space: nowrap;
 }
@@ -42,7 +42,7 @@ body {
 .btn-volver:hover {
     filter: brightness(0.96);
     transform: translateY(-1px);
-    box-shadow: 3px 3px 0px rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 0px rgba(0, 0, 0, 0.5);
 }
 
 /* ===== MENU PRINCIPAL ===== */
@@ -140,29 +140,29 @@ body {
 }
 
 .bienvenida-titulo {
-    font-size: 3.5rem;   
+    font-size: 3.5rem;
     margin-bottom: 1.2rem;
 }
 
 .bienvenida-subtitulo {
-    font-size: 2rem;    
+    font-size: 2rem;
 }
 
 
 .acciones-container {
     display: flex;
     justify-content: center;
-    gap: 5rem;              
-    margin-top: 1.5rem;     
+    gap: 5rem;
+    margin-top: 1.5rem;
 }
 
 .accion-card {
     background-color: #ffffff;
     border: 3px solid #000;
-    padding: 3rem 5rem;    
-    min-width: 320px;       
+    padding: 3rem 5rem;
+    min-width: 320px;
     text-align: center;
-    font-size: 1.8rem;      
+    font-size: 1.8rem;
     font-weight: 600;
     text-decoration: none;
     color: #000;
@@ -181,10 +181,10 @@ body {
     position: fixed;
     right: 20px;
     bottom: 20px;
-    max-width: 180px;      
+    max-width: 180px;
     height: auto;
     opacity: 0.9;
-    pointer-events: none;  
+    pointer-events: none;
 }
 
 
@@ -266,7 +266,7 @@ body {
 }
 
 .form-card label {
-    font-size: 1.2rem;  
+    font-size: 1.2rem;
     font-weight: 700;
     margin-bottom: 0.8rem;
     text-align: left;
@@ -319,7 +319,7 @@ body {
 
 .preview-wrapper {
     margin-top: 1rem;
-    display: none;               
+    display: none;
     flex-direction: column;
     align-items: center;
     gap: 1rem;
@@ -374,7 +374,7 @@ body {
 .select-insumo {
     font-weight: 700;
     min-width: 320px;
-    height: 3.5rem;         
+    height: 3.5rem;
 }
 
 
@@ -386,11 +386,11 @@ body {
 }
 
 .error-msg {
-    color: #c00000;          
-    font-weight: 700;        
+    color: #c00000;
+    font-weight: 700;
     font-size: 1rem;
     margin-bottom: 0.4rem;
-    min-height: 1.2rem;      
+    min-height: 1.2rem;
 }
 
 .accion-card-disabled {
@@ -420,7 +420,8 @@ body {
     object-fit: contain;
     border: 2px solid #000;
     background-color: #ffffff;
-    display: none; /* se muestra solo cuando hay insumo seleccionado */
+    display: none;
+    /* se muestra solo cuando hay insumo seleccionado */
 }
 
 /* HISTORIAL */
@@ -449,13 +450,13 @@ body {
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .btn-agregar-insumo:hover {
     filter: brightness(0.96);
     transform: translateY(-1px);
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
 }
 
 
@@ -521,9 +522,10 @@ body {
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
-    display: none;  /* se muestra desde JS */
+    display: none;
+    /* se muestra desde JS */
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -533,7 +535,7 @@ body {
     background-color: #fdfdfd;
     border: 3px solid #000;
     padding: 2rem 3rem;
-    box-shadow: 4px 4px 0 rgba(0,0,0,0.6);
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.6);
     text-align: center;
 }
 
@@ -557,7 +559,7 @@ body {
     font-size: 1.2rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
 }
 
 .modal-btn-si {
@@ -687,14 +689,14 @@ body {
     font-size: 1rem;
     font-weight: 700;
     cursor: pointer;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
 }
 
 .btn-eliminar-insumo:hover,
 .btn-editar-insumo:hover {
     filter: brightness(0.96);
     transform: translateY(-1px);
-    box-shadow: 3px 3px 0 rgba(0,0,0,0.5);
+    box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.5);
 }
 
 .modal-form-row select {
@@ -703,7 +705,8 @@ body {
     padding: 0.3rem 0.6rem;
     border: 2px solid #000;
     border-radius: 4px;
-    min-height: 2.2rem;       /* bueno para iPad */
+    min-height: 2.2rem;
+    /* bueno para iPad */
     background-color: #ffffff;
     color: #000000;
 }
@@ -758,7 +761,8 @@ body {
 /* ---- LOGIN ADMIN ---- */
 
 .login-section {
-    min-height: calc(100vh - 200px); /* ajusta si hace falta por header/footer */
+    min-height: calc(100vh - 200px);
+    /* ajusta si hace falta por header/footer */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -804,7 +808,8 @@ body {
     font-weight: 700;
     border-radius: 8px;
     border: 2px solid #000;
-    background-color: #1fb244; /* verde */
+    background-color: #1fb244;
+    /* verde */
     cursor: pointer;
     box-shadow: 3px 3px 0 #333;
     text-transform: uppercase;
@@ -826,30 +831,36 @@ body {
 .historial-admin {
     width: 100%;
     max-width: 1400px;
-    margin: 0 auto;       /* Centrar el contenedor */
+    margin: 0 auto;
+    /* Centrar el contenedor */
 }
 
 .historial-admin .historial-tabla-wrapper {
-    width: 100%;          /* que use todo el ancho disponible */
-    max-width: none;      /* sin límite de ancho */
+    width: 100%;
+    /* que use todo el ancho disponible */
+    max-width: none;
+    /* sin límite de ancho */
     margin-top: 1.5rem;
-    margin-left: 0;       /* que no se empuje hacia la derecha */
+    margin-left: 0;
+    /* que no se empuje hacia la derecha */
     margin-right: 0;
 }
 
 .historial-admin .historial-tabla {
     width: 100%;
-} 
+}
 
 .btn-cerrar-sesion {
     display: inline-block;
     padding: 0.4rem 1.4rem;
     margin-right: 1rem;
     font-size: 0.95rem;
-    font-weight: 700;            /* NEGRITA */
+    font-weight: 700;
+    /* NEGRITA */
     border-radius: 999px;
     border: 2px solid #000;
-    background-color: #ff4d4d;   /* ROJO */
+    background-color: #ff4d4d;
+    /* ROJO */
     color: #000000;
     text-decoration: none;
     cursor: pointer;
@@ -1014,8 +1025,16 @@ body {
 }
 
 /* Modal vista previa un poco más ancho */
-.modal-previa {
-    max-width: 95%;
+
+
+/* Tabla compacta para vista previa */
+.modal-previa .historial-tabla th,
+.modal-previa .historial-tabla td {
+    font-size: 0.75rem !important;
+    padding: 4px 4px !important;
+    line-height: 1.1;
+    white-space: normal;
+    /* Permitir wrap si es necesario */
 }
 
 /* Botón azul para finalizar */
@@ -1054,54 +1073,73 @@ body {
 /* 1. El contenedor que centra todo */
 .menu-wrapper {
     display: flex;
-    justify-content: center; /* Centrar horizontalmente */
-    align-items: center;     /* Centrar verticalmente */
-    gap: 5rem;               /* Separación entre Insumos y Papel */
+    justify-content: center;
+    /* Centrar horizontalmente */
+    align-items: center;
+    /* Centrar verticalmente */
+    gap: 5rem;
+    /* Separación entre Insumos y Papel */
     width: 100%;
-    min-height: 70vh;        /* Altura suficiente para que se centre en pantalla */
+    min-height: 70vh;
+    /* Altura suficiente para que se centre en pantalla */
     margin: 0 auto;
 }
 
 /* 2. La Tarjeta (Caja Blanca) */
 .menu-card {
-    background-color: #ffffff; /* Fondo blanco IMPORTANTE */
-    width: 350px;              /* Ancho fijo */
-    height: 350px;             /* Alto fijo */
-    
+    background-color: #ffffff;
+    /* Fondo blanco IMPORTANTE */
+    width: 350px;
+    /* Ancho fijo */
+    height: 350px;
+    /* Alto fijo */
+
     /* Estilo Retro */
-    border: 4px solid #000000; /* Borde negro grueso */
-    box-shadow: 10px 10px 0px #333333; /* Sombra sólida desplazada */
-    border-radius: 15px;       /* Bordes redondeados */
-    
+    border: 4px solid #000000;
+    /* Borde negro grueso */
+    box-shadow: 10px 10px 0px #333333;
+    /* Sombra sólida desplazada */
+    border-radius: 15px;
+    /* Bordes redondeados */
+
     /* Centrar contenido interno */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    
+
     cursor: pointer;
-    transition: all 0.2s ease; /* Suavizar movimiento */
+    transition: all 0.2s ease;
+    /* Suavizar movimiento */
 }
 
 /* 3. Efecto al pasar el mouse (Hover) */
 .menu-card:hover {
-    transform: translate(-3px, -3px); /* Se levanta un poco */
-    box-shadow: 14px 14px 0px #000000; /* La sombra crece */
-    background-color: #fffef0; /* Un color crema muy sutil opcional */
+    transform: translate(-3px, -3px);
+    /* Se levanta un poco */
+    box-shadow: 14px 14px 0px #000000;
+    /* La sombra crece */
+    background-color: #fffef0;
+    /* Un color crema muy sutil opcional */
 }
 
 /* 4. Controlar el tamaño de las imágenes */
 .menu-card-img {
-    width: 160px;        /* Tamaño controlado */
-    height: 160px;       /* Tamaño controlado */
-    object-fit: contain; /* Asegura que la imagen no se deforme */
-    margin-bottom: 20px; /* Espacio entre imagen y texto */
+    width: 160px;
+    /* Tamaño controlado */
+    height: 160px;
+    /* Tamaño controlado */
+    object-fit: contain;
+    /* Asegura que la imagen no se deforme */
+    margin-bottom: 20px;
+    /* Espacio entre imagen y texto */
 }
 
 /* 5. Texto de la tarjeta */
 .menu-card-title {
     font-size: 2.2rem;
-    font-weight: 800;    /* Letra bien gruesa */
+    font-weight: 800;
+    /* Letra bien gruesa */
     color: #000000;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -1113,21 +1151,27 @@ body {
 
 /* Item ENTRADAS: Verde Clarito */
 .menu-item.entradas {
-    background-color: #90ee90 !important; /* Verde claro pastel */
-    color: #000000 !important;            /* Texto negro para contraste */
+    background-color: #90ee90 !important;
+    /* Verde claro pastel */
+    color: #000000 !important;
+    /* Texto negro para contraste */
 }
 
 /* Item SALIDAS: Rojo */
 .menu-item.salidas {
-    background-color: #ff4d4d !important; /* Rojo suave pero alerta */
-    color: #ffffff !important;            /* Texto blanco */
-    text-shadow: 1px 1px 0 #000;          /* Sombra texto para leer mejor */
+    background-color: #ff4d4d !important;
+    /* Rojo suave pero alerta */
+    color: #ffffff !important;
+    /* Texto blanco */
+    text-shadow: 1px 1px 0 #000;
+    /* Sombra texto para leer mejor */
 }
 
 /* Efecto Hover (al pasar el mouse) para que se note que es clickeable */
 .menu-item.entradas:hover,
 .menu-item.salidas:hover {
-    filter: brightness(0.95);             /* Oscurece un poquito al tocar */
+    filter: brightness(0.95);
+    /* Oscurece un poquito al tocar */
 }
 
 /* =========================================
@@ -1135,14 +1179,16 @@ body {
    ========================================= */
 
 /* Contenedor principal de la sección */
-.historial, .inventario {
+.historial,
+.inventario {
     width: 100%;
     max-width: 1400px;
     margin: 0 auto;
 }
 
 /* Títulos de estas secciones */
-.historial-titulo, .section-title {
+.historial-titulo,
+.section-title {
     font-size: 2.2rem;
     margin-bottom: 1rem;
     text-align: left;
@@ -1154,7 +1200,8 @@ body {
 }
 
 /* Encabezado donde van los filtros y botones superiores */
-.historial-header, .inventario-header {
+.historial-header,
+.inventario-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -1164,18 +1211,21 @@ body {
 }
 
 /* Filtros de búsqueda */
-.historial-filtro, .inventario-filtro {
+.historial-filtro,
+.inventario-filtro {
     display: flex;
     align-items: center;
     gap: 0.8rem;
 }
 
-.historial-filtro label, .inventario-filtro label {
+.historial-filtro label,
+.inventario-filtro label {
     font-size: 1.1rem;
     font-weight: 700;
 }
 
-.historial-filtro input, .inventario-filtro input {
+.historial-filtro input,
+.inventario-filtro input {
     font-size: 1.1rem;
     padding: 0.4rem 0.8rem;
     border: 2px solid #000;
@@ -1186,49 +1236,59 @@ body {
 /* --- LA TABLA Y SU CAJA (Lo que más te gustó) --- */
 
 /* La caja que contiene la tabla (con borde grueso y sombra) */
-.historial-tabla-wrapper, .tabla-wrapper {
+.historial-tabla-wrapper,
+.tabla-wrapper {
     background: #fff;
     border: 3px solid #000;
-    box-shadow: 8px 8px 0 rgba(0,0,0,0.2); /* Sombra retro */
-    max-height: 70vh; /* Para que tenga scroll si es muy larga */
+    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
+    /* Sombra retro */
+    max-height: 70vh;
+    /* Para que tenga scroll si es muy larga */
     overflow-y: auto;
     border-radius: 4px;
 }
 
 /* La tabla en sí */
-.historial-tabla, .tabla-inventario {
+.historial-tabla,
+.tabla-inventario {
     width: 100%;
     border-collapse: collapse;
     font-size: 1rem;
 }
 
 /* Celdas de encabezado (TH) */
-.historial-tabla th, .tabla-inventario th {
-    background-color: #4a86c5; /* Azul retro */
+.historial-tabla th,
+.tabla-inventario th {
+    background-color: #4a86c5;
+    /* Azul retro */
     color: #ffffff;
     border: 1px solid #000;
     padding: 1rem;
     text-transform: uppercase;
     font-weight: 700;
-    position: sticky; /* Para que el encabezado quede fijo al scrollear */
+    position: sticky;
+    /* Para que el encabezado quede fijo al scrollear */
     top: 0;
     z-index: 10;
 }
 
 /* Celdas de datos (TD) */
-.historial-tabla td, .tabla-inventario td {
+.historial-tabla td,
+.tabla-inventario td {
     border: 1px solid #000;
     padding: 0.8rem;
     color: #000;
 }
 
 /* Efecto cebra (filas pares de otro color para leer mejor) */
-.historial-tabla tr:nth-child(even), .tabla-inventario tr:nth-child(even) {
+.historial-tabla tr:nth-child(even),
+.tabla-inventario tr:nth-child(even) {
     background-color: #f2f2f2;
 }
 
 /* Efecto hover en las filas */
-.historial-tabla tr:hover, .tabla-inventario tr:hover {
+.historial-tabla tr:hover,
+.tabla-inventario tr:hover {
     background-color: #e6f7ff;
 }
 
@@ -1239,15 +1299,18 @@ body {
 
 /* 1. SELECCIÓN ESPECÍFICA DE LAS 4 TABLAS
    (Usamos los IDs para no romper el estilo retro de Entradas/Salidas/Pedidos) */
-#tabla-inventario, 
-#tabla-inventario-simple, 
-#tabla-papel, 
+#tabla-inventario,
+#tabla-inventario-simple,
+#tabla-papel,
 #tabla-papel-simple {
-    border-collapse: separate; /* Necesario para bordes redondeados */
+    border-collapse: separate;
+    /* Necesario para bordes redondeados */
     border-spacing: 0;
-    font-family: 'Segoe UI', Inter, system-ui, sans-serif; /* Fuente moderna */
+    font-family: 'Segoe UI', Inter, system-ui, sans-serif;
+    /* Fuente moderna */
     width: 100%;
-    border: none; /* Sin borde negro grueso */
+    border: none;
+    /* Sin borde negro grueso */
 }
 
 /* 2. CONTENEDOR DE LA TABLA (Arreglo Scroll) */
@@ -1258,18 +1321,21 @@ body {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); 
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
     padding: 0;
-    overflow-y: auto !important; /* IMPORTANTE: Esto habilita el scroll de nuevo */
-    max-height: 70vh; /* Asegura que no se estire infinitamente */
+    overflow-y: auto !important;
+    /* IMPORTANTE: Esto habilita el scroll de nuevo */
+    max-height: 70vh;
+    /* Asegura que no se estire infinitamente */
 }
 
 /* 3. ENCABEZADOS DE TABLA (Header Profesional) */
-#tabla-inventario thead th, 
-#tabla-inventario-simple thead th, 
-#tabla-papel thead th, 
+#tabla-inventario thead th,
+#tabla-inventario-simple thead th,
+#tabla-papel thead th,
 #tabla-papel-simple thead th {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%); /* Degradado gris azulado oscuro */
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    /* Degradado gris azulado oscuro */
     color: #ffffff;
     font-weight: 600;
     text-transform: uppercase;
@@ -1281,13 +1347,15 @@ body {
 }
 
 /* 4. FILAS Y CELDAS (Cuerpo limpio) */
-#tabla-inventario td, 
-#tabla-inventario-simple td, 
-#tabla-papel td, 
+#tabla-inventario td,
+#tabla-inventario-simple td,
+#tabla-papel td,
 #tabla-papel-simple td {
     padding: 16px 15px;
-    color: #334155; /* Texto gris oscuro, no negro puro */
-    border-bottom: 1px solid #f1f5f9; /* Línea separadora muy fina */
+    color: #334155;
+    /* Texto gris oscuro, no negro puro */
+    border-bottom: 1px solid #f1f5f9;
+    /* Línea separadora muy fina */
     border-right: none;
     border-left: none;
     border-top: none;
@@ -1296,20 +1364,22 @@ body {
 }
 
 /* Efecto Hover en filas (ilumina al pasar el mouse) */
-#tabla-inventario tbody tr:hover, 
-#tabla-inventario-simple tbody tr:hover, 
-#tabla-papel tbody tr:hover, 
+#tabla-inventario tbody tr:hover,
+#tabla-inventario-simple tbody tr:hover,
+#tabla-papel tbody tr:hover,
 #tabla-papel-simple tbody tr:hover {
-    background-color: #f8fafc !important; /* Gris muy clarito */
+    background-color: #f8fafc !important;
+    /* Gris muy clarito */
     transition: background-color 0.2s ease;
-    transform: none; /* Quitamos el efecto retro de moverse */
+    transform: none;
+    /* Quitamos el efecto retro de moverse */
     box-shadow: none;
 }
 
 /* Quitar el estilo cebra retro y poner fondo blanco puro */
-#tabla-inventario tbody tr, 
-#tabla-inventario-simple tbody tr, 
-#tabla-papel tbody tr, 
+#tabla-inventario tbody tr,
+#tabla-inventario-simple tbody tr,
+#tabla-papel tbody tr,
 #tabla-papel-simple tbody tr {
     background-color: #ffffff;
 }
@@ -1320,9 +1390,11 @@ body {
 .historial:has(#tabla-inventario-simple) .historial-titulo,
 .historial:has(#tabla-papel-simple) .historial-titulo {
     font-family: 'Segoe UI', sans-serif;
-    font-weight: 300; /* Letra fina y elegante */
+    font-weight: 300;
+    /* Letra fina y elegante */
     color: #1e293b;
-    border-bottom: none; /* Sin la línea negra gruesa */
+    border-bottom: none;
+    /* Sin la línea negra gruesa */
     position: relative;
     padding-bottom: 10px;
 }
@@ -1338,20 +1410,22 @@ body {
     left: 0;
     width: 60px;
     height: 4px;
-    background: #3b82f6; /* Azul moderno */
+    background: #3b82f6;
+    /* Azul moderno */
     border-radius: 2px;
 }
 
 /* 6. INPUT DE BÚSQUEDA (Estilo Cápsula/Pill) */
 .inventario-filtro input,
-#filtro-papel, 
+#filtro-papel,
 #filtro-papel-simple,
 #filtro-inventario-simple {
     border: 1px solid #cbd5e1 !important;
-    border-radius: 50px !important; /* Redondo completo */
+    border-radius: 50px !important;
+    /* Redondo completo */
     padding: 10px 20px !important;
     font-size: 0.95rem;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
     width: 350px;
 }
@@ -1359,41 +1433,47 @@ body {
 .inventario-filtro input:focus,
 #filtro-papel:focus {
     border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important; /* Anillo de enfoque azul suave */
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
+    /* Anillo de enfoque azul suave */
     outline: none;
 }
 
 /* 7. BOTONES DE ACCIÓN - Estilo Transparente */
-.btn-modificar-papel-row, 
+.btn-modificar-papel-row,
 #tabla-inventario .btn-modificar {
-    background-color: transparent !important; /* Fuerza transparencia */
-    color: #3b82f6 !important; /* Azul */
-    border: 1px solid #3b82f6 !important; /* Borde fino */
+    background-color: transparent !important;
+    /* Fuerza transparencia */
+    color: #3b82f6 !important;
+    /* Azul */
+    border: 1px solid #3b82f6 !important;
+    /* Borde fino */
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
     cursor: pointer;
-    box-shadow: none !important; /* Quita sombras viejas */
+    box-shadow: none !important;
+    /* Quita sombras viejas */
     transition: all 0.2s ease;
 }
 
-.btn-modificar-papel-row:hover, 
+.btn-modificar-papel-row:hover,
 #tabla-inventario .btn-modificar:hover {
-    background-color: #eff6ff !important; /* Un azul muy clarito al pasar el mouse */
+    background-color: #eff6ff !important;
+    /* Un azul muy clarito al pasar el mouse */
     transform: translateY(-2px);
 }
 
 /* Botones Superiores (Agregar/Eliminar/Editar en Admin) */
-.btn-agregar-insumo, 
-.btn-eliminar-insumo, 
+.btn-agregar-insumo,
+.btn-eliminar-insumo,
 .btn-editar-insumo {
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     padding: 10px 20px;
     font-weight: 600;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     background: white;
     color: #475569;
     transition: all 0.2s;
@@ -1405,6 +1485,7 @@ body {
     color: white;
     border: none;
 }
+
 .btn-agregar-insumo:hover {
     background: #059669;
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
@@ -1416,6 +1497,7 @@ body {
     color: #e11d48;
     border: 1px solid #fecdd3;
 }
+
 .btn-eliminar-insumo:hover {
     background: #e11d48;
     color: white;
@@ -1427,6 +1509,7 @@ body {
     color: #2563eb;
     border: 1px solid #bfdbfe;
 }
+
 .btn-editar-insumo:hover {
     background: #2563eb;
     color: white;
@@ -1441,14 +1524,17 @@ body {
 .btn-eliminar-insumo,
 .btn-editar-insumo {
     border: none !important;
-    border-radius: 8px !important; /* Bordes redondeados modernos */
+    border-radius: 8px !important;
+    /* Bordes redondeados modernos */
     padding: 10px 20px !important;
     font-size: 0.95rem !important;
     font-weight: 600 !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05) !important; /* Sombra suave */
-    text-transform: none !important; /* Quita el mayúsculas forzado si lo hubiera */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+    /* Sombra suave */
+    text-transform: none !important;
+    /* Quita el mayúsculas forzado si lo hubiera */
     letter-spacing: 0.3px !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -1461,27 +1547,34 @@ body {
 .btn-eliminar-insumo:hover,
 .btn-editar-insumo:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-    filter: none !important; /* Quita filtros viejos */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    filter: none !important;
+    /* Quita filtros viejos */
 }
 
 /* 2. COLORES ESPECÍFICOS */
 
 /* AGREGAR (Verde Moderno) */
 .btn-agregar-insumo {
-    background-color: #10b981 !important; /* Emerald 500 */
+    background-color: #10b981 !important;
+    /* Emerald 500 */
     color: #ffffff !important;
 }
+
 .btn-agregar-insumo:hover {
-    background-color: #059669 !important; /* Emerald 600 */
+    background-color: #059669 !important;
+    /* Emerald 600 */
 }
 
 /* ELIMINAR (Rojo Suave / Alerta) */
 .btn-eliminar-insumo {
-    background-color: #fee2e2 !important; /* Rojo muy claro */
-    color: #ef4444 !important;            /* Texto Rojo */
+    background-color: #fee2e2 !important;
+    /* Rojo muy claro */
+    color: #ef4444 !important;
+    /* Texto Rojo */
     border: 1px solid #fecaca !important;
 }
+
 .btn-eliminar-insumo:hover {
     background-color: #ef4444 !important;
     color: #ffffff !important;
@@ -1489,10 +1582,13 @@ body {
 
 /* MODIFICAR GENERAL (Azul Suave) */
 .btn-editar-insumo {
-    background-color: #e0f2fe !important; /* Azul cielo claro */
-    color: #0284c7 !important;            /* Texto Azul */
+    background-color: #e0f2fe !important;
+    /* Azul cielo claro */
+    color: #0284c7 !important;
+    /* Texto Azul */
     border: 1px solid #bae6fd !important;
 }
+
 .btn-editar-insumo:hover {
     background-color: #0284c7 !important;
     color: #ffffff !important;
@@ -1503,8 +1599,10 @@ body {
 .btn-modificar,
 .btn-modificar-papel-row {
     background-color: transparent !important;
-    border: 1px solid #3b82f6 !important; /* Borde fino azul */
-    color: #3b82f6 !important;            /* Texto azul */
+    border: 1px solid #3b82f6 !important;
+    /* Borde fino azul */
+    color: #3b82f6 !important;
+    /* Texto azul */
     border-radius: 6px !important;
     padding: 6px 14px !important;
     font-size: 0.8rem !important;
@@ -1517,8 +1615,10 @@ body {
 
 .btn-modificar:hover,
 .btn-modificar-papel-row:hover {
-    background-color: #3b82f6 !important; /* Fondo azul al pasar mouse */
-    color: #ffffff !important;            /* Texto blanco */
+    background-color: #3b82f6 !important;
+    /* Fondo azul al pasar mouse */
+    color: #ffffff !important;
+    /* Texto blanco */
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3) !important;
 }
@@ -1531,26 +1631,34 @@ body {
 .modal-content,
 .modal-inventario-content {
     background-color: #ffffff !important;
-    border: none !important;             /* Quitamos borde negro grueso */
-    border-radius: 20px !important;      /* Bordes muy redondeados */
+    border: none !important;
+    /* Quitamos borde negro grueso */
+    border-radius: 20px !important;
+    /* Bordes muy redondeados */
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                0 10px 10px -5px rgba(0, 0, 0, 0.04) !important; /* Sombra difusa suave */
+        0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+    /* Sombra difusa suave */
     padding: 3rem !important;
     font-family: 'Segoe UI', system-ui, sans-serif !important;
-    max-width: 600px !important;         /* Ancho controlado */
+    max-width: 600px !important;
+    /* Ancho controlado */
 }
 
 /* 2. TÍTULOS DEL MODAL */
 .modal-titulo {
     font-size: 1.5rem !important;
     font-weight: 700 !important;
-    color: #1e293b !important;           /* Gris oscuro elegante */
+    color: #1e293b !important;
+    /* Gris oscuro elegante */
     margin-bottom: 2rem !important;
-    text-transform: none !important;     /* Texto normal, no todo mayúsculas */
+    text-transform: none !important;
+    /* Texto normal, no todo mayúsculas */
     letter-spacing: -0.5px !important;
-    border-bottom: 1px solid #f1f5f9 !important; /* Línea separadora sutil */
+    border-bottom: 1px solid #f1f5f9 !important;
+    /* Línea separadora sutil */
     padding-bottom: 1rem !important;
-    text-align: left !important;         /* Alineado a la izquierda */
+    text-align: left !important;
+    /* Alineado a la izquierda */
 }
 
 /* 3. CAMPOS DE TEXTO Y LISTAS (Inputs & Selects) */
@@ -1560,14 +1668,17 @@ body {
 #del-papel-select,
 #mod-papel-select,
 #edit-insumo-select {
-    border: 1px solid #cbd5e1 !important; /* Borde gris suave */
+    border: 1px solid #cbd5e1 !important;
+    /* Borde gris suave */
     border-radius: 8px !important;
     padding: 12px 15px !important;
     font-size: 1rem !important;
-    background-color: #f8fafc !important; /* Fondo gris muy clarito */
+    background-color: #f8fafc !important;
+    /* Fondo gris muy clarito */
     color: #334155 !important;
     transition: all 0.2s ease !important;
-    min-height: 48px !important;          /* Altura cómoda para clickear */
+    min-height: 48px !important;
+    /* Altura cómoda para clickear */
     box-shadow: none !important;
     width: 100% !important;
 }
@@ -1577,16 +1688,19 @@ body {
 .modal-form-row select:focus,
 #del-insumo-select:focus,
 #del-papel-select:focus {
-    border-color: #3b82f6 !important;     /* Azul al enfocar */
+    border-color: #3b82f6 !important;
+    /* Azul al enfocar */
     background-color: #ffffff !important;
     outline: none !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important; /* Resplandor azul */
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+    /* Resplandor azul */
 }
 
 /* Etiquetas (Labels) */
 .modal-form-row label {
     font-weight: 600 !important;
-    color: #64748b !important;            /* Gris medio */
+    color: #64748b !important;
+    /* Gris medio */
     font-size: 0.9rem !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
@@ -1596,7 +1710,8 @@ body {
 
 /* Ajuste de filas para que se vean ordenadas */
 .modal-form-row {
-    display: block !important;            /* Label arriba del input */
+    display: block !important;
+    /* Label arriba del input */
     margin-bottom: 1.2rem !important;
     text-align: left !important;
 }
@@ -1606,7 +1721,8 @@ body {
 /* Contenedor de botones alineado a la derecha */
 .modal-form-actions {
     display: flex !important;
-    justify-content: flex-end !important; /* Botones a la derecha */
+    justify-content: flex-end !important;
+    /* Botones a la derecha */
     gap: 1rem !important;
     margin-top: 2rem !important;
     border-top: 1px solid #f1f5f9 !important;
@@ -1627,6 +1743,7 @@ body {
     cursor: pointer !important;
     transition: all 0.2s !important;
 }
+
 .btn-volver-modal:hover,
 .modal-btn-no:hover {
     background-color: #f1f5f9 !important;
@@ -1641,7 +1758,8 @@ body {
 #btn-confirmar-mod-papel,
 #edit-insumo-confirmar,
 #inv-modal-confirmar {
-    background-color: #3b82f6 !important; /* Azul */
+    background-color: #3b82f6 !important;
+    /* Azul */
     color: white !important;
     border: none !important;
     border-radius: 8px !important;
@@ -1649,6 +1767,7 @@ body {
     font-weight: 600 !important;
     box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4) !important;
 }
+
 .modal-btn-si:hover,
 #btn-confirmar-mod-papel:hover,
 #edit-insumo-confirmar:hover {
@@ -1659,7 +1778,8 @@ body {
 /* Botón AGREGAR (Verde) */
 #insumo-modal-confirmar,
 #btn-confirmar-add-papel {
-    background-color: #10b981 !important; /* Verde Esmeralda */
+    background-color: #10b981 !important;
+    /* Verde Esmeralda */
     color: white !important;
     border: none !important;
     border-radius: 8px !important;
@@ -1667,6 +1787,7 @@ body {
     font-weight: 600 !important;
     box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4) !important;
 }
+
 #insumo-modal-confirmar:hover,
 #btn-confirmar-add-papel:hover {
     background-color: #059669 !important;
@@ -1678,7 +1799,8 @@ body {
 #btn-confirmar-del-papel,
 #insumo-conf-si,
 #borrar-si {
-    background-color: #ef4444 !important; /* Rojo */
+    background-color: #ef4444 !important;
+    /* Rojo */
     color: white !important;
     border: none !important;
     border-radius: 8px !important;
@@ -1686,6 +1808,7 @@ body {
     font-weight: 600 !important;
     box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4) !important;
 }
+
 #del-insumo-eliminar:hover,
 #btn-confirmar-del-papel:hover,
 #insumo-conf-si:hover,
@@ -1699,12 +1822,15 @@ body {
    ========================================================================== */
 
 /* 1. CAJA PRINCIPAL (Más angosta y con menos borde) */
-.modal-content, 
+.modal-content,
 .modal-inventario-content {
-    width: 95% !important;        
-    max-width: 380px !important;  /* Ancho máximo muy reducido (tipo celular) */
-    padding: 1.5rem !important;   /* Relleno interno ajustado */
-    margin: auto !important;      /* Centrado */
+    width: 95% !important;
+    max-width: 380px !important;
+    /* Ancho máximo muy reducido (tipo celular) */
+    padding: 1.5rem !important;
+    /* Relleno interno ajustado */
+    margin: auto !important;
+    /* Centrado */
     border-radius: 16px !important;
 }
 
@@ -1718,10 +1844,13 @@ body {
 /* 3. CAMPOS Y ETIQUETAS (Compactos) */
 .modal-form-row {
     display: flex !important;
-    flex-direction: column !important; /* Etiqueta arriba del input */
+    flex-direction: column !important;
+    /* Etiqueta arriba del input */
     align-items: stretch !important;
-    gap: 0.3rem !important;            /* Menos espacio entre etiqueta e input */
-    margin-bottom: 0.8rem !important;  /* Menos espacio entre filas */
+    gap: 0.3rem !important;
+    /* Menos espacio entre etiqueta e input */
+    margin-bottom: 0.8rem !important;
+    /* Menos espacio entre filas */
 }
 
 .modal-form-row label {
@@ -1735,9 +1864,11 @@ body {
 #del-papel-select,
 #mod-papel-select,
 #edit-insumo-select {
-    padding: 8px 12px !important;      /* Input más bajito */
+    padding: 8px 12px !important;
+    /* Input más bajito */
     font-size: 0.95rem !important;
-    min-height: 38px !important;       /* Altura mínima reducida */
+    min-height: 38px !important;
+    /* Altura mínima reducida */
 }
 
 /* 4. BOTONES (Más pequeños) */
@@ -1747,27 +1878,31 @@ body {
     gap: 0.8rem !important;
 }
 
-.modal-btn-si, 
+.modal-btn-si,
 .modal-btn-no,
 .btn-volver-modal,
 #btn-confirmar-mod-papel,
 #edit-insumo-confirmar,
 #insumo-modal-confirmar,
-#del-insumo-eliminar, 
+#del-insumo-eliminar,
 #btn-confirmar-del-papel,
 #btn-confirmar-add-papel {
-    padding: 8px 16px !important;     /* Botón más chico */
+    padding: 8px 16px !important;
+    /* Botón más chico */
     font-size: 0.9rem !important;
     border-radius: 6px !important;
 }
+
 /* ==========================================================================
    ARREGLO VISTA PREVIA (Para que se vea grande y sin scroll)
    ========================================================================== */
 
 /* Forzamos que la tarjeta de vista previa sea ancha */
 .modal-previa {
-    max-width: 800px !important;  /* Mucho más ancho para que entre la tabla */
-    width: 95% !important;        /* Adaptable */
+    max-width: 800px !important;
+    /* Mucho más ancho para que entre la tabla */
+    width: 95% !important;
+    /* Adaptable */
 }
 
 /* Quitamos los bordes y sombras de la tabla interna para que se vea limpia */
@@ -1776,7 +1911,8 @@ body {
     border: none !important;
     background: transparent !important;
     padding: 0 !important;
-    overflow: visible !important; /* Permite que se vea todo sin barras */
+    overflow: visible !important;
+    /* Permite que se vea todo sin barras */
     max-height: none !important;
 }
 
@@ -1793,80 +1929,95 @@ body {
 
     /* 1. AJUSTE GENERAL DEL CUERPO */
     .contenido {
-        padding: 1rem !important; /* Menos relleno en los bordes */
+        padding: 1rem !important;
+        /* Menos relleno en los bordes */
     }
 
     /* 2. HEADER Y MENÚ (Transformación a vertical) */
     .header-inner {
-        height: auto !important;       /* Altura automática para que entre todo */
-        flex-direction: column !important; /* Elementos uno abajo del otro */
+        height: auto !important;
+        /* Altura automática para que entre todo */
+        flex-direction: column !important;
+        /* Elementos uno abajo del otro */
         padding: 1rem !important;
         gap: 1rem !important;
     }
 
     .btn-volver {
-        align-self: flex-start !important; /* Botón volver a la izquierda */
+        align-self: flex-start !important;
+        /* Botón volver a la izquierda */
         margin-bottom: 0.5rem;
         font-size: 1rem !important;
     }
 
     .menu-principal {
-        flex-direction: column !important; /* Links uno abajo del otro */
+        flex-direction: column !important;
+        /* Links uno abajo del otro */
         width: 100% !important;
     }
 
     .menu-item {
         border-right: none !important;
-        border-bottom: 1px solid rgba(0,0,0,0.1) !important; /* Línea separadora suave */
-        font-size: 1.2rem !important; /* Letra un poco más chica */
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        /* Línea separadora suave */
+        font-size: 1.2rem !important;
+        /* Letra un poco más chica */
         padding: 15px 0 !important;
     }
-    
+
     .menu-item:last-child {
         border-bottom: none !important;
     }
 
     /* 3. MENÚ PRINCIPAL (Tarjetas Grandes) */
     .menu-wrapper {
-        flex-direction: column !important; /* Una tarjeta abajo de la otra */
+        flex-direction: column !important;
+        /* Una tarjeta abajo de la otra */
         gap: 2rem !important;
         min-height: auto !important;
         padding-top: 2rem;
     }
 
     .menu-card {
-        width: 100% !important;        /* Ocupan todo el ancho disponible */
-        max-width: 320px !important;   /* Pero no se hacen gigantes */
-        height: auto !important;       /* Altura flexible */
+        width: 100% !important;
+        /* Ocupan todo el ancho disponible */
+        max-width: 320px !important;
+        /* Pero no se hacen gigantes */
+        height: auto !important;
+        /* Altura flexible */
         padding: 2rem !important;
     }
 
     /* 4. FORMULARIOS (Registro de Entradas/Salidas/Pedidos) */
     .form-row {
-        flex-direction: column !important; /* Inputs uno abajo del otro */
+        flex-direction: column !important;
+        /* Inputs uno abajo del otro */
         gap: 1.5rem !important;
     }
 
     .form-card {
-        min-width: auto !important;    /* Quita el ancho mínimo fijo */
+        min-width: auto !important;
+        /* Quita el ancho mínimo fijo */
         width: 100% !important;
         padding: 1.5rem !important;
     }
 
     .registro-cards-grid {
-        grid-template-columns: 1fr !important; /* Una sola columna */
+        grid-template-columns: 1fr !important;
+        /* Una sola columna */
         max-width: 100% !important;
     }
 
     /* Selectores e Inputs más cómodos para el dedo */
-    .form-card select, 
+    .form-card select,
     .form-card input,
-    .select-insumo, 
+    .select-insumo,
     .select-unidad {
         width: 100% !important;
         min-width: auto !important;
         font-size: 1.1rem !important;
-        height: 50px !important; /* Más alto para tocar fácil */
+        height: 50px !important;
+        /* Más alto para tocar fácil */
     }
 
     /* 5. BOTONES DE ACCIÓN (Grandes) */
@@ -1885,19 +2036,21 @@ body {
 
     /* 6. TABLAS (Hacerlas deslizables) */
     /* En celulares las tablas no caben, así que permitimos scroll horizontal interno */
-    .historial-tabla-wrapper, 
+    .historial-tabla-wrapper,
     .tabla-wrapper {
-        overflow-x: auto !important; /* Scroll lateral si no entra */
+        overflow-x: auto !important;
+        /* Scroll lateral si no entra */
         border-radius: 8px !important;
     }
 
-    .historial-tabla, 
+    .historial-tabla,
     .tabla-inventario {
-        min-width: 600px !important; /* Fuerza ancho mínimo para que no se aplaste */
+        min-width: 600px !important;
+        /* Fuerza ancho mínimo para que no se aplaste */
     }
 
     /* Achicar un poco la letra de la tabla */
-    .historial-tabla th, 
+    .historial-tabla th,
     .historial-tabla td,
     .tabla-inventario th,
     .tabla-inventario td {
@@ -1906,7 +2059,7 @@ body {
     }
 
     /* 7. ADMIN HEADERS Y FILTROS */
-    .historial-header, 
+    .historial-header,
     .inventario-header {
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -1916,16 +2069,18 @@ body {
     .historial-header-right,
     .login-actions {
         display: flex;
-        flex-direction: column; /* Botones uno abajo del otro en admin */
+        flex-direction: column;
+        /* Botones uno abajo del otro en admin */
         width: 100%;
         gap: 0.8rem !important;
     }
 
-    .btn-agregar-insumo, 
-    .btn-eliminar-insumo, 
+    .btn-agregar-insumo,
+    .btn-eliminar-insumo,
     .btn-editar-insumo,
     .btn-cerrar-sesion {
-        width: 100% !important; /* Botones ancho completo */
+        width: 100% !important;
+        /* Botones ancho completo */
         margin: 0 !important;
         text-align: center !important;
         justify-content: center !important;
@@ -1933,18 +2088,18 @@ body {
 
     .inventario-filtro input,
     .historial-filtro input {
-        width: 100% !important; /* Buscador ancho completo */
+        width: 100% !important;
+        /* Buscador ancho completo */
     }
 
     /* 8. MODALES (Ajuste final para pantallas muy chicas) */
-    .modal-content, 
+    .modal-content,
     .modal-inventario-content {
         width: 95% !important;
         padding: 1rem !important;
     }
-    
+
     .modal-titulo {
         font-size: 1.2rem !important;
     }
 }
-
