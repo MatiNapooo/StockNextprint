@@ -1,20 +1,46 @@
 import sqlite3
 import os
+import shutil 
 from collections import Counter
 from datetime import datetime
 from sqlite3 import IntegrityError
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, "stock.db")
 
-# ===== CONEXIÓN A BASE DE DATOS =====
-def get_conn():
-    conn = sqlite3.connect(DB_PATH)
+# --- BLOQUE MÁGICO PARA RAILWAY ---
+def get_db_path():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Esta es la carpeta "segura" que crearemos en Railway
+    railway_volumen = "/app/datos"
+    
+    # 1. ¿Estamos en Railway? (Si existe la carpeta del volumen)
+    if os.path.exists(railway_volumen):
+        db_path_volumen = os.path.join(railway_volumen, "stock.db")
+        
+        # 2. ¿El archivo ya está en el volumen?
+        if not os.path.exists(db_path_volumen):
+            # NO está (es la primera vez). Lo copiamos desde el código original.
+            print("Iniciando carga de base de datos al volumen persistente...")
+            origen = os.path.join(base_dir, "stock.db")
+            if os.path.exists(origen):
+                shutil.copy2(origen, db_path_volumen)
+                print("¡Base de datos copiada con éxito!")
+        
+        return db_path_volumen
+    else:
+        # No estamos en Railway (estamos en tu PC)
+        return os.path.join(base_dir, "stock.db")
+
+# Usamos la función para definir la ruta
+DB_PATH = get_db_path()
+
+# ----------------------------------
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_PATH) # <-- Usamos la variable que calculamos arriba
     conn.row_factory = sqlite3.Row
     return conn
-
-get_db_connection = get_conn
 
 # ===== CONFIGURACIÓN FLASK =====
 app = Flask(__name__)
