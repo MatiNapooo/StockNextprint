@@ -764,9 +764,20 @@
         {% elif vista == "papel_inventario_simple" %}
         <section class="historial">
             <h1 class="historial-titulo">Inventario - Papel</h1>
-            <div class="historial-filtro">
-                <label>Filtrar:</label><input id="filtro-papel-simple" type="text" placeholder="Escriba para filtrar">
+
+            <!-- TARJETA DE FILTRO (Diseño Card Restaurado) -->
+            <div class="filtro-card">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <label for="filtro-papel-simple">Filtrar:</label>
+                    <input id="filtro-papel-simple" type="text" placeholder="Escriba para filtrar...">
+                </div>
+
+                <div class="filtro-toggle">
+                    <input type="checkbox" id="check-stock-papel-simple">
+                    <label for="check-stock-papel-simple">Con Stock</label>
+                </div>
             </div>
+
             <div class="historial-tabla-wrapper">
                 <table class="historial-tabla" id="tabla-papel-simple">
                     <thead>
@@ -791,448 +802,483 @@
                     </tbody>
                 </table>
             </div>
-        </section>
+            {% elif vista == "papel_inventario_admin" %}
+            <section class="historial historial-admin">
+                <div class="historial-header">
+                    <div class="historial-header-left">
+                        <h1 class="historial-titulo">Administración - Papel</h1>
 
+                        <!-- Tarjeta de filtro estilo 'Simple' integrada en el header -->
+                        <div class="filtro-card"
+                            style="margin: 0.5rem 0; width: auto; min-width: 450px; padding: 0.8rem;">
+                            <div style="display: flex; align-items: center; flex: 1;">
+                                <label for="filtro-papel">Filtrar:</label>
+                                <input id="filtro-papel" type="text" placeholder="Buscar papel...">
+                            </div>
 
-        {% elif vista == "papel_inventario_admin" %}
-        <section class="inventario">
-            <h1 class="section-title">Administración – Papel</h1>
-            <div class="inventario-header">
-                <div class="historial-header-right">
-                    <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+
-                        Agregar</button>
-                    <button type="button" class="btn-eliminar-insumo"
-                        onclick="openModal('modal-papel-eliminar')">Eliminar</button>
-                    <button type="button" class="btn-editar-insumo"
-                        onclick="openModal('modal-papel-modificar-general')">Modificar</button>
-
-                    <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
-                        style="margin-left: 10px;">Salir</a>
-                </div>
-            </div>
-            <div class="inventario-filtro" style="margin-top: 1rem;">
-                <label>Filtrar:</label><input id="filtro-papel" type="text" placeholder="Buscar papel...">
-            </div>
-            <div class="tabla-wrapper">
-                <table id="tabla-papel" class="tabla-inventario">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>NOMBRE</th>
-                            <th>STOCK</th>
-                            <th>ENT</th>
-                            <th>SAL</th>
-                            <th>TOTAL</th>
-                            <th>ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in registros %}
-                        <tr>
-                            <td>{{ r['id'] }}</td>
-                            <td>{{ r['nombre'] }}</td>
-                            <td>{{ r['stock_inicial'] }}</td>
-                            <td>{{ r['entradas'] }}</td>
-                            <td>{{ r['salidas'] }}</td>
-                            <td>{{ r['total'] }}</td>
-                            <td>
-                                <button class="btn-modificar-papel-row" type="button" data-id="{{ r['id'] }}"
-                                    data-nombre="{{ r['nombre'] }}" data-stock="{{ r['stock_inicial'] }}"
-                                    data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
-                                    MODIFICAR
-                                </button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <div class="modal-overlay" id="modal-papel-agregar">
-            <div class="modal-content">
-                <h2 class="modal-titulo">Agregar Nuevo Papel</h2>
-                <div class="modal-form">
-                    <div class="modal-form-row"><label>Nombre</label><input type="text" id="add-papel-nombre"></div>
-                    <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock" value="0">
+                            <div class="filtro-toggle">
+                                <input type="checkbox" id="check-stock-papel">
+                                <label for="check-stock-papel">Con Stock</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="historial-header-right">
+                        <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+
+                            Agregar</button>
+                        <button type="button" class="btn-eliminar-insumo"
+                            onclick="openModal('modal-papel-eliminar')">Eliminar</button>
+                        <button type="button" class="btn-editar-insumo"
+                            onclick="openModal('modal-papel-modificar-general')">Modificar</button>
+                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
+                            style="margin-left: 10px;">Salir</a>
                     </div>
                 </div>
-                <div class="modal-form-actions">
-                    <button class="modal-btn modal-btn-no" onclick="closeModal('modal-papel-agregar')">Cancelar</button>
-                    <button class="modal-btn modal-btn-si" id="btn-confirmar-add-papel">Guardar</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="modal-overlay" id="modal-papel-eliminar">
-            <div class="modal-content">
-                <h2 class="modal-titulo">Eliminar Papel</h2>
-                <div class="modal-form">
-                    <div class="modal-form-row">
-                        <label>Seleccionar</label>
-                        <select id="del-papel-select">
-                            <option value="">-- Seleccione --</option>
-                            {% for r in registros %}
-                            <option value="{{ r['id'] }}">{{ r['nombre'] }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-form-actions">
-                    <button class="modal-btn modal-btn-no"
-                        onclick="closeModal('modal-papel-eliminar')">Cancelar</button>
-                    <button class="modal-btn modal-btn-si" id="btn-confirmar-del-papel"
-                        style="background-color: var(--color-danger);">Eliminar</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="modal-papel-modificar-general">
-            <div class="modal-content">
-                <h2 class="modal-titulo">Modificar Papel</h2>
-                <div class="modal-form">
-                    <div class="modal-form-row">
-                        <label>Seleccionar</label>
-                        <select id="mod-papel-select">
-                            <option value="">-- Seleccione --</option>
-                            {% for r in registros %}
-                            <option value="{{ r['id'] }}" data-nombre="{{ r['nombre'] }}"
-                                data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
-                                data-salidas="{{ r['salidas'] }}">
-                                {{ r['nombre'] }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
-                    <div class="modal-form-row"><label>Stock Inicial</label><input type="number" id="mod-papel-stock">
-                    </div>
-                    <div class="modal-form-row"><label>Entradas</label><input type="number" id="mod-papel-entradas">
-                    </div>
-                    <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas"></div>
-                </div>
-                <div class="modal-form-actions">
-                    <button class="modal-btn modal-btn-no"
-                        onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
-                    <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
-                </div>
-            </div>
-        </div>
-
-        {% elif vista == "papel_entradas_menu" %}
-        <section class="acciones">
-            <div class="acciones-container">
-                <a href="{{ url_for('papel_entradas_historial') }}" class="accion-card">Ver historial de entradas</a>
-                <a href="{{ url_for('papel_entradas_nuevo') }}" class="accion-card">Registrar nueva entrada</a>
-            </div>
-        </section>
-
-        {% elif vista == "papel_entradas_nueva" %}
-        <section class="registro-section">
-            <h1 class="section-title">Registrar Entrada de Papel</h1>
-            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-            <form method="post" action="{{ url_for('papel_entradas_nuevo') }}" id="form-papel-entradas-nueva">
-                <div class="registro-cards-grid">
-                    <div class="registro-card">
-                        <label>Tipo de Papel</label>
-                        <select name="tipo_papel" required>
-                            <option value="">-- Seleccione --</option>
-                            {% for p in papeles %}
-                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                            <option value="{{ nombre }}">{{ nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
-                    </div>
-                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
-                            required></div>
-                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
-                            name="observaciones" rows="2"></textarea></div>
-                </div>
-                <div class="modal-form-actions" style="justify-content: center;">
-                    <button type="submit" class="btn-confirmar">Confirmar Entrada</button>
-                </div>
-            </form>
-        </section>
-
-        {% elif vista == "papel_entradas_historial" %}
-        <section class="historial">
-            <h1 class="historial-titulo">Historial Entradas - Papel</h1>
-            <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-ent" type="text"></div>
-            <div class="historial-tabla-wrapper">
-                <table class="historial-tabla" id="tabla-papel-ent">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Papel</th>
-                            <th>Gramaje</th>
-                            <th>Formato</th>
-                            <th>Marca</th>
-                            <th>Cant</th>
-                            <th>Obs</th>
-                            <th>ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in registros %}
-                        <tr>
-                            <td>{{ r['fecha'] }}</td>
-                            <td>{{ r['tipo_papel'] }}</td>
-                            <td>{{ r['gramaje'] }}</td>
-                            <td>{{ r['formato'] }}</td>
-                            <td>{{ r['marca'] }}</td>
-                            <td>{{ r['cantidad'] }}</td>
-                            <td>{{ r['observaciones'] }}</td>
-                            <td>
-                                <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
-                                    data-tipo="entrada">BORRAR</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        {% elif vista == "papel_salidas_menu" %}
-        <section class="acciones">
-            <div class="acciones-container">
-                <a href="{{ url_for('papel_salidas_historial') }}" class="accion-card">Ver historial de salidas</a>
-                <a href="{{ url_for('papel_salidas_nuevo') }}" class="accion-card">Registrar nueva salida</a>
-            </div>
-        </section>
-
-        {% elif vista == "papel_salidas_nueva" %}
-        <section class="registro-section">
-            <h1 class="section-title">Registrar Salida de Papel</h1>
-            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-            <form method="post" action="{{ url_for('papel_salidas_nuevo') }}" id="form-papel-salidas-nueva">
-                <div class="registro-cards-grid">
-                    <div class="registro-card">
-                        <label>Tipo de Papel</label>
-                        <select name="tipo_papel" required>
-                            <option value="">-- Seleccione --</option>
-                            {% for p in papeles %}
-                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                            <option value="{{ nombre }}">{{ nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
-                    </div>
-                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
-                            required></div>
-                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
-                            name="observaciones" rows="2"></textarea></div>
-                </div>
-                <div class="modal-form-actions" style="justify-content: center;">
-                    <button type="submit" class="btn-confirmar" style="background-color: var(--color-danger);">Confirmar
-                        Salida</button>
-                </div>
-            </form>
-        </section>
-
-        {% elif vista == "papel_salidas_historial" %}
-        <section class="historial">
-            <h1 class="historial-titulo">Historial Salidas - Papel</h1>
-            <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-sal" type="text"></div>
-            <div class="historial-tabla-wrapper">
-                <table class="historial-tabla" id="tabla-papel-sal">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Papel</th>
-                            <th>Gramaje</th>
-                            <th>Formato</th>
-                            <th>Marca</th>
-                            <th>Cant</th>
-                            <th>Obs</th>
-                            <th>ACCIÓN</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in registros %}
-                        <tr>
-                            <td>{{ r['fecha'] }}</td>
-                            <td>{{ r['tipo_papel'] }}</td>
-                            <td>{{ r['gramaje'] }}</td>
-                            <td>{{ r['formato'] }}</td>
-                            <td>{{ r['marca'] }}</td>
-                            <td>{{ r['cantidad'] }}</td>
-                            <td>{{ r['observaciones'] }}</td>
-                            <td>
-                                <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
-                                    data-tipo="salida">BORRAR</button>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        {% elif vista == "papel_pedidos_menu" %}
-        <section class="acciones">
-            <div class="acciones-container">
-                <a href="{{ url_for('papel_pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
-                <a href="{{ url_for('papel_pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
-            </div>
-        </section>
-
-        {% elif vista == "papel_pedidos_nuevo" %}
-        <section class="registro-section">
-            <h1 class="section-title">Generar Pedido de Papel</h1>
-            {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
-            <form method="post" action="{{ url_for('papel_pedidos_nuevo') }}" id="form-papel-pedidos-nuevo">
-                <div class="registro-cards-grid">
-                    <div class="registro-card">
-                        <label>Pedido por</label>
-                        <input type="text" name="pedido_por" required>
-                    </div>
-                    <div class="registro-card">
-                        <label>Tipo de Papel</label>
-                        <select name="tipo_papel" required>
-                            <option value="">-- Seleccione --</option>
-                            {% for p in papeles %}
-                            {% set nombre = p['nombre'] if p is mapping else p[0] %}
-                            <option value="{{ nombre }}">{{ nombre }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="registro-card"><label>Gramaje</label><input type="text" name="gramaje" required></div>
-                    <div class="registro-card"><label>Formato</label><input type="text" name="formato" required></div>
-                    <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                    <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
-                    </div>
-                    <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
-                            required></div>
-                    <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
-                            name="observaciones" rows="2"></textarea></div>
-                </div>
-                <div class="modal-form-actions" style="justify-content: center;">
-                    <button type="submit" class="btn-confirmar"
-                        style="background-color: var(--color-warning);">Registrar Pedido</button>
-                </div>
-            </form>
-        </section>
-
-        {% elif vista == "papel_pedidos_historial" %}
-        <section class="historial">
-            <h1 class="historial-titulo">Historial Pedidos - Papel</h1>
-            <div class="historial-filtro">
-                <label>Filtrar:</label>
-                <input id="filtro-papel-ped" type="text" placeholder="Buscar...">
-            </div>
-            <div class="historial-tabla-wrapper">
-                <table class="historial-tabla" id="tabla-papel-pedidos">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>POR</th>
-                            <th>Papel</th>
-                            <th>Gramaje</th>
-                            <th>Formato</th>
-                            <th>Marca</th>
-                            <th>Cant</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in registros %}
-                        <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
-                            <td>{{ r['fecha'] }}</td>
-                            <td>{{ r['pedido_por'] }}</td>
-                            <td>{{ r['tipo_papel'] }}</td>
-                            <td>{{ r['gramaje'] }}</td>
-                            <td>{{ r['formato'] }}</td>
-                            <td>{{ r['marca'] }}</td>
-                            <td>{{ r['cantidad'] }}</td>
-                            <td class="estado-pedido">{{ r['estado'] }}</td>
-                            <td>
-                                {% if r['estado'] != 'Entregado' %}
-                                <button type="button" class="btn-entregado btn-entregado-papel" data-id="{{ r['id'] }}">
-                                    Entregado
-                                </button>
-                                {% else %}
-                                ✔
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        {% endif %} <div class="modal-overlay" id="modal-borrar">
-            <div class="modal-content">
-                <p class="modal-texto">¿Seguro que quieres borrar?</p>
-                <div class="modal-botones">
-                    <button type="button" class="modal-btn modal-btn-si" id="borrar-si">SI</button>
-                    <button type="button" class="modal-btn modal-btn-no" id="borrar-no">NO</button>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-overlay" id="modal-preview" style="display:none;">
-            <div class="modal-content">
-                <button type="button" class="btn-volver-modal" id="preview-volver">Volver</button>
-                <h2 class="modal-titulo">Vista Previa</h2>
-                <div class="tabla-wrap">
-                    <table>
+                <div class="tabla-wrapper">
+                    <table id="tabla-papel" class="tabla-inventario">
                         <thead>
                             <tr>
-                                <th>CÓDIGO</th>
-                                <th>INSUMO</th>
-                                <th>DESCRIPCIÓN</th>
+                                <th>ID</th>
+                                <th>NOMBRE</th>
                                 <th>STOCK</th>
-                                <th>ENTRADAS</th>
-                                <th>SALIDAS</th>
+                                <th>ENT</th>
+                                <th>SAL</th>
                                 <th>TOTAL</th>
+                                <th>ACCIÓN</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {% for r in registros %}
                             <tr>
-                                <td id="pv-codigo"></td>
-                                <td id="pv-insumo"></td>
-                                <td id="pv-desc"></td>
-                                <td id="pv-stock"></td>
-                                <td id="pv-entradas"></td>
-                                <td id="pv-salidas"></td>
-                                <td id="pv-total"></td>
+                                <td>{{ r['id'] }}</td>
+                                <td>{{ r['nombre'] }}</td>
+                                <td>{{ r['stock_inicial'] }}</td>
+                                <td>{{ r['entradas'] }}</td>
+                                <td>{{ r['salidas'] }}</td>
+                                <td>{{ r['total'] }}</td>
+                                <td>
+                                    <button class="btn-modificar-papel-row" type="button" data-id="{{ r['id'] }}"
+                                        data-nombre="{{ r['nombre'] }}" data-stock="{{ r['stock_inicial'] }}"
+                                        data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
+                                        MODIFICAR
+                                    </button>
+                                </td>
                             </tr>
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>
-                <button id="preview-finalizar" type="button" class="btn-confirmar">Finalizar registro</button>
-            </div>
-        </div>
+            </section>
 
-        <div class="modal-overlay" id="modal-confirm-borrar" style="display:none;">
-            <div class="modal-content">
-                <h2 class="modal-titulo">¿Seguro que desea borrar?</h2>
-                <div class="modal-form-actions">
-                    <button id="borrar-si" type="button" class="modal-btn modal-btn-si">SI</button>
-                    <button id="borrar-no" type="button" class="modal-btn modal-btn-no">NO</button>
+            <div class="modal-overlay" id="modal-papel-agregar">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">Agregar Nuevo Papel</h2>
+                    <div class="modal-form">
+                        <div class="modal-form-row"><label>Nombre</label><input type="text" id="add-papel-nombre"></div>
+                        <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock"
+                                value="0">
+                        </div>
+                    </div>
+                    <div class="modal-form-actions">
+                        <button class="modal-btn modal-btn-no"
+                            onclick="closeModal('modal-papel-agregar')">Cancelar</button>
+                        <button class="modal-btn modal-btn-si" id="btn-confirmar-add-papel">Guardar</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="modal-overlay" id="modal-ok" style="display:none;">
-            <div class="modal-content">
-                <h2 class="modal-titulo">¡Registro Confirmado!</h2>
-                <div id="ok-text" style="margin-top:10px;"></div>
+            <div class="modal-overlay" id="modal-papel-eliminar">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">Eliminar Papel</h2>
+                    <div class="modal-form">
+                        <div class="modal-form-row">
+                            <label>Seleccionar</label>
+                            <select id="del-papel-select">
+                                <option value="">-- Seleccione --</option>
+                                {% for r in registros %}
+                                <option value="{{ r['id'] }}">{{ r['nombre'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-form-actions">
+                        <button class="modal-btn modal-btn-no"
+                            onclick="closeModal('modal-papel-eliminar')">Cancelar</button>
+                        <button class="modal-btn modal-btn-si" id="btn-confirmar-del-papel"
+                            style="background-color: var(--color-danger);">Eliminar</button>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="modal-overlay" id="modal-papel-modificar-general">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">Modificar Papel</h2>
+                    <div class="modal-form">
+                        <div class="modal-form-row">
+                            <label>Seleccionar</label>
+                            <select id="mod-papel-select">
+                                <option value="">-- Seleccione --</option>
+                                {% for r in registros %}
+                                <option value="{{ r['id'] }}" data-nombre="{{ r['nombre'] }}"
+                                    data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
+                                    data-salidas="{{ r['salidas'] }}">
+                                    {{ r['nombre'] }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
+                        <div class="modal-form-row"><label>Stock Inicial</label><input type="number"
+                                id="mod-papel-stock">
+                        </div>
+                        <div class="modal-form-row"><label>Entradas</label><input type="number" id="mod-papel-entradas">
+                        </div>
+                        <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas">
+                        </div>
+                    </div>
+                    <div class="modal-form-actions">
+                        <button class="modal-btn modal-btn-no"
+                            onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
+                        <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
+                    </div>
+                </div>
+            </div>
+
+            {% elif vista == "papel_entradas_menu" %}
+            <section class="acciones">
+                <div class="acciones-container">
+                    <a href="{{ url_for('papel_entradas_historial') }}" class="accion-card">Ver historial de
+                        entradas</a>
+                    <a href="{{ url_for('papel_entradas_nuevo') }}" class="accion-card">Registrar nueva entrada</a>
+                </div>
+            </section>
+
+            {% elif vista == "papel_entradas_nueva" %}
+            <section class="registro-section">
+                <h1 class="section-title">Registrar Entrada de Papel</h1>
+                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+                <form method="post" action="{{ url_for('papel_entradas_nuevo') }}" id="form-papel-entradas-nueva">
+                    <div class="registro-cards-grid">
+                        <div class="registro-card">
+                            <label>Tipo de Papel</label>
+                            <select name="tipo_papel" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for p in papeles %}
+                                {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                                <option value="{{ nombre }}">{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Gramaje eliminado -->
+                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        </div>
+                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                        </div>
+                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                                required></div>
+                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                                name="observaciones" rows="2"></textarea></div>
+                    </div>
+                    <div class="modal-form-actions" style="justify-content: center;">
+                        <button type="submit" class="btn-confirmar">Confirmar Entrada</button>
+                    </div>
+                </form>
+            </section>
+
+            {% elif vista == "papel_entradas_historial" %}
+            <section class="historial">
+                <h1 class="historial-titulo">Historial Entradas - Papel</h1>
+                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-ent" type="text"></div>
+                <div class="historial-tabla-wrapper">
+                    <table class="historial-tabla" id="tabla-papel-ent">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Papel</th>
+                                <!-- Gramaje eliminado -->
+                                <th>Formato</th>
+                                <th>Marca</th>
+                                <th>Cant</th>
+                                <th>Obs</th>
+                                <th>ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in registros %}
+                            <tr>
+                                <td>{{ r['fecha'] }}</td>
+                                <td>{{ r['tipo_papel'] }}</td>
+                                <!-- Gramaje eliminado -->
+                                <td>{{ r['formato'] }}</td>
+                                <td>{{ r['marca'] }}</td>
+                                <td>{{ r['cantidad'] }}</td>
+                                <td>{{ r['observaciones'] }}</td>
+                                <td>
+                                    <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
+                                        data-tipo="entrada">BORRAR</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% elif vista == "papel_salidas_menu" %}
+            <section class="acciones">
+                <div class="acciones-container">
+                    <a href="{{ url_for('papel_salidas_historial') }}" class="accion-card">Ver historial de salidas</a>
+                    <a href="{{ url_for('papel_salidas_nuevo') }}" class="accion-card">Registrar nueva salida</a>
+                </div>
+            </section>
+
+            {% elif vista == "papel_salidas_nueva" %}
+            <section class="registro-section">
+                <h1 class="section-title">Registrar Salida de Papel</h1>
+                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+                <form method="post" action="{{ url_for('papel_salidas_nuevo') }}" id="form-papel-salidas-nueva">
+                    <div class="registro-cards-grid">
+                        <div class="registro-card">
+                            <label>Tipo de Papel</label>
+                            <select name="tipo_papel" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for p in papeles %}
+                                {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                                <option value="{{ nombre }}">{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Gramaje eliminado -->
+                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        </div>
+                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                        </div>
+                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                                required></div>
+                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                                name="observaciones" rows="2"></textarea></div>
+                    </div>
+                    <div class="modal-form-actions" style="justify-content: center;">
+                        <button type="submit" class="btn-confirmar"
+                            style="background-color: var(--color-danger);">Confirmar
+                            Salida</button>
+                    </div>
+                </form>
+            </section>
+
+            {% elif vista == "papel_salidas_historial" %}
+            <section class="historial">
+                <h1 class="historial-titulo">Historial Salidas - Papel</h1>
+                <div class="historial-filtro"><label>Filtrar:</label><input id="filtro-papel-sal" type="text"></div>
+                <div class="historial-tabla-wrapper">
+                    <table class="historial-tabla" id="tabla-papel-sal">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Papel</th>
+                                <!-- Gramaje eliminado -->
+                                <th>Formato</th>
+                                <th>Marca</th>
+                                <th>Cant</th>
+                                <th>Obs</th>
+                                <th>ACCIÓN</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in registros %}
+                            <tr>
+                                <td>{{ r['fecha'] }}</td>
+                                <td>{{ r['tipo_papel'] }}</td>
+                                <!-- Gramaje eliminado -->
+                                <td>{{ r['formato'] }}</td>
+                                <td>{{ r['marca'] }}</td>
+                                <td>{{ r['cantidad'] }}</td>
+                                <td>{{ r['observaciones'] }}</td>
+                                <td>
+                                    <button class="btn-borrar btn-borrar-papel" data-id="{{ r['id'] }}"
+                                        data-tipo="salida">BORRAR</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% elif vista == "papel_pedidos_menu" %}
+            <section class="acciones">
+                <div class="acciones-container">
+                    <a href="{{ url_for('papel_pedidos_historial') }}" class="accion-card">Ver historial de pedidos</a>
+                    <a href="{{ url_for('papel_pedidos_nuevo') }}" class="accion-card">Registrar nuevo pedido</a>
+                </div>
+            </section>
+
+            {% elif vista == "papel_pedidos_nuevo" %}
+            <section class="registro-section">
+                <h1 class="section-title">Generar Pedido de Papel</h1>
+                {% if error %}<div class="login-error">{{ error }}</div>{% endif %}
+                <form method="post" action="{{ url_for('papel_pedidos_nuevo') }}" id="form-papel-pedidos-nuevo">
+                    <div class="registro-cards-grid">
+                        <div class="registro-card">
+                            <label>Pedido por</label>
+                            <input type="text" name="pedido_por" required>
+                        </div>
+                        <div class="registro-card">
+                            <label>Tipo de Papel</label>
+                            <select name="tipo_papel" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for p in papeles %}
+                                {% set nombre = p['nombre'] if p is mapping else p[0] %}
+                                <option value="{{ nombre }}">{{ nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <!-- Gramaje eliminado -->
+                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        </div>
+                        <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
+                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
+                        </div>
+                        <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
+                                required></div>
+
+                        <!-- Checkbox Agregar Stock (Movido y Agrandado) -->
+                        <div class="registro-card"
+                            style="display: flex; flex-direction: column; justify-content: flex-end;">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 5px 0;">
+                                <input type="checkbox" name="agregar_stock" id="agregar_stock"
+                                    style="width: 30px; height: 30px; cursor: pointer;">
+                                <label for="agregar_stock"
+                                    style="margin: 0; cursor: pointer; font-size: 1rem; font-weight: 600;">¿Agregar al
+                                    Stock?</label>
+                            </div>
+                        </div>
+
+                        <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
+                                name="observaciones" rows="2"></textarea></div>
+                    </div>
+                    <div class="modal-form-actions" style="justify-content: center;">
+                        <button type="submit" class="btn-confirmar"
+                            style="background-color: var(--color-warning);">Registrar Pedido</button>
+                    </div>
+                </form>
+            </section>
+
+            {% elif vista == "papel_pedidos_historial" %}
+            <section class="historial">
+                <h1 class="historial-titulo">Historial Pedidos - Papel</h1>
+                <div class="historial-filtro">
+                    <label>Filtrar:</label>
+                    <input id="filtro-papel-ped" type="text" placeholder="Buscar...">
+                </div>
+                <div class="historial-tabla-wrapper">
+                    <table class="historial-tabla" id="tabla-papel-pedidos">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>POR</th>
+                                <th>Papel</th>
+                                <!-- Gramaje eliminado -->
+                                <th>Formato</th>
+                                <th>Marca</th>
+                                <th>Cant</th>
+                                <th>Obs</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in registros %}
+                            <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                                <td>{{ r['fecha'] }}</td>
+                                <td>{{ r['pedido_por'] }}</td>
+                                <td>{{ r['tipo_papel'] }}</td>
+                                <!-- Gramaje eliminado -->
+                                <td>{{ r['formato'] }}</td>
+                                <td>{{ r['marca'] }}</td>
+                                <td>{{ r['cantidad'] }}</td>
+                                <td>{{ r['observaciones'] }}</td>
+                                <td class="estado-pedido">{{ r['estado'] }}</td>
+                                <td>
+                                    {% if r['estado'] != 'Entregado' %}
+                                    <button type="button" class="btn-entregado btn-entregado-papel"
+                                        data-id="{{ r['id'] }}">
+                                        Entregado
+                                    </button>
+                                    {% else %}
+                                    ✔
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            {% endif %} <div class="modal-overlay" id="modal-borrar">
+                <div class="modal-content">
+                    <p class="modal-texto">¿Seguro que quieres borrar?</p>
+                    <div class="modal-botones">
+                        <button type="button" class="modal-btn modal-btn-si" id="borrar-si">SI</button>
+                        <button type="button" class="modal-btn modal-btn-no" id="borrar-no">NO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-preview" style="display:none;">
+                <div class="modal-content">
+                    <button type="button" class="btn-volver-modal" id="preview-volver">Volver</button>
+                    <h2 class="modal-titulo">Vista Previa</h2>
+                    <div class="tabla-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>CÓDIGO</th>
+                                    <th>INSUMO</th>
+                                    <th>DESCRIPCIÓN</th>
+                                    <th>STOCK</th>
+                                    <th>ENTRADAS</th>
+                                    <th>SALIDAS</th>
+                                    <th>TOTAL</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td id="pv-codigo"></td>
+                                    <td id="pv-insumo"></td>
+                                    <td id="pv-desc"></td>
+                                    <td id="pv-stock"></td>
+                                    <td id="pv-entradas"></td>
+                                    <td id="pv-salidas"></td>
+                                    <td id="pv-total"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button id="preview-finalizar" type="button" class="btn-confirmar">Finalizar registro</button>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-confirm-borrar" style="display:none;">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">¿Seguro que desea borrar?</h2>
+                    <div class="modal-form-actions">
+                        <button id="borrar-si" type="button" class="modal-btn modal-btn-si">SI</button>
+                        <button id="borrar-no" type="button" class="modal-btn modal-btn-no">NO</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-overlay" id="modal-ok" style="display:none;">
+                <div class="modal-content">
+                    <h2 class="modal-titulo">¡Registro Confirmado!</h2>
+                    <div id="ok-text" style="margin-top:10px;"></div>
+                </div>
+            </div>
 
     </main>
 
@@ -1240,7 +1286,7 @@
     <img src="{{ url_for('static', filename='img/logo-nextprint.png') }}" alt="Nextprint" class="logo-fixed">
     {% endif %}
 
-    <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=9"></script>
 </body>
 
 </html>

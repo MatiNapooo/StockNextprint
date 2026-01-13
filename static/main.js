@@ -467,16 +467,62 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         }
 
-        // ===== PAPEL FILTROS =====
-        const filtroPapel = document.getElementById("filtro-papel");
-        const tablaPapel = document.getElementById("tabla-papel");
-        if (filtroPapel && tablaPapel) {
-            filtroPapel.addEventListener("input", function () {
-                const q = this.value.toLowerCase();
-                tablaPapel.querySelectorAll("tbody tr").forEach(tr => {
-                    tr.style.display = tr.textContent.toLowerCase().includes(q) ? "" : "none";
+        // ===== PAPEL FILTROS - ENFOQUE SIMPLE (SOLO TEXTO) =====
+
+        // ADMIN
+        const papelInput = document.getElementById("filtro-papel");
+        const papelTable = document.getElementById("tabla-papel");
+
+        if (papelInput && papelTable) {
+            const filtrarPapelAdmin = function () {
+                const busqueda = papelInput.value.toLowerCase().trim();
+                const filas = papelTable.querySelectorAll("tbody tr");
+
+                filas.forEach(function (fila) {
+                    let mostrar = true;
+
+                    // Filtro de texto
+                    if (busqueda) {
+                        const textoFila = fila.textContent.toLowerCase();
+                        if (!textoFila.includes(busqueda)) {
+                            mostrar = false;
+                        }
+                    }
+
+                    fila.style.display = mostrar ? "" : "none";
                 });
-            });
+            };
+
+            papelInput.addEventListener("input", filtrarPapelAdmin);
+            papelInput.addEventListener("keyup", filtrarPapelAdmin);
+        }
+
+        // SIMPLE
+        const papelSimpleInput = document.getElementById("filtro-papel-simple");
+        const papelSimpleTable = document.getElementById("tabla-papel-simple");
+
+        if (papelSimpleInput && papelSimpleTable) {
+            const filtrarPapelSimple = function () {
+                const busqueda = papelSimpleInput.value.toLowerCase().trim();
+                const filas = papelSimpleTable.querySelectorAll("tbody tr");
+
+                filas.forEach(function (fila) {
+                    let mostrar = true;
+
+                    // Filtro de texto
+                    if (busqueda) {
+                        const textoFila = fila.textContent.toLowerCase();
+                        if (!textoFila.includes(busqueda)) {
+                            mostrar = false;
+                        }
+                    }
+
+                    fila.style.display = mostrar ? "" : "none";
+                });
+            };
+
+            papelSimpleInput.addEventListener("input", filtrarPapelSimple);
+            papelSimpleInput.addEventListener("keyup", filtrarPapelSimple);
         }
 
     });
@@ -1070,4 +1116,66 @@ document.addEventListener("click", function (e) {
             console.error(err);
             alert("Error de conexión al intentar borrar.");
         });
+});
+
+// ==========================================
+// PEGAR AL FINAL DE main.js
+// LOGICA FILTRO "CON STOCK" (PAPEL)
+// ==========================================
+
+function initFiltroPapel(checkId, inputId, tableId, colIndexTotal) {
+    const chk = document.getElementById(checkId);
+    const input = document.getElementById(inputId);
+    const table = document.getElementById(tableId);
+
+    if (!chk || !table) return;
+
+    function filtrar() {
+        const soloStock = chk.checked;
+        const termino = input ? input.value.toLowerCase() : "";
+        const filas = table.querySelectorAll("tbody tr");
+
+        filas.forEach(tr => {
+            let mostrar = true;
+
+            // 1. Respetar el Filtro de Texto (si el usuario escribió algo)
+            if (termino) {
+                const textoFila = tr.textContent.toLowerCase();
+                if (!textoFila.includes(termino)) {
+                    mostrar = false;
+                }
+            }
+
+            // 2. Aplicar Filtro de Stock (si el checkbox está marcado)
+            if (mostrar && soloStock) {
+                const celdas = tr.querySelectorAll("td");
+                // Buscamos la columna TOTAL usando el índice
+                if (celdas[colIndexTotal]) {
+                    const valor = parseInt(celdas[colIndexTotal].textContent.trim()) || 0;
+                    // Si es menor a 1 (o sea 0 o negativo), lo ocultamos
+                    if (valor < 1) {
+                        mostrar = false;
+                    }
+                }
+            }
+
+            tr.style.display = mostrar ? "" : "none";
+        });
+    }
+
+    // Escuchar cambios en el checkbox
+    chk.addEventListener("change", filtrar);
+
+    // Escuchar cambios en el input de texto para que trabajen juntos
+    if (input) {
+        input.addEventListener("input", filtrar);
+    }
+}
+
+// Inicializar Papel Simple (La columna TOTAL es la 5ta -> índice 4)
+document.addEventListener("DOMContentLoaded", function () {
+    initFiltroPapel("check-stock-papel-simple", "filtro-papel-simple", "tabla-papel-simple", 4);
+
+    // Inicializar Papel Admin (La columna TOTAL es la 8va -> índice 7)
+    initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 5);
 });

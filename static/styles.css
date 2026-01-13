@@ -2252,3 +2252,131 @@ body {
     color: #6c757d;
     font-size: 0.85rem;
 }
+
+/* Tarjeta de Filtro Moderna */
+.filtro-card {
+    background-color: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border: 1px solid #e1e4e8;
+}
+
+.filtro-card label {
+    margin-right: 12px;
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95rem;
+}
+
+.filtro-card input[type='text'] {
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    width: 300px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+}
+
+.filtro-card input[type='text']:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.filtro-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.filtro-toggle input[type='checkbox'] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-primary);
+}
+
+.filtro-toggle label {
+    margin: 0;
+    cursor: pointer;
+    color: #343a40;
+    font-weight: 600;
+}
+
+
+/* =========================================
+   FILTRO CARD STYLE (Restaurado)
+   ========================================= */
+.filtro-card {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin: 1.5rem 0;
+    /* Espaciado vertical asegurado */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+    /* Sombra suave 'card' */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    width: 100%;
+    /* Asegura que ocupe el ancho */
+}
+
+/* Ajuste para que el input no se vea gigante o enano */
+.filtro-card input[type="text"] {
+    flex: 1;
+    /* Ocupa el espacio disponible si es necesario */
+    max-width: 400px;
+    /* Pero no te pases */
+    padding: 0.5rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+.filtro-card label {
+    font-weight: 600;
+    color: #495057;
+    margin-right: 0.5rem;
+}
+
+/* El contenedor del checkbox "Con Stock" */
+.filtro-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    background-color: #f1f3f5;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filtro-toggle:hover {
+    background-color: #e9ecef;
+}
+
+.filtro-toggle input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.filtro-toggle label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+}

@@ -952,7 +952,7 @@ def papel_entradas_nuevo():
     if request.method == "POST":
         # Recibir los 7 datos específicos
         tipo_papel = request.form.get("tipo_papel", "").strip()
-        gramaje = request.form.get("gramaje", "").strip()
+        # gramaje eliminado
         formato = request.form.get("formato", "").strip()
         marca = request.form.get("marca", "").strip()
         proveedor = request.form.get("proveedor", "").strip()
@@ -965,8 +965,8 @@ def papel_entradas_nuevo():
         conn.execute("""
             INSERT INTO papel_entradas 
             (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+            VALUES (?, ?, '', ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones))
         
         # Actualizar stock en inventario
         conn.execute("""
@@ -1002,7 +1002,7 @@ def papel_salidas_nuevo():
     conn = get_conn()
     if request.method == "POST":
         tipo_papel = request.form.get("tipo_papel", "").strip()
-        gramaje = request.form.get("gramaje", "").strip()
+        # gramaje eliminado
         formato = request.form.get("formato", "").strip()
         marca = request.form.get("marca", "").strip()
         proveedor = request.form.get("proveedor", "").strip()
@@ -1015,8 +1015,8 @@ def papel_salidas_nuevo():
         conn.execute("""
             INSERT INTO papel_salidas 
             (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+            VALUES (?, ?, '', ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones))
 
         # Restar stock en inventario
         conn.execute("""
@@ -1072,12 +1072,13 @@ def papel_pedidos_nuevo():
         pedido_por = request.form.get("pedido_por", "").strip()
         
         tipo_papel = request.form.get("tipo_papel", "").strip()
-        gramaje = request.form.get("gramaje", "").strip()
+        # gramaje eliminado
         formato = request.form.get("formato", "").strip()
         marca = request.form.get("marca", "").strip()
         proveedor = request.form.get("proveedor", "").strip()
         cantidad = request.form.get("cantidad", "").strip()
         observaciones = request.form.get("observaciones", "").strip()
+        agregar_stock = 1 if request.form.get("agregar_stock") else 0
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
@@ -1086,9 +1087,9 @@ def papel_pedidos_nuevo():
         # Si no la tiene, tendrás que agregarla manualmente a la base de datos o el código dará error.
         conn.execute("""
             INSERT INTO papel_pedidos 
-            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'En espera')
-        """, (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones))
+            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado, afecta_stock)
+            VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, 'En espera', ?)
+        """, (fecha, pedido_por, tipo_papel, formato, marca, proveedor, cantidad, observaciones, agregar_stock))
 
         conn.commit()
         conn.close()
@@ -1114,12 +1115,14 @@ def papel_pedido_entregado(pedido_id):
     if pedido and pedido["estado"] != "Entregado":
         # Marcar entregado
         conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
-        # Sumar al stock automáticamente cuando se entrega
-        conn.execute("""
-            UPDATE papel_inventario 
-            SET stock_inicial = stock_inicial + ?, total = total + ? 
-            WHERE nombre = ?
-        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
+        
+        # Sumar al stock AUTOMÁTICAMENTE SOLO SI se marcó el checkbox
+        if pedido["afecta_stock"]:
+            conn.execute("""
+                UPDATE papel_inventario 
+                SET stock_inicial = stock_inicial + ?, total = total + ? 
+                WHERE nombre = ?
+            """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
         conn.commit()
         
     conn.close()
