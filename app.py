@@ -1245,7 +1245,75 @@ def papel_modificar():
     return jsonify({"ok": True, "nombre": nombre, "formato": formato, "stock_inicial": stock, "entradas": entradas, "salidas": salidas, "total": total})
 
 
+# --- HERRAMIENTA DE ACTUALIZACIÓN (Solo para usar una vez) ---
+@app.route('/instalar-papel')
+def instalar_papel():
+    try:
+        conn = get_conn()
+        cursor = conn.cursor()
+        
+        # 1. Crear tabla INVENTARIO DE PAPEL
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS papel_inventario (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                formato TEXT NOT NULL,
+                stock_inicial INTEGER DEFAULT 0,
+                entradas INTEGER DEFAULT 0,
+                salidas INTEGER DEFAULT 0,
+                total INTEGER DEFAULT 0
+            )
+        ''')
 
+        # 2. Crear tabla ENTRADAS DE PAPEL
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS papel_entradas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT,
+                tipo_papel TEXT,
+                formato TEXT,
+                marca TEXT,
+                cantidad INTEGER,
+                observaciones TEXT
+            )
+        ''')
+
+        # 3. Crear tabla SALIDAS DE PAPEL
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS papel_salidas (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT,
+                tipo_papel TEXT,
+                formato TEXT,
+                marca TEXT,
+                cantidad INTEGER,
+                observaciones TEXT
+            )
+        ''')
+
+        # 4. Crear tabla PEDIDOS DE PAPEL
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS papel_pedidos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fecha TEXT,
+                pedido_por TEXT,
+                proveedor TEXT,
+                tipo_papel TEXT,
+                formato TEXT,
+                marca TEXT,
+                cantidad INTEGER,
+                observaciones TEXT,
+                estado TEXT DEFAULT 'Pendiente'
+            )
+        ''')
+        
+        conn.commit()
+        conn.close()
+        return "¡ÉXITO! Tablas de Papel creadas en el volumen persistente. Ya puedes ir al menú."
+        
+    except Exception as e:
+        return f"Error al crear tablas: {str(e)}"
+        
 # ---------------- ARRANQUE APP ----------------
 
 if __name__ == "__main__":
