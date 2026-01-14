@@ -41,6 +41,44 @@ def get_db_path():
 # Usamos la función para definir la ruta
 DB_PATH = get_db_path()
 
+# --- AUTO-REPARACIÓN DE BASE DE DATOS (VERSIÓN 2.0 - EVOLUCIONADA) ---
+try:
+    print("🔧 Iniciando verificación y actualización de tablas...")
+    con_temp = sqlite3.connect(DB_PATH)
+    cur_temp = con_temp.cursor()
+    
+    # 1. CREAR TABLAS SI NO EXISTEN (Esto ya lo tenías)
+    cur_temp.execute('''
+        CREATE TABLE IF NOT EXISTS papel_inventario (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nombre TEXT NOT NULL,
+            formato TEXT NOT NULL,
+            stock_inicial INTEGER DEFAULT 0,
+            entradas INTEGER DEFAULT 0,
+            salidas INTEGER DEFAULT 0,
+            total INTEGER DEFAULT 0
+        )
+    ''')
+    # ... (Si quieres dejar los otros CREATE TABLE aquí, déjalos, no molestan) ...
+
+    # 2. AGREGAR COLUMNA 'FORMATO' A LAS TABLAS VIEJAS (MIGRACIÓN)
+    # Intentamos agregar la columna. Si ya existe, dará error y lo ignoramos (pass).
+    tablas_con_formato = ['papel_inventario', 'papel_entradas', 'papel_salidas', 'papel_pedidos']
+    
+    for tabla in tablas_con_formato:
+        try:
+            # Comando SQL para agregar una columna nueva a una tabla existente
+            cur_temp.execute(f"ALTER TABLE {tabla} ADD COLUMN formato TEXT DEFAULT ''")
+            print(f"✅ Columna 'formato' agregada exitosamente a {tabla}")
+        except Exception as e:
+            # Si entra acá, es porque la columna YA EXISTE. No hacemos nada.
+            pass
+
+    con_temp.commit()
+    con_temp.close()
+    print("✅ Base de datos actualizada y lista.")
+except Exception as e:
+    print(f"❌ Error en auto-reparación: {e}")
 # ----------------------------------
 
 def get_db_connection():
