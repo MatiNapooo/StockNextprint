@@ -943,11 +943,12 @@ body {
 
 .registro-card select {
     width: 100%;
-    padding: 0.8rem 0.9rem;
+    padding: 0.6rem 0.9rem;
     font-size: 1.15rem;
     border: 2px solid #ddd;
     border-radius: 8px;
-    height: 2.8rem;
+    height: auto;
+    min-height: 3rem;
     cursor: pointer;
     background-color: #fff;
     transition: all 0.2s ease;
@@ -1440,6 +1441,7 @@ body {
 
 /* 7. BOTONES DE ACCIÓN - Estilo Transparente */
 .btn-modificar-papel-row,
+.btn-modificar-papel-row-inline,
 #tabla-inventario .btn-modificar {
     background-color: transparent !important;
     /* Fuerza transparencia */
@@ -1459,6 +1461,7 @@ body {
 }
 
 .btn-modificar-papel-row:hover,
+.btn-modificar-papel-row-inline:hover,
 #tabla-inventario .btn-modificar:hover {
     background-color: #eff6ff !important;
     /* Un azul muy clarito al pasar el mouse */

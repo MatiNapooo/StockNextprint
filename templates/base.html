@@ -783,6 +783,7 @@
                     <thead>
                         <tr>
                             <th>PAPEL</th>
+                            <th>FORMATO</th>
                             <th>STOCK</th>
                             <th>ENTRADAS</th>
                             <th>SALIDAS</th>
@@ -793,6 +794,7 @@
                         {% for r in registros %}
                         <tr>
                             <td>{{ r['nombre'] }}</td>
+                            <td>{{ r['formato'] }}</td>
                             <td>{{ r['stock_inicial'] }}</td>
                             <td>{{ r['entradas'] }}</td>
                             <td>{{ r['salidas'] }}</td>
@@ -813,12 +815,13 @@
                             style="margin: 0.5rem 0; width: auto; min-width: 450px; padding: 0.8rem;">
                             <div style="display: flex; align-items: center; flex: 1;">
                                 <label for="filtro-papel">Filtrar:</label>
-                                <input id="filtro-papel" type="text" placeholder="Buscar papel...">
+                                <input id="filtro-papel" type="text" placeholder="Buscar papel..."
+                                    oninput="filtrarPapelInline()">
                             </div>
 
                             <div class="filtro-toggle">
-                                <input type="checkbox" id="check-stock-papel">
-                                <label for="check-stock-papel">Con Stock</label>
+                                <input type="checkbox" id="check-stock-papel" onchange="filtrarPapelInline()">
+                                <label for="check-stock-papel">Con Stock (Total > 0)</label>
                             </div>
                         </div>
                     </div>
@@ -840,6 +843,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>NOMBRE</th>
+                                <th>FORMATO</th>
                                 <th>STOCK</th>
                                 <th>ENT</th>
                                 <th>SAL</th>
@@ -852,14 +856,16 @@
                             <tr>
                                 <td>{{ r['id'] }}</td>
                                 <td>{{ r['nombre'] }}</td>
+                                <td>{{ r['formato'] }}</td>
                                 <td>{{ r['stock_inicial'] }}</td>
                                 <td>{{ r['entradas'] }}</td>
                                 <td>{{ r['salidas'] }}</td>
                                 <td>{{ r['total'] }}</td>
                                 <td>
-                                    <button class="btn-modificar-papel-row" type="button" data-id="{{ r['id'] }}"
-                                        data-nombre="{{ r['nombre'] }}" data-stock="{{ r['stock_inicial'] }}"
-                                        data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
+                                    <button class="btn-modificar-papel-row-inline" type="button" data-id="{{ r['id'] }}"
+                                        data-nombre="{{ r['nombre'] }}" data-formato="{{ r['formato'] }}"
+                                        data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
+                                        data-salidas="{{ r['salidas'] }}" onclick="abrirModalModificar(this)">
                                         MODIFICAR
                                     </button>
                                 </td>
@@ -875,6 +881,15 @@
                     <h2 class="modal-titulo">Agregar Nuevo Papel</h2>
                     <div class="modal-form">
                         <div class="modal-form-row"><label>Nombre</label><input type="text" id="add-papel-nombre"></div>
+                        <div class="modal-form-row">
+                            <label>Formato</label>
+                            <select id="add-papel-formato">
+                                <option value="">-- Seleccione --</option>
+                                {% for f in formatos %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock"
                                 value="0">
                         </div>
@@ -882,7 +897,7 @@
                     <div class="modal-form-actions">
                         <button class="modal-btn modal-btn-no"
                             onclick="closeModal('modal-papel-agregar')">Cancelar</button>
-                        <button class="modal-btn modal-btn-si" id="btn-confirmar-add-papel">Guardar</button>
+                        <button class="modal-btn modal-btn-si" onclick="agregarPapelInline()">Guardar</button>
                     </div>
                 </div>
             </div>
@@ -916,19 +931,28 @@
                     <div class="modal-form">
                         <div class="modal-form-row">
                             <label>Seleccionar</label>
-                            <select id="mod-papel-select">
+                            <select id="mod-papel-select" onchange="actualizarCamposModificar()">
                                 <option value="">-- Seleccione --</option>
                                 {% for r in registros %}
                                 <option value="{{ r['id'] }}" data-nombre="{{ r['nombre'] }}"
-                                    data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
-                                    data-salidas="{{ r['salidas'] }}">
-                                    {{ r['nombre'] }}
+                                    data-formato="{{ r['formato'] }}" data-stock="{{ r['stock_inicial'] }}"
+                                    data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
+                                    {{ r['nombre'] }} - {{ r['formato'] }}
                                 </option>
                                 {% endfor %}
                             </select>
                         </div>
 
                         <div class="modal-form-row"><label>Nombre</label><input type="text" id="mod-papel-nombre"></div>
+                        <div class="modal-form-row">
+                            <label>Formato</label>
+                            <select id="mod-papel-formato">
+                                <option value="">-- Seleccione --</option>
+                                {% for f in formatos %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="modal-form-row"><label>Stock Inicial</label><input type="number"
                                 id="mod-papel-stock">
                         </div>
@@ -940,7 +964,8 @@
                     <div class="modal-form-actions">
                         <button class="modal-btn modal-btn-no"
                             onclick="closeModal('modal-papel-modificar-general')">Cancelar</button>
-                        <button class="modal-btn modal-btn-si" id="btn-confirmar-mod-papel">Guardar Cambios</button>
+                        <button class="modal-btn modal-btn-si" onclick="guardarModificarPapelInline()">Guardar
+                            Cambios</button>
                     </div>
                 </div>
             </div>
@@ -971,7 +996,14 @@
                             </select>
                         </div>
                         <!-- Gramaje eliminado -->
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        <div class="registro-card">
+                            <label>Formato</label>
+                            <select name="formato" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for f in formatos %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
                         <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
@@ -1051,7 +1083,14 @@
                             </select>
                         </div>
                         <!-- Gramaje eliminado -->
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        <div class="registro-card">
+                            <label>Formato</label>
+                            <select name="formato" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for f in formatos %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
                         <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
@@ -1137,7 +1176,14 @@
                             </select>
                         </div>
                         <!-- Gramaje eliminado -->
-                        <div class="registro-card"><label>Formato</label><input type="text" name="formato" required>
+                        <div class="registro-card">
+                            <label>Formato</label>
+                            <select name="formato" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for f in formatos %}
+                                <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
                         <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
@@ -1286,7 +1332,154 @@
     <img src="{{ url_for('static', filename='img/logo-nextprint.png') }}" alt="Nextprint" class="logo-fixed">
     {% endif %}
 
-    <script src="{{ url_for('static', filename='main.js') }}?v=9"></script>
+    <script>
+        function agregarPapelInline() {
+            const nombreInput = document.getElementById('add-papel-nombre');
+            const formatoInput = document.getElementById('add-papel-formato');
+            const stockInput = document.getElementById('add-papel-stock');
+
+            const nombre = nombreInput ? nombreInput.value.trim() : "";
+            const formato = formatoInput ? formatoInput.value : "";
+            const stock = stockInput ? stockInput.value : "0";
+
+            if (!nombre || !formato) {
+                alert("Por favor, completá nombre y formato (Versión Inline).");
+                return;
+            }
+
+            fetch('/papel/agregar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.ok) {
+                        location.reload();
+                    } else {
+                        alert("Error: " + (data.error || "No se pudo agregar"));
+                    }
+                })
+                .catch(err => alert("Error de conexión al agregar."));
+        }
+
+        // ===== INLINE PAPEL MODIFICAR =====
+        function abrirModalModificar(btn) {
+            const modal = document.getElementById('modal-papel-modificar-general');
+            const select = document.getElementById('mod-papel-select');
+
+            // Pre-seleccionar en el dropdown si existe
+            if (select) {
+                select.value = btn.dataset.id;
+                actualizarCamposModificar(); // Llenar inputs con datos del select
+            }
+            // Fallback por si el select no tiene los datos actualizados: usar atributos del btn
+            document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
+            document.getElementById('mod-papel-formato').value = btn.dataset.formato;
+            document.getElementById('mod-papel-stock').value = btn.dataset.stock;
+            // Entradas y salidas suelen ser read-only o calculados, pero si están en el form:
+            const inpEntradas = document.getElementById('mod-papel-entradas');
+            const inpSalidas = document.getElementById('mod-papel-salidas');
+            if (inpEntradas) inpEntradas.value = btn.dataset.entradas;
+            if (inpSalidas) inpSalidas.value = btn.dataset.salidas;
+
+            if (modal) modal.style.display = 'flex';
+        }
+
+        function actualizarCamposModificar() {
+            const select = document.getElementById('mod-papel-select');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if (select.value) {
+                document.getElementById('mod-papel-nombre').value = selectedOption.dataset.nombre || '';
+                document.getElementById('mod-papel-formato').value = selectedOption.dataset.formato || '';
+                document.getElementById('mod-papel-stock').value = selectedOption.dataset.stock || '0';
+
+                const inpEntradas = document.getElementById('mod-papel-entradas');
+                const inpSalidas = document.getElementById('mod-papel-salidas');
+                if (inpEntradas) inpEntradas.value = selectedOption.dataset.entradas || '0';
+                if (inpSalidas) inpSalidas.value = selectedOption.dataset.salidas || '0';
+            }
+        }
+
+        function guardarModificarPapelInline() {
+            const select = document.getElementById('mod-papel-select');
+            const p_id = select.value;
+            const nombre = document.getElementById('mod-papel-nombre').value;
+            const formato = document.getElementById('mod-papel-formato').value;
+            const stock = document.getElementById('mod-papel-stock').value;
+            // Entradas y salidas si son editables
+            const inpEntradas = document.getElementById('mod-papel-entradas');
+            const inpSalidas = document.getElementById('mod-papel-salidas');
+            const entradas = inpEntradas ? inpEntradas.value : 0;
+            const salidas = inpSalidas ? inpSalidas.value : 0;
+
+            if (!p_id || !nombre || !formato) {
+                alert("Faltan datos obligatorios (Nombre, Formato).");
+                return;
+            }
+
+            const payload = {
+                id: p_id,
+                nombre: nombre,
+                formato: formato,
+                stock_inicial: stock,
+                entradas: entradas,
+                salidas: salidas
+            };
+
+            fetch('/papel/modificar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) location.reload();
+                    else alert("Error: " + data.error);
+                })
+                .catch(e => alert("Error de conexión al modificar."));
+        }
+
+        function filtrarPapelInline() {
+            const input = document.getElementById('filtro-papel');
+            const check = document.getElementById('check-stock-papel');
+            const tabla = document.getElementById('tabla-papel');
+
+            if (!input || !tabla) return;
+
+            const busqueda = input.value.toLowerCase().trim();
+            const soloStock = check ? check.checked : false;
+
+            const filas = tabla.querySelectorAll('tbody tr');
+
+            filas.forEach(fila => {
+                let mostrar = true;
+
+                // 1. Filtro Texto (Nombre o Formato)
+                // Concatenamos todo el texto de la fila para buscar
+                const textoFila = fila.innerText.toLowerCase();
+                if (busqueda && !textoFila.includes(busqueda)) {
+                    mostrar = false;
+                }
+
+                // 2. Filtro Stock (Columna TOTAL es indice 6)
+                // <td>ID</td> <td>Nom</td> <td>Fmt</td> <td>Ini</td> <td>Ent</td> <td>Sal</td> <td>TOT</td>
+                if (mostrar && soloStock) {
+                    const celdaTotal = fila.cells[6];
+                    if (celdaTotal) {
+                        const val = parseInt(celdaTotal.innerText.trim());
+                        if (isNaN(val) || val <= 0) {
+                            mostrar = false;
+                        }
+                    }
+                }
+
+                fila.style.display = mostrar ? '' : 'none';
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='main.js') }}?v=12"></script>
 </body>
 
 </html>

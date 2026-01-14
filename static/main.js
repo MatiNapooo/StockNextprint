@@ -352,6 +352,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 modPapelSelect.value = btn.dataset.id;
                 document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
+                document.getElementById('mod-papel-formato').value = btn.dataset.formato;
                 document.getElementById('mod-papel-stock').value = btn.dataset.stock;
                 document.getElementById('mod-papel-entradas').value = btn.dataset.entradas;
                 document.getElementById('mod-papel-salidas').value = btn.dataset.salidas;
@@ -365,6 +366,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const selectedOption = modPapelSelect.options[modPapelSelect.selectedIndex];
                 if (modPapelSelect.value) {
                     document.getElementById('mod-papel-nombre').value = selectedOption.dataset.nombre || '';
+                    document.getElementById('mod-papel-formato').value = selectedOption.dataset.formato || '';
                     document.getElementById('mod-papel-stock').value = selectedOption.dataset.stock || '0';
                     document.getElementById('mod-papel-entradas').value = selectedOption.dataset.entradas || '0';
                     document.getElementById('mod-papel-salidas').value = selectedOption.dataset.salidas || '0';
@@ -377,6 +379,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const payload = {
                     id: modPapelSelect.value,
                     nombre: document.getElementById('mod-papel-nombre').value,
+                    formato: document.getElementById('mod-papel-formato').value,
                     stock_inicial: document.getElementById('mod-papel-stock').value,
                     entradas: document.getElementById('mod-papel-entradas').value,
                     salidas: document.getElementById('mod-papel-salidas').value
@@ -404,20 +407,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
             newBtnAdd.addEventListener('click', function () {
                 const nombreInput = document.getElementById('add-papel-nombre');
+                const formatoInput = document.getElementById('add-papel-formato');
                 const stockInput = document.getElementById('add-papel-stock');
 
                 const nombre = nombreInput ? nombreInput.value.trim() : "";
+                const formato = formatoInput ? formatoInput.value : "";
                 const stock = stockInput ? stockInput.value : "0";
 
-                if (!nombre) {
-                    alert("Por favor, escribí un nombre para el papel.");
+                if (!nombre || !formato) {
+                    alert("Por favor, completá nombre y formato.");
                     return;
                 }
 
                 fetch('/papel/agregar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre: nombre, stock: stock })
+                    body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock })
                 })
                     .then(response => response.json())
                     .then(data => {
@@ -478,6 +483,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const busqueda = papelInput.value.toLowerCase().trim();
                 const filas = papelTable.querySelectorAll("tbody tr");
 
+                const checkStock = document.getElementById("check-stock-papel");
+                const soloConStock = checkStock ? checkStock.checked : false;
+
                 filas.forEach(function (fila) {
                     let mostrar = true;
 
@@ -489,12 +497,28 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                     }
 
+                    // Filtro de stock: Columna índice 6 (0:ID, 1:Nombre, 2:Formato, 3:StockIni, 4:Ent, 5:Sal, 6:Total)
+                    if (soloConStock && mostrar) {
+                        const celdaTotal = fila.cells[6];
+                        if (celdaTotal) {
+                            const totalVal = parseInt(celdaTotal.textContent.trim()) || 0;
+                            if (totalVal <= 0) {
+                                mostrar = false;
+                            }
+                        }
+                    }
+
                     fila.style.display = mostrar ? "" : "none";
                 });
             };
 
             papelInput.addEventListener("input", filtrarPapelAdmin);
             papelInput.addEventListener("keyup", filtrarPapelAdmin);
+
+            const checkStock = document.getElementById("check-stock-papel");
+            if (checkStock) {
+                checkStock.addEventListener("change", filtrarPapelAdmin);
+            }
         }
 
         // SIMPLE

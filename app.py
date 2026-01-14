@@ -6,6 +6,12 @@ from datetime import datetime
 from sqlite3 import IntegrityError
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
+# Lista Global de Formatos para Papel
+FORMATOS_PAPEL = [
+    "30x40", "40x50", "45x65", "50x70", "56x27", "64x88", "65x95",
+    "70x100", "72x102", "82x118", "A3", "A4", "Carta", "Oficio"
+]
+
 
 # --- BLOQUE MÁGICO PARA RAILWAY ---
 def get_db_path():
@@ -786,6 +792,12 @@ def pedido_entregado(pedido_id):
 # ==========================================
 
 # 1. ADMIN / INVENTARIO PAPEL
+FORMATOS_PAPEL = [
+    "50x65", "61x86", "63x88", "65x95", "72x92", "66x100", 
+    "72x102", "74x110", "82x118", 
+    "36 cm", "41 cm", "46 cm"
+]
+
 @app.route("/papel/admin", methods=["GET", "POST"])
 def papel_admin():
     # Login simple separado para papel (opcional, o usa el mismo de insumos)
@@ -804,9 +816,9 @@ def papel_admin():
 
     # Si está logueado, mostrar inventario admin
     conn = get_conn()
-    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre").fetchall()
+    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre, formato").fetchall()
     conn.close()
-    return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros)
+    return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros, formatos=FORMATOS_PAPEL)
 
 # ==========================================
 # NUEVAS RUTAS PARA GESTIÓN DE PAPEL
@@ -878,15 +890,15 @@ def papel_eliminar_movimiento_historial():
             conn.execute("""
                 UPDATE papel_inventario 
                 SET entradas = entradas - ?, total = total - ?
-                WHERE nombre = ?
-            """, (cantidad, cantidad, nombre_papel))
+                WHERE nombre = ? AND formato = ?
+            """, (cantidad, cantidad, nombre_papel, registro["formato"]))
         else:
             # Si borro una salida, SUMO al stock (devuelvo el papel)
             conn.execute("""
                 UPDATE papel_inventario 
                 SET salidas = salidas - ?, total = total + ?
-                WHERE nombre = ?
-            """, (cantidad, cantidad, nombre_papel))
+                WHERE nombre = ? AND formato = ?
+            """, (cantidad, cantidad, nombre_papel, registro["formato"]))
 
         conn.commit()
         return jsonify({"ok": True})
@@ -896,48 +908,12 @@ def papel_eliminar_movimiento_historial():
     finally:
         conn.close()
 
-# 2. MODIFICAR PAPEL (ADMIN) - Recalculando total
-# IMPORTANTE: Asegúrate de que esta función aparezca solo una vez en todo el archivo
-@app.route("/papel/modificar", methods=["POST"])
-def papel_modificar():
-    data = request.get_json(silent=True) or {}
-    papel_id = data.get("id")
-    nuevo_nombre = (data.get("nombre") or "").strip()
-    
-    # Datos numéricos
-    stock_inicial = data.get("stock_inicial")
-    entradas = data.get("entradas")
-    salidas = data.get("salidas")
 
-    if not papel_id:
-        return jsonify({"ok": False, "error": "Falta ID"}), 400
-
-    conn = get_conn()
-    try:
-        # Si vienen datos numéricos, recalculamos el total: (StockInicial + Entradas - Salidas)
-        if stock_inicial is not None:
-            total = int(stock_inicial) + int(entradas) - int(salidas)
-            conn.execute("""
-                UPDATE papel_inventario
-                SET nombre = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
-                WHERE id = ?
-            """, (nuevo_nombre, stock_inicial, entradas, salidas, total, papel_id))
-        else:
-            # Solo cambio de nombre
-            conn.execute("UPDATE papel_inventario SET nombre = ? WHERE id = ?", (nuevo_nombre, papel_id))
-            
-        conn.commit()
-    except sqlite3.IntegrityError:
-        conn.close()
-        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
-    
-    conn.close()
-    return jsonify({"ok": True})
 @app.route("/papel/inventario")
 def papel_inventario():
     # Inventario modo lectura (para el menú principal)
     conn = get_conn()
-    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre").fetchall()
+    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre, formato").fetchall()
     conn.close()
     return render_template("base.html", vista="papel_inventario_simple", modo="papel", registros=registros)
 
@@ -961,6 +937,17 @@ def papel_entradas_nuevo():
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
+        # Verificar si existe el par nombre/formato en el inventario
+        existe = conn.execute(
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
+            (tipo_papel, formato)
+        ).fetchone()
+
+        if not existe:
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            conn.close()
+            return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
+
         # Guardar en historial entradas
         conn.execute("""
             INSERT INTO papel_entradas 
@@ -972,17 +959,18 @@ def papel_entradas_nuevo():
         conn.execute("""
             UPDATE papel_inventario 
             SET entradas = entradas + ?, total = total + ? 
-            WHERE nombre = ?
-        """, (cantidad, cantidad, tipo_papel))
+            WHERE nombre = ? AND formato = ?
+        """, (cantidad, cantidad, tipo_papel, formato))
         
         conn.commit()
         conn.close()
         return redirect(url_for("papel_entradas_historial", ok=1))
 
     # GET: Cargar lista de papeles para el select
-    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    # Usamos DISTINCT para que no aparezcan repetidos los nombres si hay varios formatos
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
     conn.close()
-    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles)
+    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
 @app.route("/papel/entradas/historial")
 def papel_entradas_historial():
@@ -1011,6 +999,17 @@ def papel_salidas_nuevo():
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
+        # Verificar existencia
+        existe = conn.execute(
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
+            (tipo_papel, formato)
+        ).fetchone()
+
+        if not existe:
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            conn.close()
+            return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
+
         # Guardar en historial salidas
         conn.execute("""
             INSERT INTO papel_salidas 
@@ -1022,16 +1021,16 @@ def papel_salidas_nuevo():
         conn.execute("""
             UPDATE papel_inventario 
             SET salidas = salidas + ?, total = total - ? 
-            WHERE nombre = ?
-        """, (cantidad, cantidad, tipo_papel))
+            WHERE nombre = ? AND formato = ?
+        """, (cantidad, cantidad, tipo_papel, formato))
 
         conn.commit()
         conn.close()
         return redirect(url_for("papel_salidas_historial", ok=1))
 
-    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
     conn.close()
-    return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles)
+    return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
 @app.route("/papel/salidas/historial")
 def papel_salidas_historial():
@@ -1082,6 +1081,17 @@ def papel_pedidos_nuevo():
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
+        # Validar existencia antes de crear pedido (solo validar, no afectar stock aun)
+        existe = conn.execute(
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
+            (tipo_papel, formato)
+        ).fetchone()
+
+        if not existe:
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            conn.close()
+            return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}'.")
+
         # AGREGADO: Incluir 'pedido_por' en el INSERT
         # Nota: Asegúrate de que tu tabla 'papel_pedidos' tenga la columna 'pedido_por'.
         # Si no la tiene, tendrás que agregarla manualmente a la base de datos o el código dará error.
@@ -1095,9 +1105,9 @@ def papel_pedidos_nuevo():
         conn.close()
         return redirect(url_for("papel_pedidos_historial", ok=1))
 
-    papeles = conn.execute("SELECT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
     conn.close()
-    return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles)
+    return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
 @app.route("/papel/pedidos/historial")
 def papel_pedidos_historial():
@@ -1121,8 +1131,8 @@ def papel_pedido_entregado(pedido_id):
             conn.execute("""
                 UPDATE papel_inventario 
                 SET stock_inicial = stock_inicial + ?, total = total + ? 
-                WHERE nombre = ?
-            """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"]))
+                WHERE nombre = ? AND formato = ?
+            """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
         conn.commit()
         
     conn.close()
@@ -1141,27 +1151,29 @@ def papel_agregar():
 
     data = request.get_json(silent=True) or {}
     nombre = (data.get("nombre") or "").strip()
+    formato = (data.get("formato") or "").strip()
     stock = int(data.get("stock") or 0)
 
-    if not nombre:
-        return jsonify({"ok": False, "error": "El nombre es obligatorio"}), 400
+    if not nombre or not formato:
+        return jsonify({"ok": False, "error": "El nombre y formato son obligatorios"}), 400
 
     conn = get_conn()
     try:
         conn.execute("""
-            INSERT INTO papel_inventario (nombre, stock_inicial, entradas, salidas, total)
-            VALUES (?, ?, 0, 0, ?)
-        """, (nombre, stock, stock))
+            INSERT INTO papel_inventario (nombre, formato, stock_inicial, entradas, salidas, total)
+            VALUES (?, ?, ?, 0, 0, ?)
+        """, (nombre, formato, stock, stock))
+        conn.commit()
         conn.commit()
         # Recuperar ID generado
-        row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ?", (nombre,)).fetchone()
+        row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ? AND formato = ?", (nombre, formato)).fetchone()
         new_id = row["id"]
     except sqlite3.IntegrityError:
         conn.close()
-        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre"}), 400
+        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre y formato"}), 400
     
     conn.close()
-    return jsonify({"ok": True, "id": new_id, "nombre": nombre, "stock": stock, "total": stock})
+    return jsonify({"ok": True, "id": new_id, "nombre": nombre, "formato": formato, "stock": stock, "total": stock})
 
 # 2. ELIMINAR PAPEL
 @app.route("/papel/eliminar", methods=["POST"])
@@ -1183,6 +1195,54 @@ def papel_eliminar():
     conn.commit()
     conn.close()
     return jsonify({"ok": True})
+
+
+
+# 3. MODIFICAR PAPEL
+@app.route("/papel/modificar", methods=["POST"])
+def papel_modificar():
+    if not session.get("papel_admin_logueado"):
+        return jsonify({"ok": False, "error": "No autorizado"}), 403
+
+    data = request.get_json(silent=True) or {}
+    p_id = data.get("id")
+    nombre = (data.get("nombre") or "").strip()
+    formato = (data.get("formato") or "").strip()
+    
+    try:
+        stock = int(data.get("stock_inicial") or 0)
+        entradas = int(data.get("entradas") or 0)
+        salidas = int(data.get("salidas") or 0)
+    except ValueError:
+        return jsonify({"ok": False, "error": "Valores numéricos inválidos"}), 400
+
+    if not p_id or not nombre or not formato:
+        return jsonify({"ok": False, "error": "Faltan datos obligatorios"}), 400
+
+    conn = get_conn()
+    
+    # Verificar si ya existe OTRO papel con ese mismo nombre y formato
+    existe = conn.execute(
+        "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND id != ?", 
+        (nombre, formato, p_id)
+    ).fetchone()
+
+    if existe:
+        conn.close()
+        return jsonify({"ok": False, "error": "Ya existe otro papel con ese nombre y formato"}), 400
+
+    # Recalcular total
+    total = stock + entradas - salidas
+
+    conn.execute("""
+        UPDATE papel_inventario 
+        SET nombre = ?, formato = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
+        WHERE id = ?
+    """, (nombre, formato, stock, entradas, salidas, total, p_id))
+    
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True, "nombre": nombre, "formato": formato, "stock_inicial": stock, "entradas": entradas, "salidas": salidas, "total": total})
 
 
 

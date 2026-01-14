@@ -45,11 +45,13 @@ cur = conn.cursor()
 cur.execute("""
 CREATE TABLE IF NOT EXISTS papel_inventario (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    nombre TEXT NOT NULL UNIQUE,
+    nombre TEXT NOT NULL,
+    formato TEXT NOT NULL DEFAULT 'Sin Formato',
     stock_inicial INTEGER NOT NULL DEFAULT 0,
     entradas INTEGER NOT NULL DEFAULT 0,
     salidas INTEGER NOT NULL DEFAULT 0,
-    total INTEGER NOT NULL DEFAULT 0
+    total INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(nombre, formato)
 );
 """)
 
