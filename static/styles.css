@@ -442,16 +442,7 @@ body {
     margin-bottom: 1rem;
 }
 
-.btn-agregar-insumo {
-    background-color: #ffffff;
-    border: 2px solid #000;
-    border-radius: 12px;
-    padding: 0.4rem 1.0rem;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.4);
-}
+/* btn-agregar-insumo viejo eliminado para usar estilos modernos */
 
 .btn-agregar-insumo:hover {
     filter: brightness(0.96);
@@ -1525,7 +1516,9 @@ body {
 /* 1. ESTILO BASE PARA BOTONES SUPERIORES (Agregar, Eliminar, Modificar) */
 .btn-agregar-insumo,
 .btn-eliminar-insumo,
-.btn-editar-insumo {
+.btn-editar-insumo,
+.btn-imprimir-insumo,
+.btn-cerrar-sesion {
     border: none !important;
     border-radius: 8px !important;
     /* Bordes redondeados modernos */
@@ -1548,7 +1541,9 @@ body {
 /* Efecto Hover General (se levantan un poquito) */
 .btn-agregar-insumo:hover,
 .btn-eliminar-insumo:hover,
-.btn-editar-insumo:hover {
+.btn-editar-insumo:hover,
+.btn-imprimir-insumo:hover,
+.btn-cerrar-sesion:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     filter: none !important;
@@ -1595,6 +1590,46 @@ body {
 .btn-editar-insumo:hover {
     background-color: #0284c7 !important;
     color: #ffffff !important;
+}
+
+/* Botón IMPRIMIR (Gris Oscuro Moderno) */
+.btn-imprimir-insumo {
+    background-color: #334155 !important;
+    /* Slate 700 */
+    color: white !important;
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.btn-imprimir-insumo:hover {
+    background-color: #1e293b !important;
+    /* Slate 800 */
+}
+
+/* Botón SALIR / CERRAR SESIÓN (Rojo/Rosa Moderno) */
+.btn-cerrar-sesion {
+    background-color: #ffe4e6 !important;
+    /* Rose 100 */
+    color: #e11d48 !important;
+    /* Rose 600 */
+    border: none !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    padding: 10px 20px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn-cerrar-sesion:hover {
+    background-color: #e11d48 !important;
+    /* Rose 600 */
+    color: white !important;
+    transform: translateY(-2px) !important;
 }
 
 /* 3. BOTONES DENTRO DE LA TABLA (Los "Modificar" de cada fila) 
@@ -2329,45 +2364,70 @@ body {
     /* Sombra suave 'card' */
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    width: 100%;
-    /* Asegura que ocupe el ancho */
+    width: auto;
+
+    /* Diseño Tarjeta Flotante */
+    background-color: #ffffff;
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    border: 1px solid #f1f5f9;
 }
 
 /* Ajuste para que el input no se vea gigante o enano */
 .filtro-card input[type="text"] {
     flex: 1;
-    /* Ocupa el espacio disponible si es necesario */
     max-width: 400px;
-    /* Pero no te pases */
-    padding: 0.5rem 1rem;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    font-size: 1rem;
+    padding: 10px 15px;
+    border: 1px solid #cbd5e1;
+    /* Borde suave igual a modales */
+    border-radius: 8px;
+    /* Radio consistente */
+    font-size: 0.95rem;
+    background-color: #f8fafc;
+    /* Fondo gris muy claro */
+    color: #334155;
+    transition: all 0.2s ease;
+}
+
+.filtro-card input[type="text"]:focus {
+    border-color: #3b82f6;
+    background-color: #ffffff;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .filtro-card label {
     font-weight: 600;
-    color: #495057;
-    margin-right: 0.5rem;
+    color: #64748b;
+    /* Gris medio */
+    margin-right: 0.8rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
 }
 
 /* El contenedor del checkbox "Con Stock" */
 .filtro-toggle {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.8rem;
-    background-color: #f1f3f5;
-    border-radius: 6px;
+    gap: 0.6rem;
+    padding: 0.5rem 1rem;
+    background-color: #f1f5f9;
+    /* Slate 100 */
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    /* Radio 8px */
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
 .filtro-toggle:hover {
-    background-color: #e9ecef;
+    background-color: #e2e8f0;
+    /* Slate 200 */
+    border-color: #cbd5e1;
 }
 
 .filtro-toggle input[type="checkbox"] {
@@ -2382,4 +2442,97 @@ body {
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
+}
+
+/* ========================================= */
+/* ESTILOS DE IMPRESIÓN */
+/* ========================================= */
+/* Estilos anteriores de .btn-imprimir-insumo eliminados porque se movieron a la sección moderna arriba */
+
+@media print {
+
+    /* Ocultar elementos de interfaz global */
+    .top-bar,
+    .menu-principal,
+    .logo-fixed,
+    .historial-header,
+    .btn-volver,
+    .btn-cerrar-sesion,
+    .modal-overlay,
+    .filtro-card {
+        display: none !important;
+    }
+
+    /* Ocultar TODOS los botones de acción */
+    button,
+    .btn-imprimir-insumo,
+    .btn-agregar-insumo,
+    .btn-eliminar-insumo,
+    .btn-editar-insumo,
+    .btn-borrar,
+    .btn-modificar,
+    .btn-modificar-papel-row-inline {
+        display: none !important;
+    }
+
+    /* Resetear fondos y márgenes globales */
+    html,
+    body {
+        background-color: #fff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+        width: 100% !important;
+    }
+
+    /* Contenedor principal */
+    .contenido {
+        background-color: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: 0 !important;
+        height: auto !important;
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    /* Sección Historial */
+    .historial {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Wrapper de la tabla: CLAVE para quitar el scroll */
+    .historial-tabla-wrapper,
+    .tabla-wrapper {
+        border: none !important;
+        max-height: none !important;
+        height: auto !important;
+        overflow: visible !important;
+        display: block !important;
+    }
+
+    /* Tabla */
+    .historial-tabla,
+    .tabla-inventario {
+        width: 100% !important;
+        border: 1px solid #000 !important;
+        table-layout: auto !important;
+    }
+
+    /* Ocultar columna Acción (Usando clase específica) */
+    .col-accion,
+    .historial-tabla th.col-accion,
+    .historial-tabla td.col-accion,
+    .tabla-inventario th.col-accion,
+    .tabla-inventario td.col-accion {
+        display: none !important;
+        width: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+    }
 }

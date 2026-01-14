@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Stock</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=2">
 </head>
 
 <body>
@@ -785,9 +785,7 @@
                             <th>PAPEL</th>
                             <th>FORMATO</th>
                             <th>STOCK</th>
-                            <th>ENTRADAS</th>
-                            <th>SALIDAS</th>
-                            <th>TOTAL</th>
+                            <th>OBSERVACIONES</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -795,10 +793,8 @@
                         <tr>
                             <td>{{ r['nombre'] }}</td>
                             <td>{{ r['formato'] }}</td>
-                            <td>{{ r['stock_inicial'] }}</td>
-                            <td>{{ r['entradas'] }}</td>
-                            <td>{{ r['salidas'] }}</td>
                             <td>{{ r['total'] }}</td>
+                            <td>{{ r['observaciones'] }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -811,8 +807,8 @@
                         <h1 class="historial-titulo">Administración - Papel</h1>
 
                         <!-- Tarjeta de filtro estilo 'Simple' integrada en el header -->
-                        <div class="filtro-card"
-                            style="margin: 0.5rem 0; width: auto; min-width: 450px; padding: 0.8rem;">
+                        <!-- Tarjeta de filtro estilo 'Simple' integrada en el header -->
+                        <div class="filtro-card">
                             <div style="display: flex; align-items: center; flex: 1;">
                                 <label for="filtro-papel">Filtrar:</label>
                                 <input id="filtro-papel" type="text" placeholder="Buscar papel..."
@@ -828,12 +824,13 @@
                     <div class="historial-header-right">
                         <button type="button" class="btn-agregar-insumo" onclick="openModal('modal-papel-agregar')">+
                             Agregar</button>
-                        <button type="button" class="btn-eliminar-insumo"
-                            onclick="openModal('modal-papel-eliminar')">Eliminar</button>
                         <button type="button" class="btn-editar-insumo"
                             onclick="openModal('modal-papel-modificar-general')">Modificar</button>
-                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
-                            style="margin-left: 10px;">Salir</a>
+                        <button type="button" class="btn-eliminar-insumo" onclick="openModal('modal-papel-eliminar')">X
+                            Eliminar</button>
+                        <button type="button" class="btn-imprimir-insumo" onclick="window.print()">🖨️
+                            Imprimir</button>
+                        <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion">Salir</a>
                     </div>
                 </div>
 
@@ -845,10 +842,8 @@
                                 <th>NOMBRE</th>
                                 <th>FORMATO</th>
                                 <th>STOCK</th>
-                                <th>ENT</th>
-                                <th>SAL</th>
-                                <th>TOTAL</th>
-                                <th>ACCIÓN</th>
+                                <th>OBSERVACIONES</th>
+                                <th class="col-accion">ACCIÓN</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -857,15 +852,13 @@
                                 <td>{{ r['id'] }}</td>
                                 <td>{{ r['nombre'] }}</td>
                                 <td>{{ r['formato'] }}</td>
-                                <td>{{ r['stock_inicial'] }}</td>
-                                <td>{{ r['entradas'] }}</td>
-                                <td>{{ r['salidas'] }}</td>
                                 <td>{{ r['total'] }}</td>
-                                <td>
+                                <td>{{ r['observaciones'] }}</td>
+                                <td class="col-accion">
                                     <button class="btn-modificar-papel-row-inline" type="button" data-id="{{ r['id'] }}"
                                         data-nombre="{{ r['nombre'] }}" data-formato="{{ r['formato'] }}"
-                                        data-stock="{{ r['stock_inicial'] }}" data-entradas="{{ r['entradas'] }}"
-                                        data-salidas="{{ r['salidas'] }}" onclick="abrirModalModificar(this)">
+                                        data-stock="{{ r['total'] }}" data-observaciones="{{ r['observaciones'] }}"
+                                        onclick="abrirModalModificar(this)">
                                         MODIFICAR
                                     </button>
                                 </td>
@@ -891,8 +884,9 @@
                             </select>
                         </div>
                         <div class="modal-form-row"><label>Stock</label><input type="number" id="add-papel-stock"
-                                value="0">
-                        </div>
+                                value="0"></div>
+                        <div class="modal-form-row"><label>Observaciones</label><textarea id="add-papel-observaciones"
+                                rows="3" style="flex:1; border: 2px solid #000; padding: 0.5rem;"></textarea></div>
                     </div>
                     <div class="modal-form-actions">
                         <button class="modal-btn modal-btn-no"
@@ -953,13 +947,9 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        <div class="modal-form-row"><label>Stock Inicial</label><input type="number"
-                                id="mod-papel-stock">
-                        </div>
-                        <div class="modal-form-row"><label>Entradas</label><input type="number" id="mod-papel-entradas">
-                        </div>
-                        <div class="modal-form-row"><label>Salidas</label><input type="number" id="mod-papel-salidas">
-                        </div>
+                        <div class="modal-form-row"><label>Stock</label><input type="number" id="mod-papel-stock"></div>
+                        <div class="modal-form-row"><label>Observaciones</label><textarea id="mod-papel-observaciones"
+                                rows="3" style="flex:1; border: 2px solid #000; padding: 0.5rem;"></textarea></div>
                     </div>
                     <div class="modal-form-actions">
                         <button class="modal-btn modal-btn-no"
@@ -1337,10 +1327,12 @@
             const nombreInput = document.getElementById('add-papel-nombre');
             const formatoInput = document.getElementById('add-papel-formato');
             const stockInput = document.getElementById('add-papel-stock');
+            const obsInput = document.getElementById('add-papel-observaciones');
 
             const nombre = nombreInput ? nombreInput.value.trim() : "";
             const formato = formatoInput ? formatoInput.value : "";
             const stock = stockInput ? stockInput.value : "0";
+            const observaciones = obsInput ? obsInput.value.trim() : "";
 
             if (!nombre || !formato) {
                 alert("Por favor, completá nombre y formato (Versión Inline).");
@@ -1350,7 +1342,7 @@
             fetch('/papel/agregar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock })
+                body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock, observaciones: observaciones })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -1368,20 +1360,13 @@
             const modal = document.getElementById('modal-papel-modificar-general');
             const select = document.getElementById('mod-papel-select');
 
-            // Pre-seleccionar en el dropdown si existe
-            if (select) {
-                select.value = btn.dataset.id;
-                actualizarCamposModificar(); // Llenar inputs con datos del select
-            }
-            // Fallback por si el select no tiene los datos actualizados: usar atributos del btn
+            // Pre-seleccionar
+            if (select) select.value = btn.dataset.id;
+
             document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
             document.getElementById('mod-papel-formato').value = btn.dataset.formato;
             document.getElementById('mod-papel-stock').value = btn.dataset.stock;
-            // Entradas y salidas suelen ser read-only o calculados, pero si están en el form:
-            const inpEntradas = document.getElementById('mod-papel-entradas');
-            const inpSalidas = document.getElementById('mod-papel-salidas');
-            if (inpEntradas) inpEntradas.value = btn.dataset.entradas;
-            if (inpSalidas) inpSalidas.value = btn.dataset.salidas;
+            document.getElementById('mod-papel-observaciones').value = btn.dataset.observaciones || '';
 
             if (modal) modal.style.display = 'flex';
         }
@@ -1394,11 +1379,7 @@
                 document.getElementById('mod-papel-nombre').value = selectedOption.dataset.nombre || '';
                 document.getElementById('mod-papel-formato').value = selectedOption.dataset.formato || '';
                 document.getElementById('mod-papel-stock').value = selectedOption.dataset.stock || '0';
-
-                const inpEntradas = document.getElementById('mod-papel-entradas');
-                const inpSalidas = document.getElementById('mod-papel-salidas');
-                if (inpEntradas) inpEntradas.value = selectedOption.dataset.entradas || '0';
-                if (inpSalidas) inpSalidas.value = selectedOption.dataset.salidas || '0';
+                document.getElementById('mod-papel-observaciones').value = selectedOption.dataset.observaciones || '';
             }
         }
 
@@ -1408,11 +1389,7 @@
             const nombre = document.getElementById('mod-papel-nombre').value;
             const formato = document.getElementById('mod-papel-formato').value;
             const stock = document.getElementById('mod-papel-stock').value;
-            // Entradas y salidas si son editables
-            const inpEntradas = document.getElementById('mod-papel-entradas');
-            const inpSalidas = document.getElementById('mod-papel-salidas');
-            const entradas = inpEntradas ? inpEntradas.value : 0;
-            const salidas = inpSalidas ? inpSalidas.value : 0;
+            const observaciones = document.getElementById('mod-papel-observaciones').value;
 
             if (!p_id || !nombre || !formato) {
                 alert("Faltan datos obligatorios (Nombre, Formato).");
@@ -1423,9 +1400,8 @@
                 id: p_id,
                 nombre: nombre,
                 formato: formato,
-                stock_inicial: stock,
-                entradas: entradas,
-                salidas: salidas
+                stock: stock,
+                observaciones: observaciones
             };
 
             fetch('/papel/modificar', {
@@ -1456,19 +1432,18 @@
             filas.forEach(fila => {
                 let mostrar = true;
 
-                // 1. Filtro Texto (Nombre o Formato)
-                // Concatenamos todo el texto de la fila para buscar
+                // 1. Filtro Texto 
                 const textoFila = fila.innerText.toLowerCase();
                 if (busqueda && !textoFila.includes(busqueda)) {
                     mostrar = false;
                 }
 
-                // 2. Filtro Stock (Columna TOTAL es indice 6)
-                // <td>ID</td> <td>Nom</td> <td>Fmt</td> <td>Ini</td> <td>Ent</td> <td>Sal</td> <td>TOT</td>
+                // 2. Filtro Stock (Ahora Columna STOCK es indice 3)
+                // <td>ID</td> <td>Nom</td> <td>Fmt</td> <td>STOCK</td> <td>OBS</td> <td>BTN</td>
                 if (mostrar && soloStock) {
-                    const celdaTotal = fila.cells[6];
-                    if (celdaTotal) {
-                        const val = parseInt(celdaTotal.innerText.trim());
+                    const celdaStock = fila.cells[3];
+                    if (celdaStock) {
+                        const val = parseInt(celdaStock.innerText.trim());
                         if (isNaN(val) || val <= 0) {
                             mostrar = false;
                         }

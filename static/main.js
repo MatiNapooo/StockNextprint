@@ -1196,10 +1196,10 @@ function initFiltroPapel(checkId, inputId, tableId, colIndexTotal) {
     }
 }
 
-// Inicializar Papel Simple (La columna TOTAL es la 5ta -> índice 4)
+// Inicializar Papel Simple (La columna STOCK es la 3ra -> índice 2)
 document.addEventListener("DOMContentLoaded", function () {
-    initFiltroPapel("check-stock-papel-simple", "filtro-papel-simple", "tabla-papel-simple", 5);
+    initFiltroPapel("check-stock-papel-simple", "filtro-papel-simple", "tabla-papel-simple", 2);
 
-    // Inicializar Papel Admin (La columna TOTAL es la 8va -> índice 7)
-    initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 6);
+    // Inicializar Papel Admin (La columna STOCK es la 4ta -> índice 3)
+    initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 3);
 });

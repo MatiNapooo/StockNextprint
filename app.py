@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import shutil 
+import re
 from collections import Counter
 from datetime import datetime
 from sqlite3 import IntegrityError
@@ -8,9 +9,19 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 
 # Lista Global de Formatos para Papel
 FORMATOS_PAPEL = [
-    "30x40", "40x50", "45x65", "50x70", "56x27", "64x88", "65x95",
-    "70x100", "72x102", "82x118", "A3", "A4", "Carta", "Oficio"
+    "50 x 65", "61 x 86", "63 x 88", "65 x 95", "72 x 92", 
+    "66 x 100", "72 x 102", "74 x 110", "76 x 112", "70 x 100", 
+    "82 x 118", "36 cm", "41 cm", "45 cm"
 ]
+
+def natural_key(text):
+    """
+    Función auxiliar para ordenamiento natural.
+    Convierte 'Obra 80 gr' en ['Obra ', 80, ' gr'] para comparar numéricamente.
+    """
+    if not isinstance(text, str):
+        return [0]
+    return [int(c) if c.isdigit() else c.lower() for c in re.split(r'(\d+)', text)]
 
 
 # --- BLOQUE MÁGICO PARA RAILWAY ---
@@ -57,14 +68,16 @@ try:
         # Si la receta dice "UNIQUE" junto a "nombre", tenemos que operar.
         # (O si simplemente queremos asegurar que la estructura sea la nueva)
         
-        # Vamos a forzar la actualización si NO vemos la restricción compuesta nueva
-        if "UNIQUE(nombre, formato)" not in creacion_original:
-            print("⚠️ Detectada estructura antigua. Iniciando reconstrucción para permitir formatos distintos...")
+        if "UNIQUE(nombre, formato)" not in creacion_original or "observaciones" not in creacion_original:
+            print("⚠️ Detectada estructura antigua o falta columna observaciones. Iniciando reconstrucción...")
             
-            # 1. Renombrar la tabla vieja a "_backup"
-            cur_temp.execute("ALTER TABLE papel_inventario RENAME TO papel_inventario_backup")
+            # Validar si ya existe backup previo para no perder datos si falló antes
+            try:
+                 cur_temp.execute("ALTER TABLE papel_inventario RENAME TO papel_inventario_backup")
+            except sqlite3.OperationalError:
+                pass # Ya existe backup, usar ese
             
-            # 2. Crear la tabla NUEVA con la regla correcta (Nombre+Formato únicos, no solo Nombre)
+            # 2. Crear la tabla NUEVA con la regla correcta y la columna observaciones
             cur_temp.execute('''
                 CREATE TABLE papel_inventario (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,6 +87,7 @@ try:
                     entradas INTEGER DEFAULT 0,
                     salidas INTEGER DEFAULT 0,
                     total INTEGER DEFAULT 0,
+                    observaciones TEXT DEFAULT '',
                     UNIQUE(nombre, formato)
                 )
             ''')
@@ -81,11 +95,22 @@ try:
             # 3. Copiar los datos de la vieja a la nueva
             # (SQLite es inteligente y empareja las columnas por nombre si usamos SELECT explícito)
             try:
-                cur_temp.execute('''
-                    INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total)
-                    SELECT id, nombre, formato, stock_inicial, entradas, salidas, total 
-                    FROM papel_inventario_backup
-                ''')
+                # Verificar columnas de la tabla backup para ver si tiene observaciones (si ya se corrio antes)
+                cols_backup = [info[1] for info in cur_temp.execute("PRAGMA table_info(papel_inventario_backup)").fetchall()]
+                
+                if 'observaciones' in cols_backup:
+                     cur_temp.execute('''
+                        INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total, observaciones)
+                        SELECT id, nombre, formato, stock_inicial, entradas, salidas, total, observaciones 
+                        FROM papel_inventario_backup
+                    ''')
+                else:
+                    cur_temp.execute('''
+                        INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total)
+                        SELECT id, nombre, formato, stock_inicial, entradas, salidas, total 
+                        FROM papel_inventario_backup
+                    ''')
+
                 print("✅ Datos migrados exitosamente.")
                 
                 # 4. Borrar la tabla vieja solo si la copia funcionó
@@ -870,11 +895,7 @@ def pedido_entregado(pedido_id):
 # ==========================================
 
 # 1. ADMIN / INVENTARIO PAPEL
-FORMATOS_PAPEL = [
-    "50x65", "61x86", "63x88", "65x95", "72x92", "66x100", 
-    "72x102", "74x110", "82x118", 
-    "36 cm", "41 cm", "46 cm"
-]
+# (Se usa la lista global FORMATOS_PAPEL definida al inicio del archivo)
 
 @app.route("/papel/admin", methods=["GET", "POST"])
 def papel_admin():
@@ -894,8 +915,12 @@ def papel_admin():
 
     # Si está logueado, mostrar inventario admin
     conn = get_conn()
-    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre, formato").fetchall()
+    registros = conn.execute("SELECT * FROM papel_inventario").fetchall()
     conn.close()
+    
+    # Ordenamiento Natural (Python)
+    registros.sort(key=lambda r: (natural_key(r['nombre']), natural_key(r['formato'])))
+    
     return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros, formatos=FORMATOS_PAPEL)
 
 # ==========================================
@@ -991,8 +1016,12 @@ def papel_eliminar_movimiento_historial():
 def papel_inventario():
     # Inventario modo lectura (para el menú principal)
     conn = get_conn()
-    registros = conn.execute("SELECT * FROM papel_inventario ORDER BY nombre, formato").fetchall()
+    registros = conn.execute("SELECT * FROM papel_inventario").fetchall()
     conn.close()
+    
+    # Ordenamiento Natural
+    registros.sort(key=lambda r: (natural_key(r['nombre']), natural_key(r['formato'])))
+    
     return render_template("base.html", vista="papel_inventario_simple", modo="papel", registros=registros)
 
 # 2. ENTRADAS DE PAPEL
@@ -1022,7 +1051,8 @@ def papel_entradas_nuevo():
         ).fetchone()
 
         if not existe:
-            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+            papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
             return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
 
@@ -1046,7 +1076,8 @@ def papel_entradas_nuevo():
 
     # GET: Cargar lista de papeles para el select
     # Usamos DISTINCT para que no aparezcan repetidos los nombres si hay varios formatos
-    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+    papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
     return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
@@ -1084,7 +1115,8 @@ def papel_salidas_nuevo():
         ).fetchone()
 
         if not existe:
-            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+            papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
             return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
 
@@ -1106,7 +1138,8 @@ def papel_salidas_nuevo():
         conn.close()
         return redirect(url_for("papel_salidas_historial", ok=1))
 
-    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+    papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
     return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
@@ -1166,7 +1199,8 @@ def papel_pedidos_nuevo():
         ).fetchone()
 
         if not existe:
-            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+            papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+            papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
             return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}'.")
 
@@ -1183,7 +1217,8 @@ def papel_pedidos_nuevo():
         conn.close()
         return redirect(url_for("papel_pedidos_historial", ok=1))
 
-    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario ORDER BY nombre").fetchall()
+    papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
+    papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
     return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
 
@@ -1231,6 +1266,7 @@ def papel_agregar():
     nombre = (data.get("nombre") or "").strip()
     formato = (data.get("formato") or "").strip()
     stock = int(data.get("stock") or 0)
+    observaciones = (data.get("observaciones") or "").strip()
 
     if not nombre or not formato:
         return jsonify({"ok": False, "error": "El nombre y formato son obligatorios"}), 400
@@ -1238,10 +1274,9 @@ def papel_agregar():
     conn = get_conn()
     try:
         conn.execute("""
-            INSERT INTO papel_inventario (nombre, formato, stock_inicial, entradas, salidas, total)
-            VALUES (?, ?, ?, 0, 0, ?)
-        """, (nombre, formato, stock, stock))
-        conn.commit()
+            INSERT INTO papel_inventario (nombre, formato, stock_inicial, entradas, salidas, total, observaciones)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (nombre, formato, stock, stock, observaciones))
         conn.commit()
         # Recuperar ID generado
         row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ? AND formato = ?", (nombre, formato)).fetchone()
@@ -1286,41 +1321,36 @@ def papel_modificar():
     p_id = data.get("id")
     nombre = (data.get("nombre") or "").strip()
     formato = (data.get("formato") or "").strip()
+    # Ahora recibimos 'stock' como el valor TOTAL deseado
+    nuevo_total = int(data.get("stock") or 0)
+    observaciones = (data.get("observaciones") or "").strip()
     
-    try:
-        stock = int(data.get("stock_inicial") or 0)
-        entradas = int(data.get("entradas") or 0)
-        salidas = int(data.get("salidas") or 0)
-    except ValueError:
-        return jsonify({"ok": False, "error": "Valores numéricos inválidos"}), 400
-
     if not p_id or not nombre or not formato:
-        return jsonify({"ok": False, "error": "Faltan datos obligatorios"}), 400
+         return jsonify({"ok": False, "error": "Faltan datos obligatorios"}), 400
 
     conn = get_conn()
     
-    # Verificar si ya existe OTRO papel con ese mismo nombre y formato
+    # Verificar duplicado
     existe = conn.execute(
         "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND id != ?", 
         (nombre, formato, p_id)
     ).fetchone()
-
+    
     if existe:
         conn.close()
         return jsonify({"ok": False, "error": "Ya existe otro papel con ese nombre y formato"}), 400
 
-    # Recalcular total
-    total = stock + entradas - salidas
-
+    # Actualizar total directamente y observaciones. 
+    # Mantenemos las columnas entradas/salidas pero ya no se editan aqui.
     conn.execute("""
         UPDATE papel_inventario 
-        SET nombre = ?, formato = ?, stock_inicial = ?, entradas = ?, salidas = ?, total = ?
+        SET nombre = ?, formato = ?, total = ?, observaciones = ?
         WHERE id = ?
-    """, (nombre, formato, stock, entradas, salidas, total, p_id))
+    """, (nombre, formato, nuevo_total, observaciones, p_id))
     
     conn.commit()
     conn.close()
-    return jsonify({"ok": True, "nombre": nombre, "formato": formato, "stock_inicial": stock, "entradas": entradas, "salidas": salidas, "total": total})
+    return jsonify({"ok": True})
 
 
 
