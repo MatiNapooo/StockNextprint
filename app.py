@@ -41,45 +41,85 @@ def get_db_path():
 # Usamos la función para definir la ruta
 DB_PATH = get_db_path()
 
-# --- AUTO-REPARACIÓN DE BASE DE DATOS (VERSIÓN 2.0 - EVOLUCIONADA) ---
+# --- RECONSTRUCCIÓN INTELIGENTE DE TABLAS (MIGRACIÓN FINAL) ---
 try:
-    print("🔧 Iniciando verificación y actualización de tablas...")
+    print("🔧 Iniciando diagnóstico de base de datos...")
     con_temp = sqlite3.connect(DB_PATH)
     cur_temp = con_temp.cursor()
     
-    # 1. CREAR TABLAS SI NO EXISTEN (Esto ya lo tenías)
-    cur_temp.execute('''
-        CREATE TABLE IF NOT EXISTS papel_inventario (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nombre TEXT NOT NULL,
-            formato TEXT NOT NULL,
-            stock_inicial INTEGER DEFAULT 0,
-            entradas INTEGER DEFAULT 0,
-            salidas INTEGER DEFAULT 0,
-            total INTEGER DEFAULT 0
-        )
-    ''')
-    # ... (Si quieres dejar los otros CREATE TABLE aquí, déjalos, no molestan) ...
-
-    # 2. AGREGAR COLUMNA 'FORMATO' A LAS TABLAS VIEJAS (MIGRACIÓN)
-    # Intentamos agregar la columna. Si ya existe, dará error y lo ignoramos (pass).
-    tablas_con_formato = ['papel_inventario', 'papel_entradas', 'papel_salidas', 'papel_pedidos']
+    # --- PASO 1: VERIFICAR SI EXISTE LA REGLA VIEJA QUE PROHIBE DUPLICADOS ---
+    # Intentamos leer la "receta" original de la tabla papel_inventario
+    cur_temp.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='papel_inventario'")
+    resultado = cur_temp.fetchone()
     
-    for tabla in tablas_con_formato:
-        try:
-            # Comando SQL para agregar una columna nueva a una tabla existente
-            cur_temp.execute(f"ALTER TABLE {tabla} ADD COLUMN formato TEXT DEFAULT ''")
-            print(f"✅ Columna 'formato' agregada exitosamente a {tabla}")
-        except Exception as e:
-            # Si entra acá, es porque la columna YA EXISTE. No hacemos nada.
-            pass
+    if resultado:
+        creacion_original = resultado[0]
+        # Si la receta dice "UNIQUE" junto a "nombre", tenemos que operar.
+        # (O si simplemente queremos asegurar que la estructura sea la nueva)
+        
+        # Vamos a forzar la actualización si NO vemos la restricción compuesta nueva
+        if "UNIQUE(nombre, formato)" not in creacion_original:
+            print("⚠️ Detectada estructura antigua. Iniciando reconstrucción para permitir formatos distintos...")
+            
+            # 1. Renombrar la tabla vieja a "_backup"
+            cur_temp.execute("ALTER TABLE papel_inventario RENAME TO papel_inventario_backup")
+            
+            # 2. Crear la tabla NUEVA con la regla correcta (Nombre+Formato únicos, no solo Nombre)
+            cur_temp.execute('''
+                CREATE TABLE papel_inventario (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    nombre TEXT NOT NULL,
+                    formato TEXT NOT NULL,
+                    stock_inicial INTEGER DEFAULT 0,
+                    entradas INTEGER DEFAULT 0,
+                    salidas INTEGER DEFAULT 0,
+                    total INTEGER DEFAULT 0,
+                    UNIQUE(nombre, formato)
+                )
+            ''')
+            
+            # 3. Copiar los datos de la vieja a la nueva
+            # (SQLite es inteligente y empareja las columnas por nombre si usamos SELECT explícito)
+            try:
+                cur_temp.execute('''
+                    INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total)
+                    SELECT id, nombre, formato, stock_inicial, entradas, salidas, total 
+                    FROM papel_inventario_backup
+                ''')
+                print("✅ Datos migrados exitosamente.")
+                
+                # 4. Borrar la tabla vieja solo si la copia funcionó
+                cur_temp.execute("DROP TABLE papel_inventario_backup")
+                print("🗑️ Tabla antigua eliminada.")
+                
+            except Exception as e_copia:
+                print(f"❌ Error al copiar datos, restaurando backup: {e_copia}")
+                cur_temp.execute("DROP TABLE papel_inventario") # Borrar la nueva vacía
+                cur_temp.execute("ALTER TABLE papel_inventario_backup RENAME TO papel_inventario") # Volver a poner la vieja
+        
+        else:
+            print("✅ La tabla 'papel_inventario' ya tiene la estructura correcta.")
+
+    # Asegurar que las otras tablas existan (por si acaso)
+    cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_entradas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, tipo_papel TEXT, 
+            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT)''')
+            
+    cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_salidas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, tipo_papel TEXT, 
+            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT)''')
+            
+    cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_pedidos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, pedido_por TEXT, proveedor TEXT,
+            tipo_papel TEXT, formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT, 
+            estado TEXT DEFAULT 'Pendiente')''')
 
     con_temp.commit()
     con_temp.close()
-    print("✅ Base de datos actualizada y lista.")
+    print("✨ Mantenimiento de base de datos finalizado.")
+    
 except Exception as e:
-    print(f"❌ Error en auto-reparación: {e}")
-# ----------------------------------
+    print(f"❌ Error CRÍTICO en mantenimiento: {e}")
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH) # <-- Usamos la variable que calculamos arriba
