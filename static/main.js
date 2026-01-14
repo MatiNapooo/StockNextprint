@@ -1198,8 +1198,8 @@ function initFiltroPapel(checkId, inputId, tableId, colIndexTotal) {
 
 // Inicializar Papel Simple (La columna TOTAL es la 5ta -> índice 4)
 document.addEventListener("DOMContentLoaded", function () {
-    initFiltroPapel("check-stock-papel-simple", "filtro-papel-simple", "tabla-papel-simple", 4);
+    initFiltroPapel("check-stock-papel-simple", "filtro-papel-simple", "tabla-papel-simple", 5);
 
     // Inicializar Papel Admin (La columna TOTAL es la 8va -> índice 7)
-    initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 5);
+    initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 6);
 });
