@@ -1964,139 +1964,88 @@ body {
    ========================================================================== */
 
 @media (max-width: 900px) {
+    /* ============================
+       TABLETS (Portrait/Small Landscape)
+       ============================ */
 
-    /* 1. AJUSTE GENERAL DEL CUERPO */
+    /* 1. CONTENEDOR */
     .contenido {
         padding: 1rem !important;
-        /* Menos relleno en los bordes */
     }
 
-    /* 2. HEADER Y MENÚ (Transformación a vertical) */
+    /* 2. HEADER Y MENÚ */
     .header-inner {
         height: auto !important;
-        /* Altura automática para que entre todo */
         flex-direction: column !important;
-        /* Elementos uno abajo del otro */
         padding: 1rem !important;
         gap: 1rem !important;
     }
 
-    .btn-volver {
-        align-self: flex-start !important;
-        /* Botón volver a la izquierda */
-        margin-bottom: 0.5rem;
-        font-size: 1rem !important;
-    }
-
     .menu-principal {
-        flex-direction: column !important;
-        /* Links uno abajo del otro */
-        width: 100% !important;
+        flex-direction: row !important;
+        /* En tablet aun puede ser horizontal si cabe */
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+        gap: 10px !important;
     }
 
     .menu-item {
-        border-right: none !important;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-        /* Línea separadora suave */
-        font-size: 1.2rem !important;
-        /* Letra un poco más chica */
-        padding: 15px 0 !important;
-    }
-
-    .menu-item:last-child {
+        padding: 10px 15px !important;
+        font-size: 1rem !important;
+        border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
+        /* Mantener separadores */
         border-bottom: none !important;
     }
 
-    /* 3. MENÚ PRINCIPAL (Tarjetas Grandes) */
+    /* 3. MENÚ PRINCIPAL (Tarjetas) */
     .menu-wrapper {
-        flex-direction: column !important;
-        /* Una tarjeta abajo de la otra */
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
         gap: 2rem !important;
-        min-height: auto !important;
-        padding-top: 2rem;
     }
 
-    .menu-card {
-        width: 100% !important;
-        /* Ocupan todo el ancho disponible */
-        max-width: 320px !important;
-        /* Pero no se hacen gigantes */
-        height: auto !important;
-        /* Altura flexible */
-        padding: 2rem !important;
-    }
-
-    /* 4. FORMULARIOS (Registro de Entradas/Salidas/Pedidos) */
-    .form-row {
-        flex-direction: column !important;
-        /* Inputs uno abajo del otro */
-        gap: 1.5rem !important;
+    /* 4. FORMULARIOS (2 Columnas en Tablet es mejor que 1) */
+    .registro-cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-width: 100% !important;
     }
 
     .form-card {
-        min-width: auto !important;
-        /* Quita el ancho mínimo fijo */
         width: 100% !important;
         padding: 1.5rem !important;
     }
 
-    .registro-cards-grid {
-        grid-template-columns: 1fr !important;
-        /* Una sola columna */
-        max-width: 100% !important;
-    }
-
-    /* Selectores e Inputs más cómodos para el dedo */
-    .form-card select,
-    .form-card input,
-    .select-insumo,
-    .select-unidad {
-        width: 100% !important;
-        min-width: auto !important;
-        font-size: 1.1rem !important;
-        height: 50px !important;
-        /* Más alto para tocar fácil */
-    }
-
-    /* 5. BOTONES DE ACCIÓN (Grandes) */
+    /* 5. TARJETAS DE ACCIÓN (Adapting size) */
     .acciones-container {
         flex-direction: column !important;
-        gap: 1.5rem !important;
         align-items: center !important;
+        gap: 1.5rem !important;
     }
 
     .accion-card {
-        width: 100% !important;
+        width: 80% !important;
+        /* No full width, para que respire */
+        max-width: 500px !important;
         min-width: auto !important;
         padding: 2rem 1rem !important;
         font-size: 1.3rem !important;
     }
 
-    /* 6. TABLAS (Hacerlas deslizables) */
-    /* En celulares las tablas no caben, así que permitimos scroll horizontal interno */
+    /* 6. TABLAS */
     .historial-tabla-wrapper,
     .tabla-wrapper {
         overflow-x: auto !important;
-        /* Scroll lateral si no entra */
         border-radius: 8px !important;
     }
 
     .historial-tabla,
     .tabla-inventario {
-        min-width: 600px !important;
-        /* Fuerza ancho mínimo para que no se aplaste */
+        min-width: 700px !important;
+        /* Asegurar scroll */
     }
 
-    /* Achicar un poco la letra de la tabla */
-    .historial-tabla th,
-    .historial-tabla td,
-    .tabla-inventario th,
-    .tabla-inventario td {
-        padding: 8px 5px !important;
-        font-size: 0.85rem !important;
-    }
-
-    /* 7. ADMIN HEADERS Y FILTROS */
+    /* 7. ADMIN HEADERS */
     .historial-header,
     .inventario-header {
         flex-direction: column !important;
@@ -2104,41 +2053,70 @@ body {
         gap: 1rem !important;
     }
 
-    .historial-header-right,
-    .login-actions {
-        display: flex;
-        flex-direction: column;
-        /* Botones uno abajo del otro en admin */
-        width: 100%;
-        gap: 0.8rem !important;
+    .historial-header-right {
+        flex-direction: row !important;
+        /* Mantener botones en fila si caben */
+        flex-wrap: wrap !important;
+        width: 100% !important;
     }
 
     .btn-agregar-insumo,
     .btn-eliminar-insumo,
     .btn-editar-insumo,
     .btn-cerrar-sesion {
-        width: 100% !important;
-        /* Botones ancho completo */
-        margin: 0 !important;
+        flex: 1 !important;
+        /* Distribuir espacio */
         text-align: center !important;
-        justify-content: center !important;
+    }
+}
+
+@media (max-width: 600px) {
+    /* ============================
+       MÓVILES (Strict Mobile)
+       ============================ */
+
+    /* Menu vertical */
+    .menu-principal {
+        flex-direction: column !important;
+        width: 100% !important;
     }
 
+    .menu-item {
+        border-right: none !important;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .menu-wrapper {
+        flex-direction: column !important;
+    }
+
+    /* Grid layout 1 columna */
+    .registro-cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Tarjetas full width */
+    .accion-card {
+        width: 100% !important;
+    }
+
+    /* Botones admin apilados */
+    .historial-header-right {
+        flex-direction: column !important;
+    }
+
+    .btn-agregar-insumo,
+    .btn-eliminar-insumo,
+    .btn-editar-insumo {
+        width: 100% !important;
+    }
+
+    /* Filtros full width */
     .inventario-filtro input,
     .historial-filtro input {
         width: 100% !important;
-        /* Buscador ancho completo */
-    }
-
-    /* 8. MODALES (Ajuste final para pantallas muy chicas) */
-    .modal-content,
-    .modal-inventario-content {
-        width: 95% !important;
-        padding: 1rem !important;
-    }
-
-    .modal-titulo {
-        font-size: 1.2rem !important;
     }
 }
 
@@ -2444,6 +2422,86 @@ body {
     font-weight: 600;
 }
 
+/* =========================================
+   DISEÑO MODERNO: TARJETAS DE ACCIÓN
+   (Minimalista, Unificado, Moderno)
+   ========================================= */
+
+.acciones-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.accion-card {
+    background-color: #ffffff;
+    /* Fondo blanco limpio */
+    color: #475569;
+    /* Gris oscuro moderno (Slate 600) */
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+
+    border: 1px solid #e2e8f0;
+    /* Borde sutil (Slate 200) */
+    border-radius: 20px;
+    /* Bordes bien redondeados */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    /* Sombra suave */
+
+    width: 400px;
+    min-height: 150px;
+    /* Altura cómoda */
+    padding: 1.5rem;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+/* Efecto Hover Moderno */
+.accion-card:hover {
+    transform: translateY(-5px);
+    /* Levantar */
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    /* Sombra más profunda */
+    border-color: #cbd5e1;
+    /* Borde un poco más oscuro */
+    background-color: #f8fafc;
+    /* Fondo apenas gris */
+    color: #1e293b;
+    /* Texto más oscuro */
+}
+
+/* Decoración sutil (borde inferior de color unificado) */
+.accion-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    /* Azul a Cyan (Moderno) */
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.accion-card:hover::after {
+    opacity: 1;
+}
+
 /* ========================================= */
 /* ESTILOS DE IMPRESIÓN */
 /* ========================================= */
@@ -2535,4 +2593,78 @@ body {
         padding: 0 !important;
         border: none !important;
     }
+}
+
+/* =========================================
+   BOTONES DE CONFIRMACIÓN MODERNOS
+   (Minimalista, sin cambiar dimensiones externas drásticamente)
+   ========================================= */
+.btn-confirmar {
+    /* Estética Minimalista */
+    border: none;
+    border-radius: 8px;
+    /* Coherente con el resto */
+    background-color: #10b981;
+    /* Verde Emerald por defecto (Entradas) */
+    color: white;
+
+    /* Tipografía */
+    font-family: inherit;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+
+    /* Dimensiones (Padding standard moderno) */
+    padding: 10px 24px;
+
+    /* Efectos */
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-confirmar:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    filter: brightness(1.1);
+    /* Ilumina un poco cualquier color de fondo */
+}
+
+
+/* =========================================
+   ESTILOS PEDIDOS INTERNOS
+   ========================================= */
+.registro-card-interno {
+    border: 2px solid #ea580c !important;
+    /* Naranja fuerte */
+    box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2) !important;
+}
+
+.pedido-interno {
+    background-color: rgba(251, 146, 60, 0.2) !important;
+    /* Naranja/Marrón transparente */
+}
+
+.pedido-interno:hover {
+    background-color: rgba(251, 146, 60, 0.3) !important;
+}
+
+.btn-reservado {
+    background-color: #c2410c !important;
+    /* Naranja quemado / Marrón */
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.btn-reservado:hover {
+    background-color: #9a3412 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(154, 52, 18, 0.4) !important;
 }

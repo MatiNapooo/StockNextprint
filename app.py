@@ -194,6 +194,13 @@ try:
         except Exception:
             pass # La columna ya existe, todo bien.
 
+    # MIGRACIÓN ESPECÍFICA PARA PEDIDOS INTERNOS
+    try:
+        cur_extra.execute("ALTER TABLE papel_pedidos ADD COLUMN es_interno INTEGER DEFAULT 0")
+        print("✅ Columna 'es_interno' agregada a Pedidos.")
+    except Exception:
+        pass
+
     con_extra.commit()
     con_extra.close()
     print("✨ Tabla de Pedidos actualizada.")
@@ -1271,7 +1278,9 @@ def papel_pedidos_nuevo():
         proveedor = request.form.get("proveedor", "").strip()
         cantidad = request.form.get("cantidad", "").strip()
         observaciones = request.form.get("observaciones", "").strip()
+        observaciones = request.form.get("observaciones", "").strip()
         agregar_stock = 1 if request.form.get("agregar_stock") else 0
+        es_interno = 1 if request.form.get("es_interno") else 0 # Nuevo flag
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
@@ -1292,9 +1301,9 @@ def papel_pedidos_nuevo():
         # Si no la tiene, tendrás que agregarla manualmente a la base de datos o el código dará error.
         conn.execute("""
             INSERT INTO papel_pedidos 
-            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado, afecta_stock)
-            VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, 'En espera', ?)
-        """, (fecha, pedido_por, tipo_papel, formato, marca, proveedor, cantidad, observaciones, agregar_stock))
+            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado, afecta_stock, es_interno)
+            VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, 'En espera', ?, ?)
+        """, (fecha, pedido_por, tipo_papel, formato, marca, proveedor, cantidad, observaciones, agregar_stock, es_interno))
 
         conn.commit()
         conn.close()
@@ -1318,18 +1327,36 @@ def papel_pedido_entregado(pedido_id):
     # Verificar pedido
     pedido = conn.execute("SELECT * FROM papel_pedidos WHERE id = ?", (pedido_id,)).fetchone()
     
-    if pedido and pedido["estado"] != "Entregado":
-        # Marcar entregado
+    # Lógica diferenciada: Interno vs Normal
+    # Convertimos a dict para usar .get() tranquilamente si 'pedido' es un objeto sqlite3.Row
+    pedido_dict = dict(pedido)
+    
+    if pedido_dict.get("es_interno"):
+            # --- PEDIDO INTERNO: RESTA STOCK (CONSUMO) ---
+            # El estado puede quedar como 'Reservado' o 'Entregado'. Usaremos 'Reservado' para distinguir visualmente si se quiere.
+            # Pero el usuario pidio que el BOTON diga Reservado. Al tocarlo, se completa la accion.
+            # Vamos a ponerle estado 'Entregado' para finalizarlo, pero la logica es restar.
+            conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
+            
+            conn.execute("""
+            UPDATE papel_inventario 
+            SET stock_inicial = stock_inicial - ?, total = total - ? 
+            WHERE nombre = ? AND formato = ?
+        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
+             
+    else:
+        # --- PEDIDO NORMAL (COMPRA): SUMA STOCK ---
         conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
         
-        # Sumar al stock AUTOMÁTICAMENTE SOLO SI se marcó el checkbox
+        # Sumar al stock AUTOMÁTICAMENTE SOLO SI se marcó el checkbox "Agregar al Stock"
         if pedido["afecta_stock"]:
             conn.execute("""
                 UPDATE papel_inventario 
                 SET stock_inicial = stock_inicial + ?, total = total + ? 
                 WHERE nombre = ? AND formato = ?
             """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
-        conn.commit()
+            
+    conn.commit()
         
     conn.close()
     return jsonify({"ok": True})

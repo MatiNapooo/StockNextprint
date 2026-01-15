@@ -378,7 +378,7 @@
                     </div>
                 </div>
 
-                <button type="button" class="confirm-button" id="btn-entrada-confirmar">
+                <button type="button" class="btn-confirmar" id="btn-entrada-confirmar">
                     Confirmar registro
                 </button>
             </form>
@@ -467,7 +467,8 @@
                     </div>
                 </div>
 
-                <button type="button" class="confirm-button" id="btn-salida-confirmar">
+                <button type="button" class="btn-confirmar" id="btn-salida-confirmar"
+                    style="background-color: #ef4444;">
                     Confirmar registro
                 </button>
             </form>
@@ -1020,8 +1021,7 @@
                             </select>
                         </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
-                        </div>
+                        <!-- Proveedor eliminado -->
                         <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
                                 required></div>
                         <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
@@ -1107,16 +1107,15 @@
                             </select>
                         </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
-                        <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
-                        </div>
+
+                        <!-- Proveedor eliminado -->
                         <div class="registro-card"><label>Cantidad</label><input type="number" name="cantidad" min="1"
                                 required></div>
                         <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
                                 name="observaciones" rows="2"></textarea></div>
                     </div>
                     <div class="modal-form-actions" style="justify-content: center;">
-                        <button type="submit" class="btn-confirmar"
-                            style="background-color: var(--color-danger);">Confirmar
+                        <button type="submit" class="btn-confirmar" style="background-color: #ef4444;">Confirmar
                             Salida</button>
                     </div>
                 </form>
@@ -1217,12 +1216,23 @@
                             </div>
                         </div>
 
+                        <!-- Checkbox INTERNO (Nuevo) -->
+                        <div class="registro-card registro-card-interno"
+                            style="display: flex; flex-direction: column; justify-content: flex-end;">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 5px 0;">
+                                <input type="checkbox" name="es_interno" id="es_interno"
+                                    style="width: 30px; height: 30px; cursor: pointer;">
+                                <label for="es_interno"
+                                    style="margin: 0; cursor: pointer; font-size: 1rem; font-weight: 600; color: #ea580c;">¿Interno?</label>
+                            </div>
+                        </div>
+
                         <div class="registro-card" style="grid-column: 1 / -1;"><label>Observaciones</label><textarea
                                 name="observaciones" rows="2"></textarea></div>
                     </div>
                     <div class="modal-form-actions" style="justify-content: center;">
-                        <button type="submit" class="btn-confirmar"
-                            style="background-color: var(--color-warning);">Registrar Pedido</button>
+                        <button type="submit" class="btn-confirmar" style="background-color: #f59e0b;">Registrar
+                            Pedido</button>
                     </div>
                 </form>
             </section>
@@ -1240,6 +1250,7 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>POR</th>
+                                <th>PROVEEDOR</th>
                                 <th>Papel</th>
                                 <!-- Gramaje eliminado -->
                                 <th>Formato</th>
@@ -1252,9 +1263,11 @@
                         </thead>
                         <tbody>
                             {% for r in registros %}
-                            <tr class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                            <tr
+                                class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %} {% if r['es_interno'] %}pedido-interno{% endif %}">
                                 <td>{{ r['fecha'] }}</td>
                                 <td>{{ r['pedido_por'] }}</td>
+                                <td>{{ r['proveedor'] }}</td>
                                 <td>{{ r['tipo_papel'] }}</td>
                                 <!-- Gramaje eliminado -->
                                 <td>{{ r['formato'] }}</td>
@@ -1264,10 +1277,17 @@
                                 <td class="estado-pedido">{{ r['estado'] }}</td>
                                 <td>
                                     {% if r['estado'] != 'Entregado' %}
+                                    {% if r['es_interno'] %}
+                                    <button type="button" class="btn-reservado btn-entregado-papel"
+                                        data-id="{{ r['id'] }}">
+                                        Reservado
+                                    </button>
+                                    {% else %}
                                     <button type="button" class="btn-entregado btn-entregado-papel"
                                         data-id="{{ r['id'] }}">
                                         Entregado
                                     </button>
+                                    {% endif %}
                                     {% else %}
                                     ✔
                                     {% endif %}

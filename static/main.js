@@ -1203,3 +1203,30 @@ document.addEventListener("DOMContentLoaded", function () {
     // Inicializar Papel Admin (La columna STOCK es la 4ta -> índice 3)
     initFiltroPapel("check-stock-papel", "filtro-papel", "tabla-papel", 3);
 });
+
+
+// ==========================================
+// LÓGICA BOTONES DE ESTADO PEDIDOS PAPEL (Entregado / Reservado)
+// ==========================================
+document.addEventListener("click", function (e) {
+    // Buscar si el click fue en un botón con clase .btn-entregado-papel
+    const btn = e.target.closest(".btn-entregado-papel");
+
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    fetch(`/papel/pedidos/${id}/entregado`, {
+        method: "POST"
+    })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                location.reload();
+            } else {
+                alert("Error al actualizar el estado: " + (data.error || "Desconocido"));
+            }
+        })
+        .catch(err => alert("Error de conexión al actualizar pedido."));
+});
