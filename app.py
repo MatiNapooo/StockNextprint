@@ -151,16 +151,56 @@ try:
             formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT)''')
             
     cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_pedidos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, pedido_por TEXT, proveedor TEXT,
-            tipo_papel TEXT, formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT, 
-            estado TEXT DEFAULT 'Pendiente')''')
-
+            id INTEGER PRIMARY KEY AUTOINCREMENT, 
+            fecha TEXT, 
+            pedido_por TEXT, 
+            proveedor TEXT,
+            tipo_papel TEXT, 
+            formato TEXT, 
+            gramaje TEXT,
+            marca TEXT, 
+            cantidad INTEGER, 
+            observaciones TEXT, 
+            estado TEXT DEFAULT 'Pendiente',
+            afecta_stock INTEGER DEFAULT 0
+            )''')
+    
     con_temp.commit()
     con_temp.close()
     print("✨ Mantenimiento de base de datos finalizado.")
     
 except Exception as e:
     print(f"❌ Error CRÍTICO en mantenimiento: {e}")
+
+    # --- BLOQUE DE REPARACIÓN DE PEDIDOS (NUEVO) ---
+try:
+    print("🔧 Verificando columnas faltantes en PEDIDOS...")
+    con_extra = sqlite3.connect(DB_PATH)
+    cur_extra = con_extra.cursor()
+
+    # 1. Asegurar que 'papel_pedidos' tenga todas las columnas nuevas
+    # Intentamos agregar cada una. Si ya existen, no pasa nada.
+    columnas_necesarias = [
+        ("formato", "TEXT DEFAULT ''"),
+        ("pedido_por", "TEXT DEFAULT ''"),
+        ("afecta_stock", "INTEGER DEFAULT 0"),
+        ("gramaje", "TEXT DEFAULT ''")
+    ]
+
+    for col_nombre, col_tipo in columnas_necesarias:
+        try:
+            cur_extra.execute(f"ALTER TABLE papel_pedidos ADD COLUMN {col_nombre} {col_tipo}")
+            print(f"✅ Columna '{col_nombre}' agregada a Pedidos.")
+        except Exception:
+            pass # La columna ya existe, todo bien.
+
+    con_extra.commit()
+    con_extra.close()
+    print("✨ Tabla de Pedidos actualizada.")
+except Exception as e:
+    print(f"❌ Error verificando pedidos: {e}")
+# ----------------------------------------------------
+
 
 # --- BLOQUE EXTRA: MIGRACIÓN DE TABLAS SECUNDARIAS ---
 try:
