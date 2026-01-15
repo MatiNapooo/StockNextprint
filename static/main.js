@@ -876,29 +876,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // Boton Entregado Papel
-    document.addEventListener('click', function (e) {
-        if (e.target.classList.contains('btn-entregado-papel')) {
-            const btn = e.target;
-            const id = btn.dataset.id;
-            if (!id || btn.disabled) return;
-
-            fetch(`/papel/pedidos/${id}/entregado`, { method: 'POST' })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.ok) {
-                        const fila = btn.closest('tr');
-                        if (fila) {
-                            fila.classList.add('pedido-entregado');
-                            fila.querySelector('.estado-pedido').textContent = 'Entregado';
-                        }
-                        btn.disabled = true;
-                        btn.textContent = "✔";
-                    }
-                });
-        }
-    });
-
     // Filtros Papel
     const filtroPapel = document.getElementById("filtro-papel");
     const tablaPapel = document.getElementById("tabla-papel");
@@ -1217,6 +1194,9 @@ document.addEventListener("click", function (e) {
     const id = btn.dataset.id;
     if (!id) return;
 
+    // Deshabilitar botón para evitar ansiedad de doble clic del usuario
+    btn.disabled = true;
+
     fetch(`/papel/pedidos/${id}/entregado`, {
         method: "POST"
     })
@@ -1226,7 +1206,11 @@ document.addEventListener("click", function (e) {
                 location.reload();
             } else {
                 alert("Error al actualizar el estado: " + (data.error || "Desconocido"));
+                btn.disabled = false; // Reactivar si falló
             }
         })
-        .catch(err => alert("Error de conexión al actualizar pedido."));
+        .catch(err => {
+            alert("Error de conexión al actualizar pedido.");
+            btn.disabled = false;
+        });
 });

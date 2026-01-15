@@ -1327,28 +1327,32 @@ def papel_pedido_entregado(pedido_id):
     # Verificar pedido
     pedido = conn.execute("SELECT * FROM papel_pedidos WHERE id = ?", (pedido_id,)).fetchone()
     
+    if not pedido:
+        conn.close()
+        return jsonify({"ok": False, "error": "Pedido no encontrado"}), 404
+
+    # --- FRENO DE SEGURIDAD (FIX DUPLICADOS) ---
+    # Si ya se entregó, no hacemos NADA. Devolvemos OK para que el frontend se quede tranquilo.
+    if pedido["estado"] == "Entregado":
+        conn.close()
+        return jsonify({"ok": True, "mensaje": "Ya estaba entregado"})
+
     # Lógica diferenciada: Interno vs Normal
-    # Convertimos a dict para usar .get() tranquilamente si 'pedido' es un objeto sqlite3.Row
-    pedido_dict = dict(pedido)
+    es_interno = pedido["es_interno"] # Ojo: Asegúrate que tu DB tenga esta columna (ya lo hicimos en el paso anterior)
     
-    if pedido_dict.get("es_interno"):
-            # --- PEDIDO INTERNO: RESTA STOCK (CONSUMO) ---
-            # El estado puede quedar como 'Reservado' o 'Entregado'. Usaremos 'Reservado' para distinguir visualmente si se quiere.
-            # Pero el usuario pidio que el BOTON diga Reservado. Al tocarlo, se completa la accion.
-            # Vamos a ponerle estado 'Entregado' para finalizarlo, pero la logica es restar.
-            conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
-            
-            conn.execute("""
+    # 1. Marcar como Entregado PRIMERO (para evitar condiciones de carrera)
+    conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
+
+    if es_interno:
+        # --- PEDIDO INTERNO: RESTA STOCK (CONSUMO) ---
+        conn.execute("""
             UPDATE papel_inventario 
             SET stock_inicial = stock_inicial - ?, total = total - ? 
             WHERE nombre = ? AND formato = ?
         """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
              
     else:
-        # --- PEDIDO NORMAL (COMPRA): SUMA STOCK ---
-        conn.execute("UPDATE papel_pedidos SET estado = 'Entregado' WHERE id = ?", (pedido_id,))
-        
-        # Sumar al stock AUTOMÁTICAMENTE SOLO SI se marcó el checkbox "Agregar al Stock"
+        # --- PEDIDO NORMAL (COMPRA): SUMA STOCK (Solo si afecta stock) ---
         if pedido["afecta_stock"]:
             conn.execute("""
                 UPDATE papel_inventario 
@@ -1357,11 +1361,8 @@ def papel_pedido_entregado(pedido_id):
             """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
             
     conn.commit()
-        
     conn.close()
     return jsonify({"ok": True})
-    return jsonify({"ok": True})
-
 # ==========================================
 # GESTIÓN DE INVENTARIO PAPEL (Agregar al final de app.py)
 # ==========================================
