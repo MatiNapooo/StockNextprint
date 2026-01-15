@@ -14,6 +14,15 @@ FORMATOS_PAPEL = [
     "82 x 118", "36 cm", "41 cm", "45 cm"
 ]
 
+LISTA_SEDES = [
+    "Next Print SA",
+    "SD 2609",
+    "Santa Elena",
+    "Mazzola",
+    "Hutton",
+    "Stenfar"
+]
+
 def natural_key(text):
     """
     Función auxiliar para ordenamiento natural.
@@ -124,6 +133,13 @@ try:
         
         else:
             print("✅ La tabla 'papel_inventario' ya tiene la estructura correcta.")
+            
+            # Verificar si existe columna 'sede' (Migración Sede)
+            cur_temp.execute("PRAGMA table_info(papel_inventario)")
+            cols_existentes = [c[1] for c in cur_temp.fetchall()]
+            if 'sede' not in cols_existentes:
+                print("⚠️ Agregando columna 'sede' a papel_inventario...")
+                cur_temp.execute("ALTER TABLE papel_inventario ADD COLUMN sede TEXT DEFAULT ''")
 
     # Asegurar que las otras tablas existan (por si acaso)
     cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_entradas (
@@ -145,6 +161,31 @@ try:
     
 except Exception as e:
     print(f"❌ Error CRÍTICO en mantenimiento: {e}")
+
+# --- BLOQUE EXTRA: MIGRACIÓN DE TABLAS SECUNDARIAS ---
+try:
+    print("🔧 Verificando tablas secundarias (Pedidos, Entradas, Salidas)...")
+    con_extra = sqlite3.connect(DB_PATH)
+    cur_extra = con_extra.cursor()
+
+    # Lista de tablas que NECESITAN la columna formato
+    tablas_secundarias = ['papel_pedidos', 'papel_entradas', 'papel_salidas']
+
+    for tabla in tablas_secundarias:
+        try:
+            # Intentamos agregar la columna. Si ya existe, fallará y no pasa nada.
+            cur_extra.execute(f"ALTER TABLE {tabla} ADD COLUMN formato TEXT DEFAULT ''")
+            print(f"✅ Columna 'formato' agregada a {tabla}")
+        except Exception:
+            # Si entra aquí es porque la columna ya existe. Todo ok.
+            pass
+            
+    con_extra.commit()
+    con_extra.close()
+    print("✨ Tablas secundarias verificadas.")
+except Exception as e:
+    print(f"❌ Error verificando tablas secundarias: {e}")
+
 
 def get_db_connection():
     conn = sqlite3.connect(DB_PATH) # <-- Usamos la variable que calculamos arriba
@@ -921,7 +962,9 @@ def papel_admin():
     # Ordenamiento Natural (Python)
     registros.sort(key=lambda r: (natural_key(r['nombre']), natural_key(r['formato'])))
     
-    return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros, formatos=FORMATOS_PAPEL)
+    registros.sort(key=lambda r: (natural_key(r['nombre']), natural_key(r['formato'])))
+    
+    return render_template("base.html", vista="papel_inventario_admin", modo="papel", registros=registros, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES)
 
 # ==========================================
 # NUEVAS RUTAS PARA GESTIÓN DE PAPEL
@@ -1266,6 +1309,7 @@ def papel_agregar():
     nombre = (data.get("nombre") or "").strip()
     formato = (data.get("formato") or "").strip()
     stock = int(data.get("stock") or 0)
+    sede = (data.get("sede") or "").strip()
     observaciones = (data.get("observaciones") or "").strip()
 
     if not nombre or not formato:
@@ -1274,9 +1318,9 @@ def papel_agregar():
     conn = get_conn()
     try:
         conn.execute("""
-            INSERT INTO papel_inventario (nombre, formato, stock_inicial, entradas, salidas, total, observaciones)
-            VALUES (?, ?, ?, 0, 0, ?, ?)
-        """, (nombre, formato, stock, stock, observaciones))
+            INSERT INTO papel_inventario (nombre, formato, stock_inicial, entradas, salidas, total, observaciones, sede)
+            VALUES (?, ?, ?, 0, 0, ?, ?, ?)
+        """, (nombre, formato, stock, stock, observaciones, sede))
         conn.commit()
         # Recuperar ID generado
         row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ? AND formato = ?", (nombre, formato)).fetchone()
@@ -1323,6 +1367,7 @@ def papel_modificar():
     formato = (data.get("formato") or "").strip()
     # Ahora recibimos 'stock' como el valor TOTAL deseado
     nuevo_total = int(data.get("stock") or 0)
+    sede = (data.get("sede") or "").strip()
     observaciones = (data.get("observaciones") or "").strip()
     
     if not p_id or not nombre or not formato:
@@ -1344,9 +1389,9 @@ def papel_modificar():
     # Mantenemos las columnas entradas/salidas pero ya no se editan aqui.
     conn.execute("""
         UPDATE papel_inventario 
-        SET nombre = ?, formato = ?, total = ?, observaciones = ?
+        SET nombre = ?, formato = ?, total = ?, observaciones = ?, sede = ?
         WHERE id = ?
-    """, (nombre, formato, nuevo_total, observaciones, p_id))
+    """, (nombre, formato, nuevo_total, observaciones, sede, p_id))
     
     conn.commit()
     conn.close()

@@ -785,6 +785,7 @@
                             <th>PAPEL</th>
                             <th>FORMATO</th>
                             <th>STOCK</th>
+                            <th>SEDE</th>
                             <th>OBSERVACIONES</th>
                         </tr>
                     </thead>
@@ -794,6 +795,7 @@
                             <td>{{ r['nombre'] }}</td>
                             <td>{{ r['formato'] }}</td>
                             <td>{{ r['total'] }}</td>
+                            <td>{{ r['sede'] }}</td>
                             <td>{{ r['observaciones'] }}</td>
                         </tr>
                         {% endfor %}
@@ -842,6 +844,7 @@
                                 <th>NOMBRE</th>
                                 <th>FORMATO</th>
                                 <th>STOCK</th>
+                                <th>SEDE</th>
                                 <th>OBSERVACIONES</th>
                                 <th class="col-accion">ACCIÓN</th>
                             </tr>
@@ -853,11 +856,13 @@
                                 <td>{{ r['nombre'] }}</td>
                                 <td>{{ r['formato'] }}</td>
                                 <td>{{ r['total'] }}</td>
+                                <td>{{ r['sede'] }}</td>
                                 <td>{{ r['observaciones'] }}</td>
                                 <td class="col-accion">
                                     <button class="btn-modificar-papel-row-inline" type="button" data-id="{{ r['id'] }}"
                                         data-nombre="{{ r['nombre'] }}" data-formato="{{ r['formato'] }}"
-                                        data-stock="{{ r['total'] }}" data-observaciones="{{ r['observaciones'] }}"
+                                        data-stock="{{ r['total'] }}" data-sede="{{ r['sede'] }}"
+                                        data-observaciones="{{ r['observaciones'] }}"
                                         onclick="abrirModalModificar(this)">
                                         MODIFICAR
                                     </button>
@@ -880,6 +885,15 @@
                                 <option value="">-- Seleccione --</option>
                                 {% for f in formatos %}
                                 <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="modal-form-row">
+                            <label>Sede</label>
+                            <select id="add-papel-sede">
+                                <option value="">-- Seleccione --</option>
+                                {% for s in sedes %}
+                                <option value="{{ s }}">{{ s }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -929,8 +943,9 @@
                                 <option value="">-- Seleccione --</option>
                                 {% for r in registros %}
                                 <option value="{{ r['id'] }}" data-nombre="{{ r['nombre'] }}"
-                                    data-formato="{{ r['formato'] }}" data-stock="{{ r['stock_inicial'] }}"
-                                    data-entradas="{{ r['entradas'] }}" data-salidas="{{ r['salidas'] }}">
+                                    data-formato="{{ r['formato'] }}" data-stock="{{ r['total'] }}"
+                                    data-sede="{{ r['sede'] }}" data-entradas="{{ r['entradas'] }}"
+                                    data-salidas="{{ r['salidas'] }}" data-observaciones="{{ r['observaciones'] }}">
                                     {{ r['nombre'] }} - {{ r['formato'] }}
                                 </option>
                                 {% endfor %}
@@ -944,6 +959,15 @@
                                 <option value="">-- Seleccione --</option>
                                 {% for f in formatos %}
                                 <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="modal-form-row">
+                            <label>Sede</label>
+                            <select id="mod-papel-sede">
+                                <option value="">-- Seleccione --</option>
+                                {% for s in sedes %}
+                                <option value="{{ s }}">{{ s }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -1327,11 +1351,13 @@
             const nombreInput = document.getElementById('add-papel-nombre');
             const formatoInput = document.getElementById('add-papel-formato');
             const stockInput = document.getElementById('add-papel-stock');
+            const sedeInput = document.getElementById('add-papel-sede');
             const obsInput = document.getElementById('add-papel-observaciones');
 
             const nombre = nombreInput ? nombreInput.value.trim() : "";
             const formato = formatoInput ? formatoInput.value : "";
             const stock = stockInput ? stockInput.value : "0";
+            const sede = sedeInput ? sedeInput.value : "";
             const observaciones = obsInput ? obsInput.value.trim() : "";
 
             if (!nombre || !formato) {
@@ -1342,7 +1368,7 @@
             fetch('/papel/agregar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock, observaciones: observaciones })
+                body: JSON.stringify({ nombre: nombre, formato: formato, stock: stock, sede: sede, observaciones: observaciones })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -1366,6 +1392,7 @@
             document.getElementById('mod-papel-nombre').value = btn.dataset.nombre;
             document.getElementById('mod-papel-formato').value = btn.dataset.formato;
             document.getElementById('mod-papel-stock').value = btn.dataset.stock;
+            document.getElementById('mod-papel-sede').value = btn.dataset.sede || '';
             document.getElementById('mod-papel-observaciones').value = btn.dataset.observaciones || '';
 
             if (modal) modal.style.display = 'flex';
@@ -1379,6 +1406,7 @@
                 document.getElementById('mod-papel-nombre').value = selectedOption.dataset.nombre || '';
                 document.getElementById('mod-papel-formato').value = selectedOption.dataset.formato || '';
                 document.getElementById('mod-papel-stock').value = selectedOption.dataset.stock || '0';
+                document.getElementById('mod-papel-sede').value = selectedOption.dataset.sede || '';
                 document.getElementById('mod-papel-observaciones').value = selectedOption.dataset.observaciones || '';
             }
         }
@@ -1389,6 +1417,7 @@
             const nombre = document.getElementById('mod-papel-nombre').value;
             const formato = document.getElementById('mod-papel-formato').value;
             const stock = document.getElementById('mod-papel-stock').value;
+            const sede = document.getElementById('mod-papel-sede').value;
             const observaciones = document.getElementById('mod-papel-observaciones').value;
 
             if (!p_id || !nombre || !formato) {
@@ -1401,6 +1430,7 @@
                 nombre: nombre,
                 formato: formato,
                 stock: stock,
+                sede: sede,
                 observaciones: observaciones
             };
 
