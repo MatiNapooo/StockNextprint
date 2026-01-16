@@ -25,9 +25,7 @@
                 </a>
 
                 {% if is_menu %}
-                <div style="padding: 20px; color: #47626d; text-align: center; font-size: 13px;">
-                    Seleccione una opción <br> del panel principal
-                </div>
+
 
                 {% elif is_papel %}
                 <a href="{{ url_for('papel_admin') }}" class="menu-item">🔐 ADMIN</a>
@@ -1248,6 +1246,7 @@
                     <table class="historial-tabla" id="tabla-papel-pedidos">
                         <thead>
                             <tr>
+                                <th style="width: 30px;"></th> <!-- Columna X vacía cabecera -->
                                 <th>Fecha</th>
                                 <th>POR</th>
                                 <th>PROVEEDOR</th>
@@ -1265,6 +1264,12 @@
                             {% for r in registros %}
                             <tr
                                 class="{% if r['estado'] == 'Entregado' %}pedido-entregado{% endif %} {% if r['es_interno'] %}pedido-interno{% endif %}">
+                                <!-- Columna de Borrado (X) -->
+                                <td style="width: 30px; text-align: center;">
+                                    {% if r['estado'] == 'Entregado' %}
+                                    <button class="btn-borrar-historial-papel" data-id="{{ r['id'] }}">X</button>
+                                    {% endif %}
+                                </td>
                                 <td>{{ r['fecha'] }}</td>
                                 <td>{{ r['pedido_por'] }}</td>
                                 <td>{{ r['proveedor'] }}</td>
@@ -1505,6 +1510,18 @@
         }
     </script>
     <script src="{{ url_for('static', filename='main.js') }}?v=12"></script>
+
+
+    <!-- MODAL CUSTOM PARA BORRAR HISTORIAL -->
+    <div id="modal-borrar-historial" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <h3>¿Estás seguro que quieres borrar el pedido?</h3>
+            <div class="custom-modal-actions">
+                <button id="btn-modal-si" class="btn-modal-si">Sí</button>
+                <button id="btn-modal-no" class="btn-modal-no">No</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

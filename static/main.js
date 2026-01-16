@@ -1209,8 +1209,50 @@ document.addEventListener("click", function (e) {
                 btn.disabled = false; // Reactivar si falló
             }
         })
-        .catch(err => {
-            alert("Error de conexión al actualizar pedido.");
-            btn.disabled = false;
+});
+
+
+// ==========================================
+// BORRADO HISTORIAL PAPEL (MODAL CUSTOM) - LÓGICA ROBUSTA
+// ==========================================
+document.addEventListener("click", function (e) {
+    // 1. Detectar clic en el botón X (usando la nueva clase específica)
+    const btn = e.target.closest(".btn-borrar-historial-papel");
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    // 2. Mostrar Modal
+    const modal = document.getElementById("modal-borrar-historial");
+    if (modal) {
+        modal.style.display = "flex";
+        document.body.classList.add("blur-active");
+
+        // 3. Configurar botón SI (Clonar para evitar listeners duplicados)
+        const btnSi = document.getElementById("btn-modal-si");
+        const btnSiNuevo = btnSi.cloneNode(true);
+        btnSi.parentNode.replaceChild(btnSiNuevo, btnSi);
+
+        btnSiNuevo.addEventListener("click", function () {
+            // Ejecutar borrado
+            fetch(`/papel/pedidos/${id}/borrar`, { method: "POST" })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.ok) location.reload();
+                    else alert("Error: " + data.error);
+                })
+                .catch(() => alert("Error de conexión"));
         });
+
+        // 4. Configurar botón NO (Clonar para limpiar)
+        const btnNo = document.getElementById("btn-modal-no");
+        const btnNoNuevo = btnNo.cloneNode(true);
+        btnNo.parentNode.replaceChild(btnNoNuevo, btnNo);
+
+        btnNoNuevo.addEventListener("click", function () {
+            modal.style.display = "none";
+            document.body.classList.remove("blur-active");
+        });
+    }
 });

@@ -1363,6 +1363,16 @@ def papel_pedido_entregado(pedido_id):
     conn.commit()
     conn.close()
     return jsonify({"ok": True})
+
+# NUEVA RUTA: BORRAR HISTORIAL (Visualmente)
+@app.route("/papel/pedidos/<int:pedido_id>/borrar", methods=["POST"])
+def papel_pedidos_borrar(pedido_id):
+    conn = get_conn()
+    # Solo borramos el registro, NO tocamos el stock (papel_inventario)
+    conn.execute("DELETE FROM papel_pedidos WHERE id = ?", (pedido_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
 # ==========================================
 # GESTIÓN DE INVENTARIO PAPEL (Agregar al final de app.py)
 # ==========================================

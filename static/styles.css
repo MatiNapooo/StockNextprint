@@ -49,7 +49,7 @@ body {
 .menu-principal {
     display: flex;
     flex: 1;
-    background-color: #dbeeff;
+    background-color: transparent;
 }
 
 .menu-item {
@@ -1080,19 +1080,18 @@ body {
 /* 2. La Tarjeta (Caja Blanca) */
 .menu-card {
     background-color: #ffffff;
-    /* Fondo blanco IMPORTANTE */
     width: 350px;
-    /* Ancho fijo */
+    /* Ancho fijo MANTENIDO */
     height: 350px;
-    /* Alto fijo */
+    /* Alto fijo MANTENIDO */
 
-    /* Estilo Retro */
-    border: 4px solid #000000;
-    /* Borde negro grueso */
-    box-shadow: 10px 10px 0px #333333;
-    /* Sombra sólida desplazada */
-    border-radius: 15px;
-    /* Bordes redondeados */
+    /* Estilo Moderno Minimalista */
+    border: 1px solid #e2e8f0;
+    /* Borde sutil */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    /* Sombra suave */
+    border-radius: 24px;
+    /* Bordes redondeados modernos */
 
     /* Centrar contenido interno */
     display: flex;
@@ -1101,18 +1100,16 @@ body {
     align-items: center;
 
     cursor: pointer;
-    transition: all 0.2s ease;
-    /* Suavizar movimiento */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* 3. Efecto al pasar el mouse (Hover) */
+/* 3. Efecto al pasar el mouse (Hover) */
 .menu-card:hover {
-    transform: translate(-3px, -3px);
-    /* Se levanta un poco */
-    box-shadow: 14px 14px 0px #000000;
-    /* La sombra crece */
-    background-color: #fffef0;
-    /* Un color crema muy sutil opcional */
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #cbd5e1;
+    background-color: #ffffff;
 }
 
 /* 4. Controlar el tamaño de las imágenes */
@@ -1129,12 +1126,13 @@ body {
 
 /* 5. Texto de la tarjeta */
 .menu-card-title {
+    font-family: 'Segoe UI', system-ui, sans-serif;
     font-size: 2.2rem;
     font-weight: 800;
-    /* Letra bien gruesa */
-    color: #000000;
+    color: #1e293b;
+    /* Gris oscuro moderno */
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 /* =========================================
@@ -1995,6 +1993,10 @@ body {
         border-right: 1px solid rgba(0, 0, 0, 0.1) !important;
         /* Mantener separadores */
         border-bottom: none !important;
+        height: 60px !important;
+        /* AJUSTE: Altura razonable para tablet */
+        min-width: auto !important;
+        /* AJUSTE: Flexible */
     }
 
     /* 3. MENÚ PRINCIPAL (Tarjetas) */
@@ -2430,9 +2432,14 @@ body {
 .acciones-container {
     display: flex;
     justify-content: center;
-    gap: 30px;
-    margin-bottom: 2rem;
+    align-items: center;
+    /* Centrado vertical también */
+    gap: 5rem;
+    /* Ajustado según imagen */
+    margin-bottom: 4rem;
+    /* Más aire abajo */
     flex-wrap: wrap;
+    padding: 2rem;
 }
 
 .accion-card {
@@ -2449,20 +2456,24 @@ body {
 
     border: 1px solid #e2e8f0;
     /* Borde sutil (Slate 200) */
-    border-radius: 20px;
-    /* Bordes bien redondeados */
+    border-radius: 24px;
+    /* Bordes aún más redondeados */
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
     /* Sombra suave */
 
-    width: 400px;
-    min-height: 150px;
-    /* Altura cómoda */
-    padding: 1.5rem;
+    width: 420px;
+    /* Ajuste manual según ref */
+    min-height: 200px;
+    /* Ajuste manual según ref */
+    padding: 0 2rem;
 
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+
+    font-size: 1.3rem !important;
+    /* Texto proporcional */
 
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -2667,4 +2678,272 @@ body {
     background-color: #9a3412 !important;
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(154, 52, 18, 0.4) !important;
+}
+
+/* RE-DISEÑO BOTÓN ENTREGADO (VERDE) */
+.btn-entregado {
+    background-color: #16a34a !important;
+    /* Verde moderno */
+    color: white !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 6px 14px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.btn-entregado:hover {
+    background-color: #15803d !important;
+    /* Verde más oscuro al hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.4) !important;
+}
+
+/* =========================================
+   ESTILOS BORRADO HISTORIAL (PAPEL)
+   ========================================= */
+.btn-borrar-historial-papel {
+    background: none;
+    border: none;
+    color: #fca5a5;
+    /* Rojo muy liviano */
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0 5px;
+}
+
+.btn-borrar-historial-papel:hover {
+    color: #ef4444;
+    /* Rojo más intenso al hover */
+}
+
+/* Modal Custom Confirm */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: none;
+    /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+}
+
+.custom-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    animation: fadeIn 0.2s ease-out;
+    border: 1px solid #e5e7eb;
+}
+
+.custom-modal h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #1f2937;
+    font-size: 1.2rem;
+}
+
+.custom-modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.btn-modal-si {
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.1s;
+}
+
+.btn-modal-no {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.1s;
+}
+
+.btn-modal-si:hover,
+.btn-modal-no:hover {
+    transform: scale(1.05);
+}
+
+/* Efecto Blur */
+.blur-active>*:not(.custom-modal-overlay) {
+    filter: blur(5px);
+    transition: filter 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   HEADER FLOTANTE TRANSPARENTE (Sin Bloque)
+   ========================================= */
+
+.top-bar {
+    /* TRUCO: Copia el color del body (el gris de fondo) */
+    background-color: #cfcfcf !important;
+    /* Si tu fondo fuera blanco puro, cambia el código de arriba por #ffffff */
+
+    box-shadow: none !important;
+    /* Sin sombra de bloque */
+    border: none !important;
+    /* Sin bordes */
+
+    height: 100px;
+    padding: 0 10px;
+    /* REDUCIDO: Más a la izquierda */
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: auto;
+    /* Reactivamos los clicks en los botones */
+}
+
+.menu-principal {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    /* AUMENTADO: Espacio entre botones flotantes */
+}
+
+/* === ESTILO TARJETAS (Items) === */
+.menu-item {
+    height: 90px;
+    /* AUMENTADO: Alto Grande */
+    min-width: 160px;
+    /* AUMENTADO: Ancho Fijo mayor */
+    padding: 0 15px;
+    /* Padding lateral por seguridad */
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+
+    font-size: 1.3rem;
+    /* AUMENTADO */
+    font-weight: 700;
+    border-radius: 16px;
+    /* Bordes bien redondeados */
+    border: none;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+
+    /* SOMBRA INDIVIDUAL (El secreto del efecto flotante) */
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+
+    /* Fondo base (Gris para los normales) */
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.menu-item:hover {
+    transform: translateY(-5px);
+    /* Se elevan al pasar el mouse */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+/* === ENTRADAS (Verde) === */
+.menu-item.entradas {
+    background-color: #10b981;
+    color: white;
+    /* Sombra Verde Brillante (Glow) */
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.menu-item.entradas:hover {
+    background-color: #059669;
+    box-shadow: 0 15px 30px rgba(16, 185, 129, 0.5);
+}
+
+/* === SALIDAS (Rojo) === */
+.menu-item.salidas {
+    background-color: #ef4444;
+    color: white;
+    /* Sombra Roja Brillante (Glow) */
+    box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+}
+
+.menu-item.salidas:hover {
+    background-color: #dc2626;
+    box-shadow: 0 15px 30px rgba(239, 68, 68, 0.5);
+}
+
+/* === BOTÓN VOLVER (Cápsula Flotante) === */
+.btn-volver {
+    height: 50px;
+    padding: 0 30px;
+    /* Más ancho para elegancia */
+    border-radius: 50px;
+    /* Forma de píldora completa */
+
+    background-color: white;
+    /* Blanco puro para destacar */
+    color: #4b5563;
+    border: none;
+
+    /* Sombra para que flote sobre el fondo */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* AGREGADO: Centrado interno */
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.btn-volver:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+    color: #111827;
 }
