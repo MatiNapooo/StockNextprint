@@ -204,15 +204,17 @@ body {
 
 /* Titulos Minimalistas con acento azul */
 .form-titulo,
+.historial-titulo,
 .section-title {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    font-size: 3rem;
+    font-size: 2rem;
+    /* Reducido de 3rem a 2rem para ser más chico como antes */
     font-weight: 700;
     color: #1f2937;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     position: relative;
     padding-bottom: 0.5rem;
     /* Asegurar que no haya linea negra */
@@ -222,6 +224,7 @@ body {
 
 /* Mini linea azul centrada (restituida) */
 .form-titulo::after,
+.historial-titulo::after,
 .section-title::after {
     content: '';
     display: block;
@@ -533,19 +536,52 @@ body {
 }
 
 /* Botón BORRAR */
+/* Botón BORRAR Moderno */
 .btn-borrar {
-    background-color: #ff4d4d;
-    border: 2px solid #000;
-    border-radius: 10px;
-    padding: 0.2rem 0.8rem;
-    font-size: 0.95rem;
-    font-weight: 700;
+    background-color: #ef4444;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: #fff;
     cursor: pointer;
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.3);
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .btn-borrar:hover {
-    filter: brightness(0.9);
+    background-color: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.4);
+    filter: none;
+}
+
+/* Botón X Borrar Historial */
+.btn-borrar-historial-papel {
+    background: #fff;
+    color: #94a3b8;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-borrar-historial-papel:hover {
+    background-color: #fee2e2;
+    color: #ef4444;
+    border-color: #fca5a5;
+    transform: scale(1.05);
 }
 
 /* MODAL BORRADO */
@@ -1074,27 +1110,101 @@ body {
     color: #fff;
 }
 
-/* Fila de pedido entregado: verde con transición */
-.pedido-entregado {
-    background-color: #b9f5b9;
-    font-weight: 700;
-    transition: background-color 0.4s ease;
-}
-
+/* Mantenemos solo el icono si es necesario */
 .pedido-entregado-icono {
     font-weight: 700;
 }
 
-/* Botón "Entregado" similar a modificar de otros historiales */
-.btn-entregado {
-    padding: 0.2rem 0.8rem;
-    font-size: 0.9rem;
+/* --- COLORES DE FILAS PEDIDOS (Solicitud Específica) --- */
+
+/* 1. Pedido Normal Entregado: Verde Completo */
+.pedido-entregado {
+    background-color: #b9f5b9 !important;
+    /* Verde claro solido */
+    transition: background-color 0.3s ease;
+}
+
+.pedido-entregado td {
+    background-color: #b9f5b9 !important;
+    border-color: #86efac;
+    color: #14532d;
+}
+
+/* 2. Interno Normal: Marrón/Naranja casi transparente */
+.pedido-interno {
+    background-color: rgba(251, 146, 60, 0.15) !important;
+    /* Naranja muy suave */
+}
+
+.pedido-interno td {
+    background-color: rgba(251, 146, 60, 0.15) !important;
+    color: #9a3412;
+    /* Texto anaranjado oscuro */
+}
+
+/* 3. Interno Reservado: Todo de ese color (Naranja sólido) */
+.pedido-reservado {
+    background-color: #fdba74 !important;
+    /* Naranja más fuerte */
+    color: #fff !important;
+}
+
+.pedido-reservado td {
+    background-color: #fdba74 !important;
+    color: #431407 !important;
+    /* Marrón muy oscuro para contraste */
     font-weight: 700;
-    border-radius: 999px;
-    border: 2px solid #000;
-    background-color: #ffffff;
+}
+
+/* Botón "Entregado" similar a modificar de otros historiales */
+/* Botón "Entregado" Moderno (Acción) */
+.btn-entregado {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 20px;
+    border: 1px solid #3b82f6;
+    background-color: #eff6ff;
+    color: #2563eb;
     cursor: pointer;
-    box-shadow: 2px 2px 0 #333;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.1);
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+}
+
+.btn-entregado:hover {
+    background-color: #3b82f6;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.25);
+}
+
+/* STATUS BADGES (Etiquetas de Estado) */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.status-badge.status-entregado {
+    background-color: #d1fae5;
+    /* Verde suave fondo */
+    color: #059669;
+    /* Verde oscuro texto */
+    border: 1px solid #a7f3d0;
+}
+
+.status-badge.status-pendiente {
+    background-color: #fef3c7;
+    /* Amarillo suave fondo */
+    color: #d97706;
+    /* Ambar oscuro texto */
+    border: 1px solid #fde68a;
 }
 
 /* =========================================
@@ -1216,17 +1326,8 @@ body {
 }
 
 /* Títulos de estas secciones */
-.historial-titulo,
-.section-title {
-    font-size: 2.2rem;
-    margin-bottom: 1rem;
-    text-align: left;
-    text-transform: uppercase;
-    font-weight: 800;
-    border-bottom: 3px solid #000;
-    display: inline-block;
-    padding-bottom: 0.5rem;
-}
+/* Títulos de estas secciones (ELIMINADO: ahora usan estilo moderno global) */
+/* .historial-titulo, .section-title ... eliminado */
 
 /* Encabezado donde van los filtros y botones superiores */
 .historial-header,
@@ -1265,16 +1366,14 @@ body {
 /* --- LA TABLA Y SU CAJA (Lo que más te gustó) --- */
 
 /* La caja que contiene la tabla (con borde grueso y sombra) */
+/* La caja que contiene la tabla (con borde grueso y sombra) */
 .historial-tabla-wrapper,
 .tabla-wrapper {
     background: #fff;
-    border: 3px solid #000;
-    box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
-    /* Sombra retro */
+    /* Sombra retro ELIMINADA para usar la version moderna abajo */
     max-height: 70vh;
     /* Para que tenga scroll si es muy larga */
     overflow-y: auto;
-    border-radius: 4px;
 }
 
 /* La tabla en sí */
@@ -1286,15 +1385,11 @@ body {
 }
 
 /* Celdas de encabezado (TH) */
+/* Celdas de encabezado (TH) */
 .historial-tabla th,
 .tabla-inventario th {
-    background-color: #4a86c5;
-    /* Azul retro */
-    color: #ffffff;
-    border: 1px solid #000;
-    padding: 1rem;
-    text-transform: uppercase;
-    font-weight: 700;
+    /* Fondo azul retro ELIMINADO en favor del degradado moderno */
+
     position: sticky;
     /* Para que el encabezado quede fijo al scrollear */
     top: 0;
@@ -1331,7 +1426,12 @@ body {
 #tabla-inventario,
 #tabla-inventario-simple,
 #tabla-papel,
-#tabla-papel-simple {
+#tabla-papel-simple,
+#tabla-papel-ent,
+#tabla-papel-sal,
+#tabla-papel-pedidos,
+#tabla-historial,
+#tabla-pedidos {
     border-collapse: separate;
     /* Necesario para bordes redondeados */
     border-spacing: 0;
@@ -1346,7 +1446,8 @@ body {
 .historial-tabla-wrapper:has(#tabla-inventario),
 .historial-tabla-wrapper:has(#tabla-inventario-simple),
 .historial-tabla-wrapper:has(#tabla-papel-simple),
-.tabla-wrapper:has(#tabla-papel) {
+.tabla-wrapper:has(#tabla-papel),
+.historial-tabla-wrapper {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
@@ -1362,24 +1463,28 @@ body {
 #tabla-inventario thead th,
 #tabla-inventario-simple thead th,
 #tabla-papel thead th,
-#tabla-papel-simple thead th {
-    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-    /* Degradado gris azulado oscuro */
-    color: #ffffff;
-    font-weight: 600;
+#tabla-papel-simple thead th,
+.historial-tabla thead th {
+    background: #f1f5f9;
+    /* Gris muy claro (Slate 100) */
+    color: #475569;
+    /* Gris oscuro (Slate 600) */
+    font-weight: 700;
+    /* Un poco más de peso para legibilidad */
     text-transform: uppercase;
     font-size: 0.85rem;
     letter-spacing: 1px;
     padding: 18px 15px;
     border: none;
-    border-bottom: 2px solid #475569;
+    /* border-bottom: 2px solid #e2e8f0; Opcional: si se quiere una linea sutil */
 }
 
 /* 4. FILAS Y CELDAS (Cuerpo limpio) */
 #tabla-inventario td,
 #tabla-inventario-simple td,
 #tabla-papel td,
-#tabla-papel-simple td {
+#tabla-papel-simple td,
+.historial-tabla td {
     padding: 16px 15px;
     color: #334155;
     /* Texto gris oscuro, no negro puro */
@@ -1396,7 +1501,8 @@ body {
 #tabla-inventario tbody tr:hover,
 #tabla-inventario-simple tbody tr:hover,
 #tabla-papel tbody tr:hover,
-#tabla-papel-simple tbody tr:hover {
+#tabla-papel-simple tbody tr:hover,
+.historial-tabla tbody tr:hover {
     background-color: #f8fafc !important;
     /* Gris muy clarito */
     transition: background-color 0.2s ease;
@@ -1409,7 +1515,8 @@ body {
 #tabla-inventario tbody tr,
 #tabla-inventario-simple tbody tr,
 #tabla-papel tbody tr,
-#tabla-papel-simple tbody tr {
+#tabla-papel-simple tbody tr,
+.historial-tabla tbody tr {
     background-color: #ffffff;
 }
 
@@ -1417,34 +1524,37 @@ body {
 .historial-admin .historial-titulo,
 .inventario .section-title,
 .historial:has(#tabla-inventario-simple) .historial-titulo,
-.historial:has(#tabla-papel-simple) .historial-titulo {
-    font-family: 'Segoe UI', sans-serif;
-    font-weight: 300;
-    /* Letra fina y elegante */
+.historial:has(#tabla-papel-simple) .historial-titulo,
+.historial-titulo {
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
     color: #1e293b;
     border-bottom: none;
-    /* Sin la línea negra gruesa */
     position: relative;
     padding-bottom: 10px;
+    text-align: center;
+    width: 100%;
 }
 
-/* Pequeña línea decorativa debajo del título */
+/* Pequeña línea decorativa debajo del título (RESTITUDA) */
 .historial-admin .historial-titulo::after,
 .inventario .section-title::after,
 .historial:has(#tabla-inventario-simple) .historial-titulo::after,
 .historial:has(#tabla-papel-simple) .historial-titulo::after {
+    display: block;
     content: '';
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 60px;
     height: 4px;
     background: #3b82f6;
-    /* Azul moderno */
     border-radius: 2px;
 }
 
 /* 6. INPUT DE BÚSQUEDA (Estilo Cápsula/Pill) */
+.historial-filtro input,
 .inventario-filtro input,
 #filtro-papel,
 #filtro-papel-simple,

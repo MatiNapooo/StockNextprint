@@ -4,7 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Sistema de Stock</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=5">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=11">
 </head>
 
 <body>
@@ -752,19 +757,33 @@
                     </thead>
                     <tbody>
                         {% for p in registros %}
-                        <tr class="{% if p['estado'] == 'Entregado' %}pedido-entregado{% endif %}">
+                        {% set row_class = '' %}
+                        {% if p['estado'] == 'Entregado' %}
+                        {% set row_class = 'pedido-entregado' %}
+                        {% elif p['proveedor'] == 'Interno' %}
+                        {% if 'Reservado' in p['estado'] %}
+                        {% set row_class = 'pedido-reservado' %}
+                        {% else %}
+                        {% set row_class = 'pedido-interno' %}
+                        {% endif %}
+                        {% endif %}
+                        <tr class="{{ row_class }}">
                             <td>{{ p['fecha'] }}</td>
                             <td>{{ p['pedido_por'] }}</td>
                             <td>{{ p['proveedor'] }}</td>
                             <td>{{ p['insumo'] }}</td>
                             <td>{{ p['cantidad'] }}</td>
-                            <td>{{ p['estado'] }}</td>
+                            <td>
+                                {{ p['estado'] }}
+                            </td>
                             <td>
                                 {% if p['estado'] != 'Entregado' %}
                                 <form method="post" action="{{ url_for('pedido_entregado', pedido_id=p['id']) }}">
-                                    <button type="submit" class="btn-entregado">Entregado</button>
+                                    <button type="submit" class="btn-entregado">Marcar Entregado</button>
                                 </form>
-                                {% else %}✔{% endif %}
+                                {% else %}
+                                <span class="pedido-entregado-icono">✔</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -1061,13 +1080,13 @@
                     <table class="historial-tabla" id="tabla-papel-ent">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Papel</th>
-                                <th>Sede</th>
-                                <th>Formato</th>
-                                <th>Marca</th>
-                                <th>Cant</th>
-                                <th>Obs</th>
+                                <th>FECHA</th>
+                                <th>PAPEL</th>
+                                <th>SEDE</th>
+                                <th>FORMATO</th>
+                                <th>MARCA</th>
+                                <th>CANT</th>
+                                <th>OBS</th>
                                 <th>ACCIÓN</th>
                             </tr>
                         </thead>
@@ -1090,6 +1109,7 @@
                         </tbody>
                     </table>
                 </div>
+
             </section>
 
             {% elif vista == "papel_salidas_menu" %}
@@ -1158,13 +1178,13 @@
                     <table class="historial-tabla" id="tabla-papel-sal">
                         <thead>
                             <tr>
-                                <th>Fecha</th>
-                                <th>Papel</th>
+                                <th>FECHA</th>
+                                <th>PAPEL</th>
                                 <!-- Gramaje eliminado -->
-                                <th>Formato</th>
-                                <th>Marca</th>
-                                <th>Cant</th>
-                                <th>Obs</th>
+                                <th>FORMATO</th>
+                                <th>MARCA</th>
+                                <th>CANT</th>
+                                <th>OBS</th>
                                 <th>ACCIÓN</th>
                             </tr>
                         </thead>
