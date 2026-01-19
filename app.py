@@ -67,26 +67,25 @@ try:
     con_temp = sqlite3.connect(DB_PATH)
     cur_temp = con_temp.cursor()
     
-    # --- PASO 1: VERIFICAR SI EXISTE LA REGLA VIEJA QUE PROHIBE DUPLICADOS ---
+# --- PASO 1: VERIFICAR SI EXISTE LA REGLA VIEJA QUE PROHIBE DUPLICADOS ---
     # Intentamos leer la "receta" original de la tabla papel_inventario
     cur_temp.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='papel_inventario'")
     resultado = cur_temp.fetchone()
     
     if resultado:
         creacion_original = resultado[0]
-        # Si la receta dice "UNIQUE" junto a "nombre", tenemos que operar.
-        # (O si simplemente queremos asegurar que la estructura sea la nueva)
         
-        if "UNIQUE(nombre, formato)" not in creacion_original or "observaciones" not in creacion_original:
-            print("⚠️ Detectada estructura antigua o falta columna observaciones. Iniciando reconstrucción...")
+        # Validamos si la constraint actual es la correcta: UNIQUE(nombre, formato, sede)
+        if "UNIQUE(nombre, formato, sede)" not in creacion_original:
+            print("⚠️ Detectada estructura antigua (Constraint). Iniciando reconstrucción para incluir SEDE...")
             
-            # Validar si ya existe backup previo para no perder datos si falló antes
+            # Validar si ya existe backup previo
             try:
                  cur_temp.execute("ALTER TABLE papel_inventario RENAME TO papel_inventario_backup")
             except sqlite3.OperationalError:
-                pass # Ya existe backup, usar ese
+                pass 
             
-            # 2. Crear la tabla NUEVA con la regla correcta y la columna observaciones
+            # 2. Crear la tabla NUEVA con la regla correcta (incluyendo SEDE)
             cur_temp.execute('''
                 CREATE TABLE papel_inventario (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -97,58 +96,52 @@ try:
                     salidas INTEGER DEFAULT 0,
                     total INTEGER DEFAULT 0,
                     observaciones TEXT DEFAULT '',
-                    UNIQUE(nombre, formato)
+                    sede TEXT DEFAULT '',
+                    UNIQUE(nombre, formato, sede)
                 )
             ''')
             
             # 3. Copiar los datos de la vieja a la nueva
-            # (SQLite es inteligente y empareja las columnas por nombre si usamos SELECT explícito)
             try:
-                # Verificar columnas de la tabla backup para ver si tiene observaciones (si ya se corrio antes)
+                # Comprobar columnas del backup
                 cols_backup = [info[1] for info in cur_temp.execute("PRAGMA table_info(papel_inventario_backup)").fetchall()]
                 
-                if 'observaciones' in cols_backup:
-                     cur_temp.execute('''
-                        INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total, observaciones)
-                        SELECT id, nombre, formato, stock_inicial, entradas, salidas, total, observaciones 
-                        FROM papel_inventario_backup
-                    ''')
-                else:
-                    cur_temp.execute('''
-                        INSERT INTO papel_inventario (id, nombre, formato, stock_inicial, entradas, salidas, total)
-                        SELECT id, nombre, formato, stock_inicial, entradas, salidas, total 
-                        FROM papel_inventario_backup
-                    ''')
+                # Construimos la query dinámica segun qué columnas tenga el backup
+                campos_comunes = ["id", "nombre", "formato", "stock_inicial", "entradas", "salidas", "total"]
+                if "observaciones" in cols_backup: campos_comunes.append("observaciones")
+                if "sede" in cols_backup: campos_comunes.append("sede")
 
-                print("✅ Datos migrados exitosamente.")
+                cols_str = ", ".join(campos_comunes)
                 
-                # 4. Borrar la tabla vieja solo si la copia funcionó
+                cur_temp.execute(f'''
+                    INSERT INTO papel_inventario ({cols_str})
+                    SELECT {cols_str} 
+                    FROM papel_inventario_backup
+                ''')
+
+                print("✅ Datos migrados exitosamente a la nueva estructura con SEDE.")
+                
+                # 4. Borrar tabla vieja
                 cur_temp.execute("DROP TABLE papel_inventario_backup")
                 print("🗑️ Tabla antigua eliminada.")
                 
             except Exception as e_copia:
                 print(f"❌ Error al copiar datos, restaurando backup: {e_copia}")
-                cur_temp.execute("DROP TABLE papel_inventario") # Borrar la nueva vacía
-                cur_temp.execute("ALTER TABLE papel_inventario_backup RENAME TO papel_inventario") # Volver a poner la vieja
+                cur_temp.execute("DROP TABLE papel_inventario") 
+                cur_temp.execute("ALTER TABLE papel_inventario_backup RENAME TO papel_inventario")
         
         else:
-            print("✅ La tabla 'papel_inventario' ya tiene la estructura correcta.")
-            
-            # Verificar si existe columna 'sede' (Migración Sede)
-            cur_temp.execute("PRAGMA table_info(papel_inventario)")
-            cols_existentes = [c[1] for c in cur_temp.fetchall()]
-            if 'sede' not in cols_existentes:
-                print("⚠️ Agregando columna 'sede' a papel_inventario...")
-                cur_temp.execute("ALTER TABLE papel_inventario ADD COLUMN sede TEXT DEFAULT ''")
+            print("✅ La tabla 'papel_inventario' ya tiene la estructura correcta (UNIQUE nombre, formato, sede).")
+
 
     # Asegurar que las otras tablas existan (por si acaso)
     cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_entradas (
             id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, tipo_papel TEXT, 
-            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT)''')
+            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT, sede TEXT DEFAULT '')''')
             
     cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_salidas (
             id INTEGER PRIMARY KEY AUTOINCREMENT, fecha TEXT, tipo_papel TEXT, 
-            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT)''')
+            formato TEXT, marca TEXT, cantidad INTEGER, observaciones TEXT, sede TEXT DEFAULT '')''')
             
     cur_temp.execute('''CREATE TABLE IF NOT EXISTS papel_pedidos (
             id INTEGER PRIMARY KEY AUTOINCREMENT, 
@@ -162,7 +155,9 @@ try:
             cantidad INTEGER, 
             observaciones TEXT, 
             estado TEXT DEFAULT 'Pendiente',
-            afecta_stock INTEGER DEFAULT 0
+            afecta_stock INTEGER DEFAULT 0,
+            es_interno INTEGER DEFAULT 0,
+            sede TEXT DEFAULT ''
             )''')
     
     con_temp.commit()
@@ -174,64 +169,30 @@ except Exception as e:
 
     # --- BLOQUE DE REPARACIÓN DE PEDIDOS (NUEVO) ---
 try:
-    print("🔧 Verificando columnas faltantes en PEDIDOS...")
+    print("🔧 Verificando columnas faltantes en Movimientos...")
     con_extra = sqlite3.connect(DB_PATH)
     cur_extra = con_extra.cursor()
 
-    # 1. Asegurar que 'papel_pedidos' tenga todas las columnas nuevas
-    # Intentamos agregar cada una. Si ya existen, no pasa nada.
-    columnas_necesarias = [
-        ("formato", "TEXT DEFAULT ''"),
-        ("pedido_por", "TEXT DEFAULT ''"),
-        ("afecta_stock", "INTEGER DEFAULT 0"),
-        ("gramaje", "TEXT DEFAULT ''")
-    ]
-
-    for col_nombre, col_tipo in columnas_necesarias:
+    # Agregar columna 'sede' a tablas de movimiento si no existe
+    tablas_movimientos = ['papel_pedidos', 'papel_entradas', 'papel_salidas']
+    
+    for tabla in tablas_movimientos:
         try:
-            cur_extra.execute(f"ALTER TABLE papel_pedidos ADD COLUMN {col_nombre} {col_tipo}")
-            print(f"✅ Columna '{col_nombre}' agregada a Pedidos.")
+            cur_extra.execute(f"ALTER TABLE {tabla} ADD COLUMN sede TEXT DEFAULT ''")
+            print(f"✅ Columna 'sede' agregada a {tabla}.")
         except Exception:
-            pass # La columna ya existe, todo bien.
+            pass # Ya existe
 
-    # MIGRACIÓN ESPECÍFICA PARA PEDIDOS INTERNOS
+    # También asegurar formato en pedidos (por si acaso)
     try:
-        cur_extra.execute("ALTER TABLE papel_pedidos ADD COLUMN es_interno INTEGER DEFAULT 0")
-        print("✅ Columna 'es_interno' agregada a Pedidos.")
-    except Exception:
-        pass
+        cur_extra.execute("ALTER TABLE papel_pedidos ADD COLUMN formato TEXT DEFAULT ''")
+    except: pass
 
     con_extra.commit()
     con_extra.close()
-    print("✨ Tabla de Pedidos actualizada.")
+    print("✨ Tablas de movimientos verificadas.")
 except Exception as e:
-    print(f"❌ Error verificando pedidos: {e}")
-# ----------------------------------------------------
-
-
-# --- BLOQUE EXTRA: MIGRACIÓN DE TABLAS SECUNDARIAS ---
-try:
-    print("🔧 Verificando tablas secundarias (Pedidos, Entradas, Salidas)...")
-    con_extra = sqlite3.connect(DB_PATH)
-    cur_extra = con_extra.cursor()
-
-    # Lista de tablas que NECESITAN la columna formato
-    tablas_secundarias = ['papel_pedidos', 'papel_entradas', 'papel_salidas']
-
-    for tabla in tablas_secundarias:
-        try:
-            # Intentamos agregar la columna. Si ya existe, fallará y no pasa nada.
-            cur_extra.execute(f"ALTER TABLE {tabla} ADD COLUMN formato TEXT DEFAULT ''")
-            print(f"✅ Columna 'formato' agregada a {tabla}")
-        except Exception:
-            # Si entra aquí es porque la columna ya existe. Todo ok.
-            pass
-            
-    con_extra.commit()
-    con_extra.close()
-    print("✨ Tablas secundarias verificadas.")
-except Exception as e:
-    print(f"❌ Error verificando tablas secundarias: {e}")
+    print(f"❌ Error verificando movimientos: {e}")
 
 
 def get_db_connection():
@@ -244,6 +205,18 @@ get_conn = get_db_connection
 # ===== CONFIGURACIÓN FLASK =====
 app = Flask(__name__)
 app.secret_key = "nextprint-stock-super-secreto"
+
+# ===== FILTROS CUSTOM JINJA =====
+@app.template_filter('format_number')
+def format_number(value):
+    try:
+        if value is None: 
+            return "0"
+        # Convierte a entero, luego a string con formato de miles (coma por defecto),
+        # y finalmente reemplaza la coma por punto.
+        return "{:,}".format(int(value)).replace(",", ".")
+    except (ValueError, TypeError):
+        return value
 
 # ===== USUARIOS ADMIN =====
 USUARIOS_ADMIN = {
@@ -1130,35 +1103,36 @@ def papel_entradas_nuevo():
         marca = request.form.get("marca", "").strip()
         proveedor = request.form.get("proveedor", "").strip()
         cantidad = request.form.get("cantidad", "").strip()
+        sede = request.form.get("sede", "").strip()
         observaciones = request.form.get("observaciones", "").strip()
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
-        # Verificar si existe el par nombre/formato en el inventario
+        # Verificar si existe el par nombre/formato/sede en el inventario
         existe = conn.execute(
-            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
-            (tipo_papel, formato)
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND sede = ?", 
+            (tipo_papel, formato, sede)
         ).fetchone()
 
         if not existe:
             papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
             papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
-            return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
+            return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en sede '{sede}'.")
 
         # Guardar en historial entradas
         conn.execute("""
             INSERT INTO papel_entradas 
-            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
-            VALUES (?, ?, '', ?, ?, ?, ?, ?)
-        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones))
+            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, sede)
+            VALUES (?, ?, '', ?, ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones, sede))
         
         # Actualizar stock en inventario
         conn.execute("""
             UPDATE papel_inventario 
             SET entradas = entradas + ?, total = total + ? 
-            WHERE nombre = ? AND formato = ?
-        """, (cantidad, cantidad, tipo_papel, formato))
+            WHERE nombre = ? AND formato = ? AND sede = ?
+        """, (cantidad, cantidad, tipo_papel, formato, sede))
         
         conn.commit()
         conn.close()
@@ -1169,7 +1143,7 @@ def papel_entradas_nuevo():
     papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
     papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
-    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
+    return render_template("base.html", vista="papel_entradas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES)
 
 @app.route("/papel/entradas/historial")
 def papel_entradas_historial():
@@ -1194,35 +1168,36 @@ def papel_salidas_nuevo():
         marca = request.form.get("marca", "").strip()
         proveedor = request.form.get("proveedor", "").strip()
         cantidad = request.form.get("cantidad", "").strip()
+        sede = request.form.get("sede", "").strip()
         observaciones = request.form.get("observaciones", "").strip()
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
         # Verificar existencia
         existe = conn.execute(
-            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
-            (tipo_papel, formato)
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND sede = ?", 
+            (tipo_papel, formato, sede)
         ).fetchone()
 
         if not existe:
             papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
             papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
-            return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en inventario.")
+            return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en sede '{sede}'.")
 
         # Guardar en historial salidas
         conn.execute("""
             INSERT INTO papel_salidas 
-            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones)
-            VALUES (?, ?, '', ?, ?, ?, ?, ?)
-        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones))
+            (fecha, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, sede)
+            VALUES (?, ?, '', ?, ?, ?, ?, ?, ?)
+        """, (fecha, tipo_papel, formato, marca, proveedor, cantidad, observaciones, sede))
 
         # Restar stock en inventario
         conn.execute("""
             UPDATE papel_inventario 
             SET salidas = salidas + ?, total = total - ? 
-            WHERE nombre = ? AND formato = ?
-        """, (cantidad, cantidad, tipo_papel, formato))
+            WHERE nombre = ? AND formato = ? AND sede = ?
+        """, (cantidad, cantidad, tipo_papel, formato, sede))
 
         conn.commit()
         conn.close()
@@ -1231,7 +1206,7 @@ def papel_salidas_nuevo():
     papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
     papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
-    return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
+    return render_template("base.html", vista="papel_salidas_nueva", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES)
 
 @app.route("/papel/salidas/historial")
 def papel_salidas_historial():
@@ -1278,32 +1253,30 @@ def papel_pedidos_nuevo():
         proveedor = request.form.get("proveedor", "").strip()
         cantidad = request.form.get("cantidad", "").strip()
         observaciones = request.form.get("observaciones", "").strip()
-        observaciones = request.form.get("observaciones", "").strip()
         agregar_stock = 1 if request.form.get("agregar_stock") else 0
         es_interno = 1 if request.form.get("es_interno") else 0 # Nuevo flag
+        sede = request.form.get("sede", "").strip() # AGREGADO
 
         fecha = datetime.now().strftime("%Y-%m-%d")
 
         # Validar existencia antes de crear pedido (solo validar, no afectar stock aun)
         existe = conn.execute(
-            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ?", 
-            (tipo_papel, formato)
+            "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND sede = ?", 
+            (tipo_papel, formato, sede)
         ).fetchone()
 
         if not existe:
             papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
             papeles.sort(key=lambda r: natural_key(r['nombre']))
             conn.close()
-            return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, error=f"No existe el papel '{tipo_papel}' con formato '{formato}'.")
+            return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES, error=f"No existe el papel '{tipo_papel}' con formato '{formato}' en sede '{sede}'.")
 
         # AGREGADO: Incluir 'pedido_por' en el INSERT
-        # Nota: Asegúrate de que tu tabla 'papel_pedidos' tenga la columna 'pedido_por'.
-        # Si no la tiene, tendrás que agregarla manualmente a la base de datos o el código dará error.
         conn.execute("""
             INSERT INTO papel_pedidos 
-            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado, afecta_stock, es_interno)
-            VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, 'En espera', ?, ?)
-        """, (fecha, pedido_por, tipo_papel, formato, marca, proveedor, cantidad, observaciones, agregar_stock, es_interno))
+            (fecha, pedido_por, tipo_papel, gramaje, formato, marca, proveedor, cantidad, observaciones, estado, afecta_stock, es_interno, sede)
+            VALUES (?, ?, ?, '', ?, ?, ?, ?, ?, 'En espera', ?, ?, ?)
+        """, (fecha, pedido_por, tipo_papel, formato, marca, proveedor, cantidad, observaciones, agregar_stock, es_interno, sede))
 
         conn.commit()
         conn.close()
@@ -1312,7 +1285,7 @@ def papel_pedidos_nuevo():
     papeles = conn.execute("SELECT DISTINCT nombre FROM papel_inventario").fetchall()
     papeles.sort(key=lambda r: natural_key(r['nombre']))
     conn.close()
-    return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL)
+    return render_template("base.html", vista="papel_pedidos_nuevo", modo="papel", papeles=papeles, formatos=FORMATOS_PAPEL, sedes=LISTA_SEDES)
 
 @app.route("/papel/pedidos/historial")
 def papel_pedidos_historial():
@@ -1348,8 +1321,8 @@ def papel_pedido_entregado(pedido_id):
         conn.execute("""
             UPDATE papel_inventario 
             SET stock_inicial = stock_inicial - ?, total = total - ? 
-            WHERE nombre = ? AND formato = ?
-        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
+            WHERE nombre = ? AND formato = ? AND sede = ?
+        """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"], pedido["sede"]))
              
     else:
         # --- PEDIDO NORMAL (COMPRA): SUMA STOCK (Solo si afecta stock) ---
@@ -1357,8 +1330,8 @@ def papel_pedido_entregado(pedido_id):
             conn.execute("""
                 UPDATE papel_inventario 
                 SET stock_inicial = stock_inicial + ?, total = total + ? 
-                WHERE nombre = ? AND formato = ?
-            """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"]))
+                WHERE nombre = ? AND formato = ? AND sede = ?
+            """, (pedido["cantidad"], pedido["cantidad"], pedido["tipo_papel"], pedido["formato"], pedido["sede"]))
             
     conn.commit()
     conn.close()
@@ -1401,11 +1374,11 @@ def papel_agregar():
         """, (nombre, formato, stock, stock, observaciones, sede))
         conn.commit()
         # Recuperar ID generado
-        row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ? AND formato = ?", (nombre, formato)).fetchone()
+        row = conn.execute("SELECT id FROM papel_inventario WHERE nombre = ? AND formato = ? AND sede = ?", (nombre, formato, sede)).fetchone()
         new_id = row["id"]
     except sqlite3.IntegrityError:
         conn.close()
-        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre y formato"}), 400
+        return jsonify({"ok": False, "error": "Ya existe un papel con ese nombre, formato y sede"}), 400
     
     conn.close()
     return jsonify({"ok": True, "id": new_id, "nombre": nombre, "formato": formato, "stock": stock, "total": stock})
@@ -1455,13 +1428,13 @@ def papel_modificar():
     
     # Verificar duplicado
     existe = conn.execute(
-        "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND id != ?", 
-        (nombre, formato, p_id)
+        "SELECT 1 FROM papel_inventario WHERE nombre = ? AND formato = ? AND sede = ? AND id != ?", 
+        (nombre, formato, sede, p_id)
     ).fetchone()
     
     if existe:
         conn.close()
-        return jsonify({"ok": False, "error": "Ya existe otro papel con ese nombre y formato"}), 400
+        return jsonify({"ok": False, "error": "Ya existe otro papel con ese nombre, formato y sede"}), 400
 
     # Actualizar total directamente y observaciones. 
     # Mantenemos las columnas entradas/salidas pero ya no se editan aqui.

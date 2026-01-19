@@ -2947,3 +2947,198 @@ body {
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
     color: #111827;
 }
+
+/* =========================================
+   RESPONSIVE (MOBILE)
+   ========================================= */
+
+@media (max-width: 768px) {
+
+    /* HEADER */
+    .header-inner {
+        height: auto;
+        flex-direction: column;
+        padding: 1rem;
+        gap: 1rem;
+    }
+
+    .top-bar {
+        border-bottom: 2px solid #000;
+        position: relative;
+        z-index: 100;
+        height: auto;
+    }
+
+    .btn-volver {
+        align-self: center;
+        font-size: 1rem;
+        padding: 0.5rem 1rem;
+        width: 100%;
+        max-width: 200px;
+    }
+
+    .menu-principal {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .menu-item {
+        font-size: 1.2rem;
+        padding: 1rem;
+        width: 100%;
+        border-right: none !important;
+        border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+    }
+
+    .menu-item:last-child {
+        border-bottom: none;
+    }
+
+    .contenido {
+        padding: 1rem;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* MENU PRINCIPAL (TARJETAS) */
+    .menu-wrapper {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .menu-card {
+        width: 100%;
+        min-width: unset;
+        max-width: 100%;
+        padding: 2rem;
+    }
+
+    /* ACCIONES (SUBMENUS) */
+    .acciones-container {
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        padding: 0 1rem;
+    }
+
+    .accion-card {
+        min-width: unset;
+        width: 100%;
+        padding: 2rem;
+        font-size: 1.2rem;
+    }
+
+    /* FORMULARIOS GRID */
+    .registro-cards-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem;
+        width: 100%;
+        padding: 0;
+    }
+
+    .registro-card {
+        min-height: auto;
+        width: 100%;
+    }
+
+    .registro-card label {
+        font-size: 1rem;
+    }
+
+    /* Ajuste específico para checklists en mobile */
+    .registro-card input[type="checkbox"] {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    .registro-card label[for="agregar_stock"],
+    .registro-card label[for="es_interno"] {
+        font-size: 1.1rem !important;
+    }
+
+    .registro-card div[style*="justify-content: center"] {
+        flex-direction: row !important;
+        /* Asegurar que no se rompa el flex */
+    }
+
+    /* TABLAS HISTORIAL */
+    .historial-tabla-wrapper {
+        overflow-x: auto;
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+
+    .historial-tabla {
+        min-width: 600px;
+        /* Forzar scroll horizontal */
+        font-size: 0.9rem;
+    }
+
+    .historial-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .historial-filtro {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.5rem;
+    }
+
+    .historial-filtro input {
+        width: 100%;
+    }
+
+    /* ADMIN INVENTARIO */
+    .historial-admin .historial-header-right {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.8rem;
+    }
+
+    .historial-admin .historial-header-right button,
+    .historial-admin .historial-header-right a {
+        width: 100%;
+        text-align: center;
+        margin-left: 0 !important;
+    }
+
+    /* MODALES */
+    .modal-content,
+    .modal-inventario-content {
+        width: 95% !important;
+        min-width: unset !important;
+        padding: 1.5rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .modal-botones {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .modal-btn {
+        width: 100%;
+    }
+
+    .modal-form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .modal-form-row label {
+        min-width: unset;
+    }
+
+    .logo-fixed {
+        display: none;
+    }
+}

@@ -82,12 +82,12 @@
 
         {% elif vista == "menu" %}
         <section class="menu-wrapper">
-            <div class="menu-card" onclick="window.location='{{ url_for('inventario_simple') }}'">
+            <div class="menu-card" onclick="window.location='{{ url_for('inventario_simple') }}';">
                 <img src="{{ url_for('static', filename='img/insumos_menu.png') }}" alt="Insumos" class="menu-card-img">
                 <div class="menu-card-title">Insumos</div>
             </div>
 
-            <div class="menu-card" onclick="window.location='{{ url_for('papel_inventario') }}'">
+            <div class="menu-card" onclick="window.location='{{ url_for('papel_inventario') }}';">
                 <img src="{{ url_for('static', filename='img/papel_menu.png') }}" alt="Papel" class="menu-card-img">
                 <div class="menu-card-title">Papel</div>
             </div>
@@ -793,7 +793,7 @@
                         <tr>
                             <td>{{ r['nombre'] }}</td>
                             <td>{{ r['formato'] }}</td>
-                            <td>{{ r['total'] }}</td>
+                            <td>{{ r['total'] | format_number }}</td>
                             <td>{{ r['sede'] }}</td>
                             <td>{{ r['observaciones'] }}</td>
                         </tr>
@@ -854,7 +854,7 @@
                                 <td>{{ r['id'] }}</td>
                                 <td>{{ r['nombre'] }}</td>
                                 <td>{{ r['formato'] }}</td>
-                                <td>{{ r['total'] }}</td>
+                                <td>{{ r['total'] | format_number }}</td>
                                 <td>{{ r['sede'] }}</td>
                                 <td>{{ r['observaciones'] }}</td>
                                 <td class="col-accion">
@@ -1008,6 +1008,15 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="registro-card">
+                            <label>Sede</label>
+                            <select name="sede" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for s in sedes %}
+                                <option value="{{ s }}">{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <!-- Gramaje eliminado -->
                         <div class="registro-card">
                             <label>Formato</label>
@@ -1041,7 +1050,7 @@
                             <tr>
                                 <th>Fecha</th>
                                 <th>Papel</th>
-                                <!-- Gramaje eliminado -->
+                                <th>Sede</th>
                                 <th>Formato</th>
                                 <th>Marca</th>
                                 <th>Cant</th>
@@ -1054,8 +1063,8 @@
                             <tr>
                                 <td>{{ r['fecha'] }}</td>
                                 <td>{{ r['tipo_papel'] }}</td>
-                                <!-- Gramaje eliminado -->
                                 <td>{{ r['formato'] }}</td>
+
                                 <td>{{ r['marca'] }}</td>
                                 <td>{{ r['cantidad'] }}</td>
                                 <td>{{ r['observaciones'] }}</td>
@@ -1101,6 +1110,15 @@
                                 <option value="">-- Seleccione --</option>
                                 {% for f in formatos %}
                                 <option value="{{ f }}">{{ f }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="registro-card">
+                            <label>Sede</label>
+                            <select name="sede" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for s in sedes %}
+                                <option value="{{ s }}">{{ s }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -1196,6 +1214,15 @@
                                 {% endfor %}
                             </select>
                         </div>
+                        <div class="registro-card">
+                            <label>Sede</label>
+                            <select name="sede" required>
+                                <option value="">-- Seleccione --</option>
+                                {% for s in sedes %}
+                                <option value="{{ s }}">{{ s }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div class="registro-card"><label>Marca</label><input type="text" name="marca" required></div>
                         <div class="registro-card"><label>Proveedor</label><input type="text" name="proveedor" required>
                         </div>
@@ -1204,24 +1231,26 @@
 
                         <!-- Checkbox Agregar Stock (Movido y Agrandado) -->
                         <div class="registro-card"
-                            style="display: flex; flex-direction: column; justify-content: flex-end;">
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 5px 0;">
+                            style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%;">
+                            <div
+                                style="display: flex; align-items: center; gap: 12px; width: 100%; justify-content: center;">
                                 <input type="checkbox" name="agregar_stock" id="agregar_stock"
-                                    style="width: 30px; height: 30px; cursor: pointer;">
+                                    style="width: 40px; height: 40px; cursor: pointer;">
                                 <label for="agregar_stock"
-                                    style="margin: 0; cursor: pointer; font-size: 1rem; font-weight: 600;">¿Agregar al
+                                    style="margin: 0; cursor: pointer; font-size: 1.3rem; font-weight: 600;">¿Agregar al
                                     Stock?</label>
                             </div>
                         </div>
 
                         <!-- Checkbox INTERNO (Nuevo) -->
                         <div class="registro-card registro-card-interno"
-                            style="display: flex; flex-direction: column; justify-content: flex-end;">
-                            <div style="display: flex; align-items: center; gap: 12px; padding: 5px 0;">
+                            style="display: flex; flex-direction: row; align-items: center; justify-content: center; height: 100%;">
+                            <div
+                                style="display: flex; align-items: center; gap: 12px; width: 100%; justify-content: center;">
                                 <input type="checkbox" name="es_interno" id="es_interno"
-                                    style="width: 30px; height: 30px; cursor: pointer;">
+                                    style="width: 40px; height: 40px; cursor: pointer;">
                                 <label for="es_interno"
-                                    style="margin: 0; cursor: pointer; font-size: 1rem; font-weight: 600; color: #ea580c;">¿Interno?</label>
+                                    style="margin: 0; cursor: pointer; font-size: 1.3rem; font-weight: 600; color: #ea580c;">¿Interno?</label>
                             </div>
                         </div>
 
