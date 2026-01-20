@@ -3512,3 +3512,133 @@ body {
         gap: 1.5rem;
     }
 }
+
+
+/* Botón IMPRIMIR (Moderno) */
+.btn-imprimir-insumo {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-imprimir-insumo:hover {
+    background-color: #e2e8f0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+}
+
+
+/* =========================================
+   ESTILOS DE IMPRESIÓN (PRINT)
+   ========================================= */
+@media print {
+
+    /* Ocultar elementos de navegación y control */
+    .top-bar,
+    .btn-imprimir-insumo,
+    .btn-agregar-insumo,
+    .btn-editar-insumo,
+    .btn-eliminar-insumo,
+    .btn-cerrar-sesion,
+    .historial-filtro,
+    .filtro-card,
+    .btn-modificar,
+    .btn-modificar-papel-row-inline,
+    .col-accion,
+    /* Ocultar columna de acción explícitamente si tiene clase */
+    .btn-volver-modal,
+    button {
+        display: none !important;
+    }
+
+    /* Ajustar contendedores para impresión */
+    .historial,
+    .historial-admin,
+    .tabla-wrapper,
+    .historial-tabla-wrapper {
+        box-shadow: none !important;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: none !important;
+        width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* Ajustar títulos */
+    .historial-titulo,
+    .section-title {
+        font-size: 1.5rem !important;
+        text-align: center !important;
+        margin-bottom: 1rem !important;
+        color: #000 !important;
+    }
+
+    /* --- PERSONALIZACION INSUMOS (SOLO MOSTRAR INSUMO Y TOTAL) --- */
+    /* IDs: #tabla-inventario y #tabla-inventario-simple */
+    #tabla-inventario th:nth-child(1),
+    #tabla-inventario td:nth-child(1),
+    /* CÓDIGO */
+    #tabla-inventario th:nth-child(3),
+    #tabla-inventario td:nth-child(3),
+    /* DESCRIPCIÓN */
+    #tabla-inventario th:nth-child(4),
+    #tabla-inventario td:nth-child(4),
+    /* STOCK */
+    #tabla-inventario th:nth-child(5),
+    #tabla-inventario td:nth-child(5),
+    /* ENTRADAS */
+    #tabla-inventario th:nth-child(6),
+    #tabla-inventario td:nth-child(6),
+    /* SALIDAS */
+    #tabla-inventario th:nth-child(8),
+    #tabla-inventario td:nth-child(8),
+    /* ACCIÓN */
+
+    #tabla-inventario-simple th:nth-child(1),
+    #tabla-inventario-simple td:nth-child(1),
+    /* CÓDIGO */
+    #tabla-inventario-simple th:nth-child(3),
+    #tabla-inventario-simple td:nth-child(3),
+    /* DESCRIPCIÓN */
+    #tabla-inventario-simple th:nth-child(4),
+    #tabla-inventario-simple td:nth-child(4),
+    /* STOCK */
+    #tabla-inventario-simple th:nth-child(5),
+    #tabla-inventario-simple td:nth-child(5),
+    /* ENTRADAS */
+    #tabla-inventario-simple th:nth-child(6),
+    #tabla-inventario-simple td:nth-child(6)
+
+    /* SALIDAS */
+        {
+        display: none !important;
+    }
+
+    /* Asegurar que las columnas restantes (Insumo y Total) se vean bien */
+    #tabla-inventario,
+    #tabla-inventario-simple {
+        font-size: 12pt !important;
+    }
+
+    #tabla-inventario th,
+    #tabla-inventario td,
+    #tabla-inventario-simple th,
+    #tabla-inventario-simple td {
+        border: 1px solid #000 !important;
+    }
+
+}

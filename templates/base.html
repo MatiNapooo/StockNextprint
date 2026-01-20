@@ -9,7 +9,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=11">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}?v=13">
 </head>
 
 <body>
@@ -140,6 +140,8 @@
 
                     <a href="{{ url_for('logout_admin') }}" class="btn-cerrar-sesion"
                         style="margin-left: 10px;">Salir</a>
+                    <button type="button" class="btn-imprimir-insumo" onclick="window.print()">🖨️
+                        Imprimir</button>
                 </div>
             </div>
 
@@ -271,7 +273,13 @@
 
         {% elif vista == "inventario_simple" %}
         <section class="historial">
-            <h1 class="historial-titulo">Inventario</h1>
+            <div style="position: relative; text-align: center;">
+                <h1 class="historial-titulo" style="margin-bottom: 0;">Inventario</h1>
+                <button type="button" class="btn-imprimir-insumo" style="position: absolute; right: 0; top: 0;"
+                    onclick="window.print()">🖨️
+                    Imprimir</button>
+            </div>
+            <div style="margin-bottom: 2rem;"></div><!-- Espaciador tras titulo -->
             <div class="historial-filtro inventario-filtro">
                 <label for="filtro-inventario-simple">Filtrar:</label>
                 <input id="filtro-inventario-simple" type="text" placeholder="Escriba para filtrar">
@@ -794,7 +802,13 @@
 
         {% elif vista == "papel_inventario_simple" %}
         <section class="historial">
-            <h1 class="historial-titulo">Inventario - Papel</h1>
+            <div style="position: relative; text-align: center;">
+                <h1 class="historial-titulo" style="margin-bottom: 0;">Stock Papel</h1>
+                <button type="button" class="btn-imprimir-insumo" style="position: absolute; right: 0; top: 0;"
+                    onclick="window.print()">🖨️
+                    Imprimir</button>
+            </div>
+            <div style="margin-bottom: 2rem;"></div><!-- Espaciador tras titulo -->
 
             <!-- TARJETA DE FILTRO (Diseño Card Restaurado) -->
             <div class="filtro-card">
@@ -837,7 +851,7 @@
             <section class="historial historial-admin">
                 <div class="historial-header">
                     <div class="historial-header-left">
-                        <h1 class="historial-titulo">Administración - Papel</h1>
+                        <h1 class="historial-titulo">Stock Papel (Admin)</h1>
 
                         <!-- Tarjeta de filtro estilo 'Simple' integrada en el header -->
                         <!-- Tarjeta de filtro estilo 'Simple' integrada en el header -->
