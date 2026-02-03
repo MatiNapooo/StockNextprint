@@ -912,6 +912,16 @@ def pedidos_historial():
     conn.close()
     return render_template("base.html", vista="pedidos_historial", registros=registros)
 
+
+@app.route("/pedidos/<int:pedido_id>/borrar", methods=["POST"])
+def pedidos_borrar(pedido_id):
+    conn = get_db_connection()
+    # Solo borramos el registro, NO toca inventario
+    conn.execute("DELETE FROM pedidos WHERE id = ?", (pedido_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"ok": True})
+
 @app.route("/pedidos/<int:pedido_id>/entregar", methods=["POST"])
 def pedido_entregado(pedido_id):
     conn = get_db_connection()

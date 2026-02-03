@@ -754,6 +754,7 @@
                 <table class="historial-tabla" id="tabla-pedidos">
                     <thead>
                         <tr>
+                            <th style="width: 30px;"></th> <!-- Columna X vacía cabecera -->
                             <th>FECHA</th>
                             <th>POR</th>
                             <th>PROVEEDOR</th>
@@ -776,6 +777,14 @@
                         {% endif %}
                         {% endif %}
                         <tr class="{{ row_class }}">
+                            <td style="width: 30px; text-align: center;">
+                                {% if p['estado'] == 'Entregado' %}
+                                <button class="btn-borrar-historial-insumo" data-id="{{ p['id'] }}"
+                                    style="background:none; border:none; color:inherit; font-weight:bold; cursor:pointer;"
+                                    onmouseover="this.style.color='red'"
+                                    onmouseout="this.style.color='inherit'">X</button>
+                                {% endif %}
+                            </td>
                             <td>{{ p['fecha'] }}</td>
                             <td>{{ p['pedido_por'] }}</td>
                             <td>{{ p['proveedor'] }}</td>

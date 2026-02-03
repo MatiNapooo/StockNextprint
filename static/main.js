@@ -1256,3 +1256,31 @@ document.addEventListener("click", function (e) {
         });
     }
 });
+
+// ==========================================
+// BORRADO HISTORIAL PEDIDOS INSUMOS
+// ==========================================
+document.addEventListener("click", function (e) {
+    // 1. Detectar clic en el botón X (usando la nueva clase específica para insumos)
+    const btn = e.target.closest(".btn-borrar-historial-insumo");
+    if (!btn) return;
+
+    const id = btn.dataset.id;
+    if (!id) return;
+
+    // 2. Mostrar confirmacion (revisar si usar modal custom o confirm nativo por simplicidad y consistencia con otros)
+    if (!confirm("¿Seguro que deseas borrar este registro del historial?")) return;
+
+    // 3. Enviar solicitud de borrado
+    fetch(`/pedidos/${id}/borrar`, { method: "POST" })
+        .then(r => r.json())
+        .then(data => {
+            if (data.ok) {
+                // Borrar fila visualmente
+                btn.closest('tr').remove();
+            } else {
+                alert("Error: " + (data.error || "No se pudo borrar"));
+            }
+        })
+        .catch(() => alert("Error de conexión"));
+});
