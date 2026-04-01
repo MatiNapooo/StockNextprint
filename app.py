@@ -11,7 +11,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 FORMATOS_PAPEL = [
     "50 x 65", "61 x 86", "63 x 88", "65 x 95", "72 x 92", 
     "66 x 100", "72 x 102", "74 x 110", "76 x 112", "70 x 100", 
-    "82 x 118", "36 cm", "41 cm", "45 cm"
+    "82 x 118", "36 cm", "41 cm", "45 cm", "44cm", "35cm", "33cm", "23.5cm"
 ]
 
 LISTA_SEDES = [
